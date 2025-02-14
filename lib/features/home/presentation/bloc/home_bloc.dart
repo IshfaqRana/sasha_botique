@@ -23,7 +23,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetProductsOnSaleUseCase getProductsOnSaleUseCase;
   final SearchProductsUseCase searchProductsUseCase;
 
-  static const int _pageSize = 20;
+  static const int _pageSize = 5;
 
   HomeBloc({
     required this.getAllProducts,
@@ -49,19 +49,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
 
     try {
+
+
       final List<Product> products = await _loadProductsByCategory(
         event.category,
         0,
         _pageSize,
       );
 
-      debugPrint('HomeBloc._onLoadInitialProducts: ${CategoryMapper.getCategory(event.category)}: ${products.length}');
-
-      emit(HomeLoaded(
-        categoryProducts: {CategoryMapper.getCategory(event.category): products},
-        categoryOffsets: {CategoryMapper.getCategory(event.category): _pageSize},
-        currentCategory: event.category,
-      ));
+      if (state is! HomeLoaded) {
+        emit(HomeLoaded(
+          categoryProducts: {CategoryMapper.getCategory(event.category): products},
+          categoryOffsets: {CategoryMapper.getCategory(event.category): _pageSize},
+          hasMoreProducts: {CategoryMapper.getCategory(event.category): products.length >= 5 ? true : false},
+        ));
+      }else{
+        final currentState = state as HomeLoaded;
+        emit(currentState.copyWith(
+          categoryProducts: {CategoryMapper.getCategory(event.category): products},
+          categoryOffsets: {...currentState.categoryOffsets,CategoryMapper.getCategory(event.category): _pageSize},
+          hasMoreProducts: {...currentState.hasMoreProducts,CategoryMapper.getCategory(event.category): products.length >= 5 ? true : false},
+        ));
+      }
+      // debugPrint('HomeBloc._onLoadInitialProducts: categoryOffsets; ${state.categoryOffsets[CategoryMapper.getCategory(event.category)]}: ${products.length}');
     } catch (e) {
       emit(HomeError(e.toString()));
     }
@@ -74,7 +84,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final currentState = state as HomeLoaded;
     if (currentState.isLoadingMore) return;
 
-    emit(currentState.copyWith(isLoadingMore: true));
+    emit(currentState.copyWith(isLoadingMore: true,categoryProducts: {
+      CategoryMapper.getCategory(event.category): [],
+    },));
 
     try {
       final currentOffset = currentState.categoryOffsets[CategoryMapper.getCategory(event.category)] ?? 0;
@@ -87,21 +99,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         event.gender,
       );
 
-      final List<Product> updatedProducts = [
-        ...currentState.categoryProducts[CategoryMapper.getCategory(event.category)] ?? [],
-        ...newProducts,
-      ];
+
+
 
       emit(currentState.copyWith(
+
         categoryProducts: {
-          ...currentState.categoryProducts,
-          CategoryMapper.getCategory(event.category): updatedProducts,
+          CategoryMapper.getCategory(event.category): newProducts,
         },
         categoryOffsets: {
           ...currentState.categoryOffsets,
           CategoryMapper.getCategory(event.category): currentOffset + _pageSize,
         },
         isLoadingMore: false,
+        hasMoreProducts: {CategoryMapper.getCategory(event.category): newProducts.length >= 10 ? true : false},
       ));
     } catch (e) {
       emit(HomeError(e.toString()));
@@ -170,14 +181,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ));
 
     // Reload products with new filters
-    add(LoadInitialProducts(currentState.currentCategory));
+    final List<Product> products = await _loadProductsByCategory(
+      currentState.currentCategory,
+      0,
+      _pageSize,
+        event.filters,
+      event.sortOption,
+    );
+
+    // debugPrint('HomeBloc._onLoadInitialProducts: ${CategoryMapper.getCategory(event.category)}: ${products.length}');
+
+    emit(currentState.copyWith(
+      categoryProducts: {CategoryMapper.getCategory(currentState.currentCategory): products},
+      categoryOffsets: {CategoryMapper.getCategory(currentState.currentCategory): _pageSize},
+    ));
   }
 
   void _onChangeCategory(
       ChangeCategory event,
       Emitter<HomeState> emit,
       ) {
-    add(LoadInitialProducts(event.category));
+    final currentState = state as HomeLoaded;
+
+    emit(currentState.copyWith(currentCategory: event.category));
   }
 
   void _onToggleViewMode(

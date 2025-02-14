@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/app_utils.dart';
 import '../../domain/entities/products.dart';
 import '../widgets/product_card.dart';
 
@@ -7,6 +8,7 @@ class ProductList extends StatefulWidget {
   final List<Product> products;
   final bool isGridView;
   final Function() onLoadMore;
+  final Function() onInitial;
   final Function(Product) onProductTap;
 
   const ProductList({
@@ -15,6 +17,7 @@ class ProductList extends StatefulWidget {
     required this.isGridView,
     required this.onLoadMore,
     required this.onProductTap,
+    required this.onInitial,
   }) : super(key: key);
 
   @override
@@ -23,18 +26,19 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   final ScrollController _scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
+    widget.onInitial();
     _scrollController.addListener(_onScroll);
-    print('_ProductListState.initState: ProductList: ${widget.products.length}');
+    debugPrinter('_ProductListState.initState: ProductList: ${widget.products.length}');
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       widget.onLoadMore();
+
     }
   }
 

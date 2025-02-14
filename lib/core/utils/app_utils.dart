@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-void debugPrint(Object? object) {
+void debugPrinter(Object? object) {
   if (kDebugMode) {
     print(object);
   }

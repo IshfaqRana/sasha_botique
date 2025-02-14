@@ -1,19 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
+import 'package:sasha_botique/features/home/presentation/pages/search_screen.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 
 import '../../../../core/di/injections.dart';
 import '../../../../core/utils/product_category_enum.dart';
 import '../../../../core/utils/product_category_mapper.dart';
-import '../../../theme/presentation/bloc/theme_bloc.dart';
-import '../../../theme/presentation/widget/theme_toggle_button.dart';
+import '../../domain/entities/products.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/custom_drawar.dart';
 import '../widgets/filter_bottom_sheet.dart';
+import 'empty_product_screen.dart';
 import 'product_list.dart';
 import 'product_search_delegate.dart';
-
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -23,7 +24,11 @@ class HomeScreen extends StatefulWidget {
 class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final homeBloc = getIt<HomeBloc>();
-  bool _isGridView = true;
+  List<Product> popularProducts = <Product>[];
+  List<Product> newArrivalProducts = <Product>[];
+  List<Product> saleProducts = <Product>[];
+  List<Product> womenProducts = <Product>[];
+  bool hasMoreData = true;
 
   @override
   void initState() {
@@ -33,19 +38,27 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
     homeBloc.add(LoadInitialProducts(ProductCategory.sale));
     homeBloc.add(LoadInitialProducts(ProductCategory.all));
     homeBloc.add(LoadInitialProducts(ProductCategory.newArrival));
-    homeBloc.add(LoadInitialProducts(ProductCategory.gender,gender: "women"));
+    homeBloc.add(LoadInitialProducts(ProductCategory.gender, gender: "women"));
+    homeBloc.add(ChangeCategory(ProductCategory.popular));
   }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title:  Text("SASHA'S",style: context.headlineMedium,),
+        title: Text(
+          "SASHA'S",
+          style: context.headlineMedium,
+        ),
         backgroundColor: context.colors.whiteColor,
         actions: [
           IconButton(
-            icon:  Icon(Icons.notifications_outlined,),
+            icon: Icon(
+              Icons.notifications_outlined,
+            ),
             onPressed: () {},
           ),
           IconButton(
@@ -59,30 +72,28 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              showSearch(
-                context: context,
-                delegate: ProductSearchDelegate(),
-              );
+              Navigator.push(context, CupertinoPageRoute(builder: (context) => SearchScreen()));
+
             },
           ),
           // ThemeToggleButton(),
-          Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openEndDrawer();
-                },
-              );
-            }
-          ),
+          Builder(builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              },
+            );
+          }),
         ],
         bottom: TabBar(
           controller: _tabController,
           labelStyle: context.titleSmall?.copyWith(color: context.colors.blackWhite),
           unselectedLabelStyle: context.titleSmall?.copyWith(color: context.colors.grey),
           tabs: const [
-            Tab(text: 'Popular',),
+            Tab(
+              text: 'Popular',
+            ),
             Tab(text: 'Brands'),
             Tab(text: 'Womens'),
             Tab(text: 'Sale'),
@@ -90,10 +101,23 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
         ),
       ),
       endDrawer: const CustomDrawer(),
-      body: BlocBuilder<HomeBloc, HomeState>(
+      body: BlocConsumer<HomeBloc, HomeState>(
         bloc: homeBloc,
+        listener: (context, state) {
+          if (state is HomeLoaded) {
+            // print('_HomePageState.build: Current Category: ${state.currentCategory.toString()}');
+            setState(() {
+              hasMoreData = state.hasMoreProducts[CategoryMapper.getCategory(state.currentCategory)] ?? true;
+            });
+
+            popularProducts = [...popularProducts, ...state.categoryProducts[CategoryMapper.getCategory(ProductCategory.popular)] ?? []];
+            womenProducts = [...womenProducts, ...state.categoryProducts[CategoryMapper.getCategory(ProductCategory.gender)] ?? []];
+            saleProducts = [...saleProducts, ...state.categoryProducts[CategoryMapper.getCategory(ProductCategory.sale)] ?? []];
+            newArrivalProducts = [...newArrivalProducts, ...state.categoryProducts[CategoryMapper.getCategory(ProductCategory.newArrival)] ?? []];
+            print('_HomePageState.build: popularProducts Products: ${popularProducts.length}');
+          }
+        },
         builder: (context, state) {
-          print(state);
           if (state is HomeLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -110,37 +134,37 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
                   child: Row(
                     children: [
                       TextButton.icon(
-                        icon: const Icon(Icons.filter_list,),
-                        label:  Text('FILTER & SORT',style: context.headlineSmall,),
+                        icon: const Icon(
+                          Icons.filter_list,
+                        ),
+                        label: Text(
+                          'FILTER & SORT',
+                          style: context.headlineSmall,
+                        ),
                         onPressed: () {
-
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => FilterBottomSheet(
-                                initialFilters: state.activeFilters,
-                                currentSortOption: state.currentSortOption,
-                                onApplyFilters: (filters, sortOption) {
-                                  context.read<HomeBloc>().add(
-                                    ApplyFilters(filters: filters, sortOption: sortOption),
-                                  );
-                                },
-                              ),
-                            );
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (context) => FilterBottomSheet(
+                              initialFilters: state.activeFilters,
+                              currentSortOption: state.currentSortOption,
+                              onApplyFilters: (filters, sortOption) {
+                                clearCurrentList(state.currentCategory);
+                                homeBloc.add(
+                                  ApplyFilters(filters: filters, sortOption: sortOption),
+                                );
+                              },
+                            ),
+                          );
 
                           // Show filter bottom sheet
                         },
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: Icon(state.isGridView
-                            ? Icons.grid_view
-                            : Icons.view_list
-                        ),
+                        icon: Icon(state.isGridView ? Icons.grid_view : Icons.view_list),
                         onPressed: () {
-                          homeBloc.add(
-                              ToggleViewMode(!state.isGridView)
-                          );
+                          homeBloc.add(ToggleViewMode(!state.isGridView));
                         },
                       ),
                     ],
@@ -150,38 +174,71 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      ProductList(
-                        products: state.categoryProducts[CategoryMapper.getCategory(ProductCategory.popular)] ?? [],
-                        isGridView: state.isGridView,
-                        onLoadMore: () => context.read<HomeBloc>().add(
-                          LoadMoreProducts( ProductCategory.popular),
-                        ),
-                        onProductTap: (product) {},
-                      ),
-                      ProductList(
-                        products: state.categoryProducts[CategoryMapper.getCategory(ProductCategory.newArrival)] ?? [],
-                        isGridView: state.isGridView,
-                        onLoadMore: () => context.read<HomeBloc>().add(
-                          LoadMoreProducts( ProductCategory.newArrival),
-                        ),
-                        onProductTap: (product) {},
-                      ),
-                      ProductList(
-                        products: state.categoryProducts[CategoryMapper.getCategory(ProductCategory.gender)] ?? [],
-                        isGridView: state.isGridView,
-                        onLoadMore: () => context.read<HomeBloc>().add(
-                          LoadMoreProducts( ProductCategory.gender,gender: "women"),
-                        ),
-                        onProductTap: (product) {},
-                      ),
-                      ProductList(
-                        products: state.categoryProducts[CategoryMapper.getCategory(ProductCategory.sale)] ?? [],
-                        isGridView: state.isGridView,
-                        onLoadMore: () => context.read<HomeBloc>().add(
-                          LoadMoreProducts( ProductCategory.sale),
-                        ),
-                        onProductTap: (product) {},
-                      ),
+                      popularProducts.isEmpty
+                          ? EmptyProductList()
+                          : ProductList(
+                              products: popularProducts,
+                              isGridView: state.isGridView,
+                              onLoadMore: () {
+                                if (!state.isLoadingMore && hasMoreData) {
+                                  homeBloc.add(
+                                    LoadMoreProducts(ProductCategory.popular),
+                                  );
+                                }
+                              },
+                              onProductTap: (product) {},
+                              onInitial: () {
+                                homeBloc.add(ChangeCategory(ProductCategory.popular));
+                              },
+                            ),
+                      newArrivalProducts.isEmpty
+                          ? EmptyProductList()
+                          : ProductList(
+                              products: newArrivalProducts,
+                              isGridView: state.isGridView,
+                              onLoadMore: () {
+                                if (!state.isLoadingMore && hasMoreData) {                                  homeBloc.add(
+                                    LoadMoreProducts(ProductCategory.newArrival),
+                                  );
+                                }
+                              },
+                              onProductTap: (product) {},
+                              onInitial: () {
+                                homeBloc.add(ChangeCategory(ProductCategory.newArrival));
+                              },
+                            ),
+                      womenProducts.isEmpty
+                          ? EmptyProductList()
+                          : ProductList(
+                              products: womenProducts,
+                              isGridView: state.isGridView,
+                              onLoadMore: () {
+                                if (!state.isLoadingMore && hasMoreData) {                                  homeBloc.add(
+                                    LoadMoreProducts(ProductCategory.gender, gender: "women"),
+                                  );
+                                }
+                              },
+                              onProductTap: (product) {},
+                              onInitial: () {
+                                homeBloc.add(ChangeCategory(ProductCategory.gender));
+                              },
+                            ),
+                      saleProducts.isEmpty
+                          ? EmptyProductList()
+                          : ProductList(
+                              products: saleProducts,
+                              isGridView: state.isGridView,
+                              onLoadMore: () {
+                                if (!state.isLoadingMore && hasMoreData) {                                  homeBloc.add(
+                                    LoadMoreProducts(ProductCategory.sale),
+                                  );
+                                }
+                              },
+                              onProductTap: (product) {},
+                              onInitial: () {
+                                homeBloc.add(ChangeCategory(ProductCategory.sale));
+                              },
+                            ),
                     ],
                   ),
                 ),
@@ -189,9 +246,24 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
             );
           }
 
-          return   Center(child: Text("No state loaded"));
+          return EmptyProductList();
         },
       ),
     );
+  }
+  void clearCurrentList(ProductCategory category){
+    switch (category) {
+      case ProductCategory.popular:
+        popularProducts = [];
+      case ProductCategory.newArrival:
+        newArrivalProducts = [];
+      case ProductCategory.all:
+
+      case ProductCategory.gender:
+        womenProducts = [];
+      case ProductCategory.sale:
+        saleProducts = [];
+
+    }
   }
 }
