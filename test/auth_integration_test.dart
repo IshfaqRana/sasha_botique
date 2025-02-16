@@ -6,7 +6,7 @@ import 'package:sasha_botique/features/auth/domain/usecases/check_auth_usecase.d
 import 'package:sasha_botique/main.dart';
 
 void main() {
-  // IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Authentication Flow Integration Tests', () {
     testWidgets('complete auth flow - login, check status, logout',

@@ -8,7 +8,7 @@ import '../bloc/splash_bloc.dart';
 import '../bloc/splash_event.dart';
 import '../bloc/splash_state.dart';
 import '../widgets/splash_logo.dart';
-import '../../../home/presentation/pages/home_screen.dart';
+import '../../../products/presentation/pages/home_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   @override

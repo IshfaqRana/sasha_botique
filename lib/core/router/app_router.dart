@@ -3,7 +3,7 @@ import 'package:sasha_botique/core/router/route_guards.dart';
 
 import '../../features/auth/presentation/pages/login.dart';
 import '../../features/auth/presentation/pages/signup.dart';
-import '../../features/home/presentation/pages/home_screen.dart';
+import '../../features/products/presentation/pages/home_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 
 class AppRouter {

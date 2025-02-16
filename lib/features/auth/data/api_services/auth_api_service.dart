@@ -1,0 +1,97 @@
+import '../../../../core/helper/shared_preferences_service.dart';
+import '../../../../core/network/network_exceptions.dart';
+import '../../../../core/network/network_manager.dart';
+import '../../domain/entities/user.dart';
+import '../models/user_model.dart';
+
+class AuthService {
+  final NetworkManager networkManager;
+  final SharedPreferencesService preferencesService;
+  final String _baseEndpoint = '/auth';
+
+  AuthService({
+    required this.networkManager,
+    required this.preferencesService,
+  });
+
+  Future<void> refreshToken() async {
+    try {
+      final refreshToken = preferencesService.getRefreshToken();
+      if (refreshToken == null) {
+        throw UnauthorizedException('No refresh token available');
+      }
+
+      final response = await networkManager.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+
+      final newAccessToken = response.data['accessToken'];
+      final newRefreshToken = response.data['refreshToken'];
+
+      await preferencesService.setUserToken(newAccessToken);
+      await preferencesService.setRefreshToken(newRefreshToken);
+    } catch (e) {
+      await preferencesService.clearUserData();
+      throw UnauthorizedException('Session expired. Please log in again.');
+    }
+  }
+  Future<dynamic> login(String email, String password) async {
+    try {
+      final response = await networkManager.post(
+        '$_baseEndpoint/login',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+
+  Future<dynamic> signup(User user, String password) async {
+    try {
+      final userData = (user as UserModel).toJson();
+      userData['password'] = password;
+
+      final response = await networkManager.post(
+        '$_baseEndpoint/signup',
+        data: userData,
+      );
+      return response.data;
+    } catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+
+  Future<dynamic> sendPasswordResetEmail(String email) async {
+    try {
+      final response =await networkManager.post(
+        '$_baseEndpoint/password-reset',
+        data: {'email': email},
+      );
+      return response.data;
+    } catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+  Exception _handleAuthError(dynamic error) {
+    if (error is NetworkException) {
+      return AuthException(error.message);
+    } else if (error is UnauthorizedException) {
+      return AuthException('Invalid credentials');
+    } else if (error is ServerException) {
+      return AuthException('Authentication service unavailable');
+    }
+    return AuthException('Authentication failed');
+  }
+}
+
+// auth_exception.dart
+class AuthException implements Exception {
+  final String message;
+  AuthException(this.message);
+}

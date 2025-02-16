@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -38,7 +39,9 @@ class CustomTextField extends StatelessWidget {
           borderSide: const BorderSide(color: Color(0xFF6C63FF)),
         ),
         suffixIcon: suffixIcon,
-        prefix: prefixIcon,
+        prefixIcon: prefixIcon,
+
+// prefix: SvgPicture.asset('assets/svgs/email.svg'),
         filled: true,
         fillColor: Colors.grey.shade50,
       ),

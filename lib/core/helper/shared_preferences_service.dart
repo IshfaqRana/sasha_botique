@@ -8,7 +8,8 @@ class SharedPreferencesService {
   final SharedPreferences _preferences;
 
   // Keys for storing data
-  static const String _kUserToken = 'user_token';
+  static const String _kUserToken = 'user_access_token';
+  static const String _kRefreshToken = 'user_refresh_token';
   static const String _kUserId = 'user_id';
   static const String _kUserName = 'user_name';
   static const String _kIsFirstLaunch = 'is_first_launch';
@@ -25,6 +26,14 @@ class SharedPreferencesService {
 
   String? getUserToken() {
     return _preferences.getString(_kUserToken);
+  }
+
+  Future<bool> setRefreshToken(String token) async {
+    return await _preferences.setString(_kRefreshToken, token);
+  }
+
+  String? getRefreshToken() {
+    return _preferences.getString(_kRefreshToken);
   }
 
   Future<bool> setUserId(int userId) async {
@@ -76,6 +85,7 @@ class SharedPreferencesService {
   // Clear specific user data
   Future<void> clearUserData() async {
     await _preferences.remove(_kUserToken);
+    await _preferences.remove(_kRefreshToken);
     await _preferences.remove(_kUserId);
     await _preferences.remove(_kUserName);
   }

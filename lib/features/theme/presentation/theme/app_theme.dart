@@ -11,8 +11,8 @@ class AppTheme {
     fontFamily: 'Lato',
     scaffoldBackgroundColor: Colors.white,
     appBarTheme: AppBarTheme(
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
     ),
     inputDecorationTheme: InputDecorationTheme(
       // labelStyle: TextStyle(color: Colors.red),

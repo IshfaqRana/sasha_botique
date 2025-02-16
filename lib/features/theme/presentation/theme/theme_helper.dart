@@ -40,6 +40,8 @@ extension CustomColorScheme on ColorScheme {
   Color get primaryColor => const Color(0xFF6B4EFF);
   Color get whiteColor => Colors.white;
   Color get lightWhiteColor => Colors.white70;
+  Color get cartTileColor => Color(0xFFF1F4FB);
+
   Color get grey => const Color(0xFFA1A1A1);
 }
 
