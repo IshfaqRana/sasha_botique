@@ -1,14 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 
-import '../../../../core/router/navigation_service.dart';
 import '../../../../shared/widgets/custom_app_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
-import '../../data/models/user_model.dart';
-import '../../domain/entities/user.dart';
+import '../../../products/presentation/pages/home_screen.dart';
+import '../../../profile/domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/background_design.dart';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -20,15 +20,16 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _postCodeController = TextEditingController();
-  final _phoneController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _userNameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  TextEditingController _firstNameController = TextEditingController();
+  TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _postCodeController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
   String? _selectedCountry;
   String? _selectedState;
   bool _obscurePassword = true;
@@ -46,6 +47,20 @@ class _SignupScreenState extends State<SignupScreen> {
   };
 
   @override
+  void initState() {
+    if(kDebugMode){
+      _emailController = TextEditingController(text: "test_user@gmail.com");
+      _userNameController = TextEditingController(text: "test_user");
+
+      _passwordController = TextEditingController(text: "Test1234@");
+       _firstNameController = TextEditingController(text: "Test");
+       _lastNameController = TextEditingController(text: "User");
+       _phoneController = TextEditingController(text: "+923333333333");
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: AppBar(
@@ -61,115 +76,83 @@ class _SignupScreenState extends State<SignupScreen> {
       // ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is Unauthenticated) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+
+          if (state is Authenticated) {
+            Navigator.pushAndRemoveUntil(
+                context, MaterialPageRoute(builder: (context) =>  HomeScreen()),(Route<dynamic> route) => false);
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
           }
         },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
+        child: Stack(
+          children: [
+            BackgroundDesign(
+              width: 414,
+              height: 352,
+            ),
+            Positioned(
+                child: SizedBox(
+              height: 352,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Get started with SASHA.',
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          'Already have an account?',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 30.0),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: context.colors.whiteColor,
+                          size: 30,
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (context) =>  LoginScreen())),
-                          child: const Text('Log in'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    CustomTextField(
-                      label: 'Your Name',
-                      controller: _firstNameController,
-                      prefixIcon: const Icon(Icons.person_outline),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      label: 'Email address',
-                      controller: _emailController,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      label: 'Password',
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => Navigator.pop(context),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _agreedToTerms,
-                          onChanged: (value) => setState(() => _agreedToTerms = value ?? false),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'By joining I agree to receive emails from Geeta.',
-                            style: Theme.of(context).textTheme.bodySmall,
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'Get\'s started with SASHA.',
+                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: context.colors.whiteColor),
+                      ),
+                    ),
+                    // const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Already have an account?',
+                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: context.colors.whiteColor),
                           ),
-                        ),
-                      ],
+                          TextButton(
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen())),
+                            child: Text(
+                              'Log in',
+                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: context.colors.whiteColor),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 32),
-                    CustomButton(
-                      text: 'REGISTER',
-
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final user = User(
-                            id: DateTime.now().toString(),
-                            email: _emailController.text,
-                            firstName: _firstNameController.text,
-                            lastName: _lastNameController.text,
-                            address: _addressController.text,
-                            country: _selectedCountry!,
-                            state: _selectedState!,
-                            city: _cityController.text,
-                            phone: _phoneController.text,
-                            postCode: _postCodeController.text,
-                          );
-
-                          context.read<AuthBloc>().add(
-                                SignupEvent(user, _passwordController.text),
-                              );
-                        }
-                      },
-                      isLoading: context.watch<AuthBloc>().state is AuthLoading,
+                    const SizedBox(height: 40),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Register',
+                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: context.colors.whiteColor),
+                      ),
                     ),
+                    // const SizedBox(height: 100),
                   ],
                 ),
               ),
-            ),
-          ),
+            )),
+            Positioned(child: signupForm(context)),
+          ],
         ),
 
         // child: SingleChildScrollView(
@@ -470,6 +453,112 @@ class _SignupScreenState extends State<SignupScreen> {
         //     ),
         //   ),
         // ),
+      ),
+    );
+  }
+
+  Widget signupForm(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: 24.0,
+        right: 24,
+        top: 352,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 16,
+              ),
+              CustomTextField(
+                label: 'First Name',
+                controller: _firstNameController,
+                prefixIcon: const Icon(Icons.person_outline),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Last Name',
+                controller: _lastNameController,
+                prefixIcon: const Icon(Icons.person_outline),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Username *',
+                controller: _userNameController,
+                prefixIcon: const Icon(Icons.person_2),
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                prefixIcon: const Icon(Icons.phone),
+                controller: _phoneController,
+                label: 'Phone *',
+                validator: (value) => value?.isEmpty == true ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Email address *',
+                controller: _emailController,
+                prefixIcon: const Icon(Icons.email_outlined),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Password',
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
+              // const SizedBox(height: 24),
+              // Row(
+              //   children: [
+              //     Checkbox(
+              //       value: _agreedToTerms,
+              //       onChanged: (value) => setState(() => _agreedToTerms = value ?? false),
+              //     ),
+              //     Expanded(
+              //       child: Text(
+              //         'By joining I agree to receive emails from Geeta.',
+              //         style: Theme.of(context).textTheme.bodySmall,
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              const SizedBox(height: 32),
+              CustomButton(
+                text: 'REGISTER',
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    final user = User(
+                      // id: DateTime.now().toString(),
+                      email: _emailController.text,
+                      firstName: _firstNameController.text,
+                      lastName: _lastNameController.text,
+                      username: _userNameController.text,
+
+                      mobileNo: _phoneController.text, title: 'Mr.',
+
+                    );
+
+                    context.read<AuthBloc>().add(
+                          SignupEvent(user, _passwordController.text),
+                        );
+                  }
+                },
+                isLoading: context.watch<AuthBloc>().state is AuthLoading,
+              ),
+              SizedBox(
+                height: 24,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

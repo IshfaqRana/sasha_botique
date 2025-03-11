@@ -1,5 +1,6 @@
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
 
+import '../models/favourite_products_response_model.dart';
 import '../models/product_model.dart';
 
 abstract class ProductRemoteDataSource {
@@ -10,13 +11,28 @@ abstract class ProductRemoteDataSource {
     Map<String, dynamic>? filters,
     String? sortOption,
   });
+  Future<List<ProductModel>> getPopularProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
+  Future<List<ProductModel>> getSaleProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
   Future<List<ProductModel>> searchProducts(
-    String query,
+   String query,
     Map<String, dynamic>? filters,
   );
   Future<List<ProductModel>> getFavoriteProducts();
   Future<void> addToFavorite(String productID);
   Future<void> removeFromFavorite(String productID);
+  Future<ProductModel?> fetchProductDetail(String productID);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -30,7 +46,44 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     Map<String, dynamic>? filters,
     String? sortOption,
   }) async {
-    await productApiService.getProducts(category: category, offset: offset, limit: limit,filters: filters,sortOption: sortOption);
+    final response = await productApiService.getProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
+    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
+    return [];
+  }
+
+  @override
+  Future<List<ProductModel>> getSaleProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    final response = await productApiService.getSaleProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
+    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
+    return [];
+  }
+
+  @override
+  Future<List<ProductModel>> getPopularProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    print(filters);
+    final response = await productApiService.getPopularProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
+    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
     return [];
   }
 
@@ -39,13 +92,21 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     String query,
     Map<String, dynamic>? filters,
   ) async {
-    await productApiService.searchProducts(query, filters);
+    final response = await productApiService.searchProducts(query, filters);
+    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
     return [];
   }
 
   @override
   Future<List<ProductModel>> getFavoriteProducts() async {
-    await productApiService.getFavoriteProducts();
+    final response = await productApiService.getFavoriteProducts();
+    FavouriteProductsResponseModel favouriteProductsResponseModel = FavouriteProductsResponseModel.fromJson(response);
+    if (favouriteProductsResponseModel.status ?? false) {
+      return favouriteProductsResponseModel.payload?.products ?? [];
+    }
     return [];
   }
 
@@ -57,5 +118,19 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<void> removeFromFavorite(String productID) async {
     await productApiService.removeFromFavorite(productID);
+  }
+
+  @override
+  Future<ProductModel?> fetchProductDetail(String productID) async {
+    try {
+      final response = await productApiService.fetchProductDetail(productID);
+      SingleProductModelResponse productModelResponse = SingleProductModelResponse.fromJson(response);
+      if (productModelResponse.status ?? false) {
+        return productModelResponse.product;
+      }
+      return null;
+    }catch (e){
+      return null;
+    }
   }
 }

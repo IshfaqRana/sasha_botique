@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
+import 'package:shimmer/shimmer.dart';
+
+import '../../../../shared/widgets/cache_image.dart';
 
 class CartItemCard extends StatelessWidget {
   final String name;
@@ -10,7 +13,7 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onRemove;
   final Function(int) onQuantityChanged;
 
-  const CartItemCard({
+  const     CartItemCard({
     Key? key,
     required this.name,
     required this.collection,
@@ -31,13 +34,32 @@ class CartItemCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 24),
-          Image.network(
-            imageUrl,
-            width: 70,
-            height: 70,
-            fit: BoxFit.cover,
+          const SizedBox(width: 16),
+          SizedBox(
+            width: 80,
+            height: 80,
+            child: CachedImage(
+              imageUrl: imageUrl,
+              placeholder: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  height: 80,
+                  width: double.infinity,
+                  color: Colors.grey.shade300,
+                ),
+              ),
+              errorWidget: Icon(Icons.error),
+              width: 80,
+              height: 80,
+            ),
           ),
+          // Image.network(
+          //   imageUrl,
+          //   width: 70,
+          //   height: 70,
+          //   fit: BoxFit.cover,
+          // ),
           const SizedBox(width: 24),
           Expanded(
             child: Column(
@@ -49,6 +71,8 @@ class CartItemCard extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -80,8 +104,11 @@ class CartItemCard extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.remove),
-                    onPressed: () => onQuantityChanged(quantity - 1),
+                    icon: Icon(
+                      Icons.remove,
+                      color: quantity <= 1 ? context.colors.grey : context.colors.primary,
+                    ),
+                    onPressed: () => quantity <= 1 ? null : onQuantityChanged(quantity - 1),
                     padding: EdgeInsets.zero,
                   ),
                   Text(

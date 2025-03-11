@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sasha_botique/features/auth/domain/entities/auth_entity.dart';
 
-import '../../domain/entities/user.dart';
+import '../../../profile/domain/entities/user.dart';
 import '../../domain/usecases/check_auth_usecase.dart';
 import '../../domain/usecases/forget_password.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -49,8 +50,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ) async {
     emit(AuthLoading());
     try {
-      await login(event.email, event.password);
-      emit(Authenticated());
+     AuthEntity entity = await login(event.email, event.password);
+     print(entity.success);
+     print(entity.success);
+     if(entity.success) {
+       emit(Authenticated());
+     }else{
+       emit(AuthError(entity.message));
+     }
     } catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -62,8 +69,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ) async {
     emit(AuthLoading());
     try {
-      await signup(event.user, event.password);
-      emit(Unauthenticated());
+      AuthEntity entity = await signup(event.user, event.password);
+      if(entity.success) {
+        emit(Authenticated());
+      }else{
+        emit(AuthError(entity.message));
+      }
     } catch (e) {
       emit(AuthError(e.toString()));
     }

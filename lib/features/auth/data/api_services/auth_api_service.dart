@@ -1,13 +1,12 @@
 import '../../../../core/helper/shared_preferences_service.dart';
 import '../../../../core/network/network_exceptions.dart';
 import '../../../../core/network/network_manager.dart';
-import '../../domain/entities/user.dart';
-import '../models/user_model.dart';
+import '../../../profile/domain/entities/user.dart';
 
 class AuthService {
   final NetworkManager networkManager;
   final SharedPreferencesService preferencesService;
-  final String _baseEndpoint = '/auth';
+  final String _baseEndpoint = '/account';
 
   AuthService({
     required this.networkManager,
@@ -54,11 +53,17 @@ class AuthService {
 
   Future<dynamic> signup(User user, String password) async {
     try {
-      final userData = (user as UserModel).toJson();
+      final userData = {};
       userData['password'] = password;
+      userData['title'] = "Mr.";
+      userData['email'] = user.email;
+      userData['first_name'] = user.firstName;
+      userData['last_name'] = user.lastName;
+      userData['username'] = user.username;
+      userData['mobile_no'] = user.mobileNo;
 
       final response = await networkManager.post(
-        '$_baseEndpoint/signup',
+        _baseEndpoint,
         data: userData,
       );
       return response.data;

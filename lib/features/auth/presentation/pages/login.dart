@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/features/auth/presentation/pages/signup.dart';
 import 'package:sasha_botique/features/auth/presentation/pages/welcome_screen.dart';
+import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 
 import '../../../../shared/widgets/custom_app_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../products/presentation/pages/home_screen.dart';
+import '../../../theme/presentation/theme/theme_helper.dart';
 import '../bloc/auth_bloc.dart';
+import '../widgets/background_design.dart';
 import 'forget_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -37,115 +40,166 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.push(
-                        context, MaterialPageRoute(builder: (context) =>  WelcomeScreen())),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Welcome Back!',
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Yay! You\'re back! Thanks for shopping with us. We have excited deals and promotions going on, grab your pick now!',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 48),
-                  CustomTextField(
-                    label: 'Email address',
-                    controller: _emailController,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'Please enter your email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  CustomTextField(
-                    label: 'Password',
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+        child: Stack(
+          children: [
+            BackgroundDesign(),
+            Positioned(
+                child: SizedBox(
+                  // height: 400,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 30.0),
+                      child: IconButton(
+                        icon:  Icon(Icons.arrow_back,color: context.colors.whiteColor,size: 30,),
+                        onPressed: () => Navigator.push(
+                            context, MaterialPageRoute(builder: (context) =>  WelcomeScreen())),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context, MaterialPageRoute(builder: (context) =>  ForgotPasswordScreen()));
-                      },
-                      child: const Text('Forgot Password?'),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      return CustomButton(
-                        text: 'LOG IN',
-                        isLoading: state is AuthLoading,
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            context.read<AuthBloc>().add(
-                              LoginEvent(
-                                _emailController.text,
-                                _passwordController.text,
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Not registered yet?"),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context, MaterialPageRoute(builder: (context) =>  SignupScreen()));
-
-                        },
-                        child: const Text('Create an Account'),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Welcome Back!',
+                        style: Theme.of(context).textTheme.headlineLarge!.copyWith(color: context.colors.whiteColor),
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 300,
+                        child: Text(
+                          'Yay! You\'re back! Thanks for shopping with us. We have excited deals and promotions going on, grab your pick now!',
+                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: context.colors.whiteColor),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 60),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'LOG IN',
+                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: context.colors.whiteColor),
+                      ),
+                    ),
+                    const SizedBox(height: 100),
+                                  ],
+                                ),
                   ),
-                ],
-              ),
-            ),
-          ),
+                )),
+            loginForm(context),
+          ],
         ),
       ),
     );
+  }
+
+  Positioned loginForm(BuildContext context) {
+    return Positioned(
+            child: Padding(
+        padding: const EdgeInsets.only(
+        left: 24.0,
+        right: 24,
+        top: 454,
+    ),
+    child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    const SizedBox(height: 40),
+                    CustomTextField(
+                      prefixIcon: Icon(Icons.email),
+                      label: 'Email address',
+                      controller: _emailController,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Please enter your email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    CustomTextField(
+                      prefixIcon: Icon(Icons.lock_outline),
+                      label: 'Password',
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context, MaterialPageRoute(builder: (context) =>  ForgotPasswordScreen()));
+                        },
+                        child: const Text('Forgot Password?'),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        return CustomButton(
+                          text: 'LOG IN',
+                          isLoading: state is AuthLoading,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              context.read<AuthBloc>().add(
+                                LoginEvent(
+                                  _emailController.text,
+                                  _passwordController.text,
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Not registered yet?"),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context, MaterialPageRoute(builder: (context) =>  SignupScreen()));
+
+                          },
+                          child: const Text('Create an Account'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+    ),
+            ),
+          );
   }
 }

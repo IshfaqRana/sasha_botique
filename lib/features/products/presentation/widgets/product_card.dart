@@ -1,6 +1,13 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
+import 'package:shimmer/shimmer.dart';
 
+import '../../../../shared/widgets/cache_image.dart';
+import '../../../../shared/widgets/cached_network_image.dart';
+import '../../../../shared/widgets/favorite_icon_widget.dart';
 import '../../domain/entities/products.dart';
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -28,26 +35,27 @@ class ProductCard extends StatelessWidget {
                   top: Radius.circular(30),
                   bottom: Radius.circular(30),
                 ),
-                child: Image.network(
-                  product.imageUrl,
-                  fit: BoxFit.cover,
-                ),
+                child: CachedImage(
+                  imageUrl: product.imageUrl.isNotEmpty ? product.imageUrl.first: "https",
+                  placeholder: Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      height: 208,
+                      width: double.infinity,
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  errorWidget: Icon(Icons.error),
+                  width: 300,
+                  height: 200,
+                )
               ),
             ),
             Positioned(
               top: 8,
               right: 16,
-              child: IconButton(
-                icon: Icon(
-                  product.isWishlisted
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: product.isWishlisted ? Colors.red : Colors.black,
-                ),
-                onPressed: () {
-                  // Implement wishlist toggle
-                },
-              ),
+              child: FavouriteIconWidget(product: product),
             ),
 
           ],
@@ -60,15 +68,13 @@ class ProductCard extends StatelessWidget {
               Text(
                 product.name,
                 style: Theme.of(context).textTheme.titleMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Text(
-                    index.toString(),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: context.colors.infoBlue,fontSize: 12),
-                  ),
-                  SizedBox(width: 8,),
+
                   Text(
                     '\$${product.price.toStringAsFixed(2)}',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(

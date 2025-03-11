@@ -33,3 +33,13 @@ class ReloadStateEvent extends HomeEvent {
   final HomeLoaded state;
   ReloadStateEvent(this.state);
 }
+
+class AddToCartEvent extends HomeEvent{
+  final String productId;final int quantity;final String name;final String imageURL;final double price;final String collection;
+  AddToCartEvent({required this.productId, required this.imageURL,required this.price,required this.collection, required this.quantity, required this.name});
+}
+
+class RemoveFromCartEvent extends HomeEvent{
+  final String productId;
+  RemoveFromCartEvent(this.productId);
+}

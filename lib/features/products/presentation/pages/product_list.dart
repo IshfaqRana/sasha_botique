@@ -41,9 +41,9 @@ class _ProductListState extends State<ProductList> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      widget.onLoadMore();
-    }
+    // if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    //   widget.onLoadMore();
+    // }
   }
 
   @override

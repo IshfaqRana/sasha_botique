@@ -17,6 +17,9 @@ class HomeLoaded extends HomeState {
   final bool isLoadingMore;
   final ProductCategory currentCategory;
   final Map<String, String?> categoryErrors;
+  final Map<String, CartOperationStatus> productCartStatuses; // Track cart operation status for each product
+  final Set<String> productsInCart; // Track which products are in cart
+  final Map<String, String?> cartErrors; // Track cart operation errors
 
 
   HomeLoaded({
@@ -29,6 +32,9 @@ class HomeLoaded extends HomeState {
     this.currentSortOption = 'Featured',
     this.isLoadingMore = false,
     this.currentCategory = ProductCategory.popular,
+    this.productCartStatuses = const {},
+    this.productsInCart = const {},
+    this.cartErrors = const {},
   });
 
   HomeLoaded copyWith({
@@ -41,6 +47,9 @@ class HomeLoaded extends HomeState {
     String? currentSortOption,
     bool? isLoadingMore,
     ProductCategory? currentCategory,
+    Map<String, CartOperationStatus>? productCartStatuses,
+    Set<String>? productsInCart,
+    Map<String, String?>? cartErrors,
   }) {
     return HomeLoaded(
       categoryProducts: categoryProducts ?? this.categoryProducts,
@@ -52,6 +61,9 @@ class HomeLoaded extends HomeState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       currentCategory: currentCategory ?? this.currentCategory,
       hasMoreProducts: hasMoreProducts ?? this.hasMoreProducts,
+      productCartStatuses: productCartStatuses ?? this.productCartStatuses,
+      productsInCart: productsInCart ?? this.productsInCart,
+      cartErrors: cartErrors ?? this.cartErrors,
     );
   }
 }

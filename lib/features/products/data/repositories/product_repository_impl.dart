@@ -24,7 +24,7 @@ class ProductRepositoryImpl implements ProductRepository {
     String? sortOption,
   }) async {
     try {
-      return await localDataSource.getProducts(
+      return await remoteDataSource.getProducts(
         category: category,
         offset: offset,
         limit: limit,
@@ -43,11 +43,11 @@ class ProductRepositoryImpl implements ProductRepository {
     String? sortOption,
   }) async {
     try {
-      return await localDataSource.getPopularProducts(
+      return await remoteDataSource.getPopularProducts(
         offset: offset,
         limit: limit,
         filters: filters,
-        sortOption: sortOption,
+        sortOption: sortOption, category: 'popular',
       );
     } catch (e) {
       rethrow;
@@ -61,11 +61,11 @@ class ProductRepositoryImpl implements ProductRepository {
     String? sortOption,
   }) async {
     try {
-      return await localDataSource.getSaleProducts(
+      return await remoteDataSource.getSaleProducts(
         offset: offset,
         limit: limit,
         filters: filters,
-        sortOption: sortOption,
+        sortOption: sortOption, category: 'sale',
       );
     } catch (e) {
       rethrow;
@@ -114,7 +114,11 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<List<Product>> searchProducts(String query,Map<String,dynamic>? filters) async {
     try {
-      return await remoteDataSource.searchProducts(query,filters);
+      // return await remoteDataSource.searchProducts(query,filters);
+      List<Product> foundedProducts =  await remoteDataSource.searchProducts(query,  filters, );
+      debugPrinter("foundedProducts Products");
+      debugPrinter(foundedProducts.length);
+      return foundedProducts;
     } catch (e) {
       // Implement local search or throw
       throw Exception('Search failed');
@@ -135,9 +139,13 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<Product>> getFavouriteProducts() async {
     try{
       final items = await remoteDataSource.getFavoriteProducts();
+      debugPrinter("Favorite Products");
+      debugPrinter(items.length);
+      // final items = await remoteDataSource.getFavoriteProducts();
       return items;
-    }catch(e){
+    }catch(e,stacktrace){
       debugPrinter(e.toString());
+      debugPrinter(stacktrace.toString());
 
       return [];
     }
@@ -149,6 +157,18 @@ class ProductRepositoryImpl implements ProductRepository {
       await remoteDataSource.removeFromFavorite(productID);
     }catch(e){
       debugPrinter(e.toString());
+    }
+  }
+
+  @override
+  Future<Product?> fetchProductDetail(String productID) async {
+    try{
+     final response = await remoteDataSource.fetchProductDetail(productID);
+     return response;
+    }catch(e){
+      debugPrinter(e.toString());
+      throw Exception('Sorry,Failed in fetching product details.');
+
     }
   }
 

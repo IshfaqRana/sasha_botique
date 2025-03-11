@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:sasha_botique/features/auth/domain/entities/user.dart';
 import 'package:sasha_botique/features/auth/domain/usecases/signup_usecase.dart';
+import 'package:sasha_botique/features/profile/domain/entities/user.dart';
 
 import 'check_auth_status_test.dart';
 
@@ -15,9 +15,9 @@ void main() {
   });
 
   final tUser = User(
-    id: '1',
+
     email: 'test@example.com',
-    firstName: 'Test User', lastName: '', address: '', country: '', state: '', city: '', phone: '', postCode: '',
+    firstName: 'Test User', lastName: '', username: '',  mobileNo: '',title: ""
   );
   final tPassword = 'password123';
 

@@ -1,5 +1,7 @@
-import '../../domain/entities/user.dart';
-import '../models/user_model.dart';
+import 'package:sasha_botique/features/auth/domain/entities/auth_entity.dart';
+
+
+import '../../../profile/domain/entities/user.dart';
 import '../source/auth_local_data_source.dart';
 import '../source/auth_remote_data_source.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -11,15 +13,21 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this.localDataSource, this.remoteDataSource);
 
   @override
-  Future<String> login(String email, String password) async {
-    final token = await remoteDataSource.login(email, password);
-    await localDataSource.saveToken(token);
-    return token;
+  Future<AuthEntity> login(String email, String password) async {
+    final authEntity = await remoteDataSource.login(email, password);
+    if(authEntity.success) {
+      await localDataSource.saveToken(authEntity.token ?? "");
+    }
+    return authEntity;
   }
 
   @override
-  Future<void> signup(User user, String password) async {
-    await remoteDataSource.signup(user, password);
+  Future<AuthEntity> signup(User user, String password) async {
+    final authEntity =  await remoteDataSource.signup(user, password);
+    if(authEntity.success) {
+      await localDataSource.saveToken(authEntity.token ?? "");
+    }
+    return authEntity;
   }
 
   @override

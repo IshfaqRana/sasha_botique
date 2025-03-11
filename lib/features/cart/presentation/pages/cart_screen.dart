@@ -20,7 +20,8 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   void initState() {
-    cartBloc.add(LoadCartItems());
+
+    // cartBloc.add(LoadCartItems());
     super.initState();
   }
 
@@ -35,87 +36,99 @@ class _CartScreenState extends State<CartScreen> {
       body: BlocConsumer<CartBloc, CartState>(
         bloc: cartBloc,
         listener: (context, state) {
+          print('_CartScreenState.build: ${state}');
           if(state is CartLoaded)
-            {
-              cartItems = [...cartItems,...state.items];
+          {
+            print('_CartScreenState.build: items ${state.items.length}');
+
+            cartItems = [...state.items];
             }
         },
         builder: (context, state) {
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: cartItems.length, // Replace with actual cart items length
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final cartItem = cartItems[index];
-                    return CartItemCard(
-                      name: cartItem.name,
-                      collection: cartItem.collection,
-                      price: cartItem.price,
-                      imageUrl: cartItem.imageUrl,
-                      quantity: cartItem.quantity,
-                      onRemove: () {
-                        // Handle remove item
-                      },
-                      onQuantityChanged: (newQuantity) {
-                        // Handle quantity change
-                      },
-                    );
-                  }
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle checkout
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+          if(state is CartLoaded) {
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                      key: PageStorageKey('cartProducts'),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: cartItems.length,
+                      // Replace with actual cart items length
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final cartItem = cartItems[index];
+                        return CartItemCard(
+                          name: cartItem.name,
+                          collection: cartItem.collection,
+                          price: cartItem.price,
+                          imageUrl: cartItem.imageUrl,
+                          quantity: cartItem.quantity,
+                          onRemove: () {
+                            cartBloc.add(RemoveCartItem(cartItem.id));
+                          },
+                          onQuantityChanged: (newQuantity) {
+                            cartBloc.add(UpdateCartItemQuantity(cartItemId: cartItem.id, quantity: newQuantity));
+                          },
+                        );
+                      }
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'GO TO CHECKOUT',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          '\$135.96',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
                       ),
                     ],
                   ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Handle checkout
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'GO TO CHECKOUT',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '\$${state.total}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          );
+              ],
+            );
+
+          }
+          if(state is CartLoading){
+            return const Center(child: CircularProgressIndicator());
+          }
+            return Center(child: Text( "Sorry, there are no products in cart.",style: context.headlineSmall,));
         },
       ),
     );

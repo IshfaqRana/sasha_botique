@@ -6,9 +6,20 @@ import 'package:sasha_botique/features/cart/domain/usecases/add_to_cart.dart';
 import 'package:sasha_botique/features/cart/domain/usecases/clear_cart_item.dart';
 import 'package:sasha_botique/features/cart/domain/usecases/remove_from_cart.dart';
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
+import 'package:sasha_botique/features/products/domain/usecases/add_to_favourite.dart';
+import 'package:sasha_botique/features/products/domain/usecases/fetch_product_detail.dart';
+import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
+import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_popular_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_products_by_gender.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_products_on_sale.dart';
+import 'package:sasha_botique/features/products/domain/usecases/remove_from_favourite.dart';
+import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
+import 'package:sasha_botique/features/products/presentation/bloc/search/search_bloc.dart';
+import 'package:sasha_botique/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:sasha_botique/features/profile/domain/usecases/add_user_address.dart';
+import 'package:sasha_botique/features/profile/presentation/bloc/user_address/user_address_bloc.dart';
+import 'package:sasha_botique/features/profile/presentation/bloc/user_profile/user_profile_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/auth/data/source/auth_local_data_source.dart';
@@ -26,6 +37,7 @@ import '../../features/cart/data/source/local_data_source.dart';
 import '../../features/cart/data/source/remote_data_source.dart';
 import '../../features/cart/domain/repository/cart_repository.dart';
 import '../../features/cart/domain/usecases/get_cart_items_usecase.dart';
+import '../../features/cart/domain/usecases/update_cart_item_quantity_usecase.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
 import '../../features/products/data/source/product_local_data_source.dart';
 import '../../features/products/data/source/product_remote_data_source.dart';
@@ -35,14 +47,28 @@ import '../../features/products/domain/usecases/get_new_arrival_products.dart';
 import '../../features/products/domain/usecases/get_all_products.dart';
 import '../../features/products/domain/usecases/search_products.dart';
 import '../../features/products/presentation/bloc/home/home_bloc.dart';
+import '../../features/products/presentation/bloc/product_detail/product_details_bloc.dart';
+import '../../features/profile/data/api_services/profile_api_service.dart';
+import '../../features/profile/data/source/profile_remote_data_source.dart';
+import '../../features/profile/domain/repositories/profile_repository.dart';
+import '../../features/profile/domain/usecases/change_password.dart';
+import '../../features/profile/domain/usecases/delete_user_address.dart';
+import '../../features/profile/domain/usecases/get_user_address.dart';
+import '../../features/profile/domain/usecases/get_user_profile.dart';
+import '../../features/profile/domain/usecases/set_default_user_address.dart';
+import '../../features/profile/domain/usecases/update_profile_picture.dart';
+import '../../features/profile/domain/usecases/update_user_address.dart';
+import '../../features/profile/domain/usecases/update_user_profile.dart';
 import '../../features/theme/data/source/theme_data_source.dart';
 import '../../features/theme/domain/repositories/theme_repository.dart';
 import '../../features/theme/data/repositories/theme_repository_impl.dart';
 import '../../features/theme/presentation/bloc/theme_bloc.dart';
+import '../helper/hive_service.dart';
 import '../helper/shared_preferences_service.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
 import '../router/route_guards.dart';
+import '../services/cart_product_communication_service/cart_product_comm_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -50,6 +76,10 @@ Future<void> setup() async {
   // Register SharedPreferences instance
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  getIt.registerSingleton<HiveService>(HiveService());
+  await getIt<HiveService>().init();
+
+
 
   // Register SharedPreferencesService
   getIt.registerSingleton<SharedPreferencesService>(
@@ -65,11 +95,11 @@ Future<void> setup() async {
   getIt.registerFactory<ThemeBloc>(() => ThemeBloc(getIt<ThemeRepository>()));
   // Core
   getIt.registerSingleton<NavigationService>(NavigationService());
-  getIt.registerSingleton<NetworkManager>(NetworkManager(preferencesService: getIt<SharedPreferencesService>(),authService: getIt<AuthService>()));
+  getIt.registerSingleton<NetworkManager>(NetworkManager(preferencesService: getIt<SharedPreferencesService>()));
 
   //Auth Service
 
-  getIt.registerLazySingleton<AuthService>(()=> AuthService(networkManager: getIt<NetworkManager>(), preferencesService: getIt<SharedPreferencesService>()));
+  getIt.registerSingleton<AuthService>(AuthService(networkManager: getIt<NetworkManager>(), preferencesService: getIt<SharedPreferencesService>()));
 
   // Data sources
   getIt.registerLazySingleton<AuthLocalDataSource>(
@@ -112,6 +142,42 @@ Future<void> setup() async {
   getIt.registerLazySingleton<AppRouter>(
     () => AppRouter(getIt<RouteGuards>()),
   );
+  getIt.registerLazySingleton<ICartCommunicationService>(
+        () => CartCommunicationService(getIt<CartBloc>()),
+  );
+  //Profile Injections
+  getIt.registerLazySingleton<ProfileApiService>(()=> ProfileApiService(getIt<NetworkManager>(),getIt<SharedPreferencesService>()));
+
+  getIt.registerLazySingleton<ProfileRemoteDataSource>(
+        () => ProfileRemoteDataSourceImpl(getIt<ProfileApiService>()), // Implement this class for API calls
+  );
+
+  getIt.registerLazySingleton<ProfileRepository>(
+        () => ProfileRepositoryImpl(
+
+      getIt<ProfileRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetUserProfile>(()=> GetUserProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<ChangePassword>(()=> ChangePassword(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateProfilePicture>(()=> UpdateProfilePicture(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateUserProfile>(()=> UpdateUserProfile(getIt<ProfileRepository>()));
+
+
+  getIt.registerSingleton<ProfileBloc>(ProfileBloc(getUserProfile: getIt<GetUserProfile>(),changePassword: getIt<ChangePassword>(), updateProfilePicture: getIt<UpdateProfilePicture>(), updateUserProfile: getIt<UpdateUserProfile>(),));
+
+//Update User Address
+  getIt.registerLazySingleton<UpdateUserAddress>(()=> UpdateUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<GetUserAddress>(()=> GetUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<AddUserAddress>(()=> AddUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<DeleteUserAddress>(()=> DeleteUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<SetDefaultAddress>(()=> SetDefaultAddress(getIt<ProfileRepository>()));
+
+  //User Address Bloc
+  getIt.registerSingleton<AddressBloc>(AddressBloc(getAddresses: getIt<GetUserAddress>(), addAddress: getIt<AddUserAddress>(), updateAddress: getIt<UpdateUserAddress>(), setDefaultAddress: getIt<SetDefaultAddress>(), deleteAddress: getIt<DeleteUserAddress>()));
+
+
 
   getIt.registerLazySingleton<ProductApiService>(()=> ProductApiService(getIt<NetworkManager>()));
   // locator.registerSingleton<VideoRepository>(RemoteVideosRepository());
@@ -123,6 +189,7 @@ Future<void> setup() async {
     () => ProductRemoteDataSourceImpl(getIt<ProductApiService>()), // Implement this class for API calls
   );
 
+
   // Home Feature Repositories
   getIt.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(
@@ -130,6 +197,8 @@ Future<void> setup() async {
       remoteDataSource: getIt<ProductRemoteDataSource>(),
     ),
   );
+
+
   getIt.registerLazySingleton<GetAllProductsUseCase>(
     () => GetAllProductsUseCase(getIt<ProductRepository>()),
   );
@@ -160,8 +229,13 @@ Future<void> setup() async {
       getGenderProductsUseCase: getIt<GetGenderProductsUseCase>(),
       getNewArrivalProductsUseCase: getIt<GetNewArrivalProductsUseCase>(),
       getPopularProducts: getIt<GetPopularProductsUseCase>(),
+      cartService: getIt<ICartCommunicationService>(),
     ),
   );
+
+  getIt.registerLazySingleton<FetchProductDetailUseCase>(()=> FetchProductDetailUseCase(getIt<ProductRepository>()));
+
+  getIt.registerFactory<ProductDetailBloc>(()=> ProductDetailBloc(fetchProductDetailUseCase: getIt<FetchProductDetailUseCase>(),  ));
 
   //Cart Feature Dependencies
   getIt.registerLazySingleton<CartApiService>(() => CartApiService(getIt<NetworkManager>()));
@@ -171,7 +245,7 @@ Future<void> setup() async {
   );
 
   getIt.registerLazySingleton<CartLocalDataSource>(
-    () => CartLocalDataSource(),
+    () => CartLocalDataSourceImpl(hiveService: getIt<HiveService>()),
   );
   // Repository
   getIt.registerLazySingleton<CartRepository>(
@@ -185,12 +259,24 @@ Future<void> setup() async {
   getIt.registerLazySingleton<AddToCartItemUseCase>(() => AddToCartItemUseCase(getIt<CartRepository>()));
   getIt.registerLazySingleton<RemoveFromCartUseCase>(() => RemoveFromCartUseCase(getIt<CartRepository>()));
   getIt.registerLazySingleton<ClearCartUseCase>(() => ClearCartUseCase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<UpdateCartItemQuantityUseCase>(() => UpdateCartItemQuantityUseCase(getIt<CartRepository>()));
 
-  getIt.registerFactory(
-    () => CartBloc(
+  getIt.registerSingleton(
+    CartBloc(
         getCartItemsUsecase: getIt<GetCartItemsUsecase>(),
         addToCartItemUseCase: getIt<AddToCartItemUseCase>(),
         removeFromCartUseCase: getIt<RemoveFromCartUseCase>(),
-        clearCartUseCase: getIt<ClearCartUseCase>()),
+        clearCartUseCase: getIt<ClearCartUseCase>(),
+      updateCartItemQuantityUseCase: getIt<UpdateCartItemQuantityUseCase>(),
+    )..add(LoadCartItems()),
   );
+  //Favorite Usecase
+  getIt.registerLazySingleton<AddToFavouriteUseCase>(()=> AddToFavouriteUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton<GetFavoriteProductsUseCase>(()=> GetFavoriteProductsUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton<RemoveFromFavoriteUseCase>(()=> RemoveFromFavoriteUseCase(getIt<ProductRepository>()));
+ //Fav and Search  Blocs
+  // getIt.registerSingleton<FavoriteBloc>(() => FavoriteBloc(removeFromFavoriteUseCase: getIt<RemoveFromFavoriteUseCase>(), addToFavouriteUseCase: getIt<AddToFavouriteUseCase>(), getFavoriteProductsUseCase: getIt<GetFavoriteProductsUseCase>()));
+  getIt.registerSingleton<FavoriteBloc>(FavoriteBloc(removeFromFavoriteUseCase: getIt<RemoveFromFavoriteUseCase>(), addToFavouriteUseCase: getIt<AddToFavouriteUseCase>(), getFavoriteProductsUseCase: getIt<GetFavoriteProductsUseCase>()));
+  getIt.registerFactory<SearchBloc>(()=>SearchBloc(searchProductsUseCase: getIt<SearchProductsUseCase>()));
+
 }

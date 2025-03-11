@@ -27,6 +27,7 @@ extension BuildContextEntension<T> on BuildContext {
   TextStyle? get bodyExtraSmall => bodySmall?.copyWith(fontSize: 10, height: 1.6, letterSpacing: .5);
 
   TextStyle? get bodyLarge => Theme.of(this).textTheme.bodyLarge;
+  TextStyle? get bodyMedium => Theme.of(this).textTheme.bodyMedium;
 
   TextStyle? get dividerTextSmall => bodySmall?.copyWith(letterSpacing: 0.5, fontWeight: FontWeight.w700, fontSize: 12.0);
 

@@ -43,6 +43,7 @@ abstract class ProductRepository {
   Future<List<Product>> getFavouriteProducts();
 
   Future<void> addToFav(String productID);
+  Future<Product?> fetchProductDetail(String productID);
   Future<void> removeFromFav(String productID);
 
 }

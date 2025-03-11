@@ -1,3 +1,5 @@
+import 'package:sasha_botique/features/auth/domain/entities/auth_entity.dart';
+
 import '../repositories/auth_repository.dart';
 
 class LoginUseCase {
@@ -5,7 +7,7 @@ class LoginUseCase {
 
   LoginUseCase(this.repository);
 
-  Future<void> call(String email, String password) async {
-    await repository.login(email, password);
+  Future<AuthEntity> call(String email, String password) async {
+    return repository.login(email, password);
   }
 }

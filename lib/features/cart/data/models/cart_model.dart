@@ -11,6 +11,8 @@ class CartItemModel extends CartItem {
     required double price,
     required int quantity,
     required String collection,
+    required String size,
+     String? color,
   }) : super(
     id: id,
     productId: productId,
@@ -19,6 +21,8 @@ class CartItemModel extends CartItem {
     price: price,
     quantity: quantity,
     collection: collection,
+    size: size,
+    color: color,
   );
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +34,8 @@ class CartItemModel extends CartItem {
       price: json['price'].toDouble(),
       quantity: json['quantity'] ?? 1,
       collection: json['season'],
+      size: json['size'],
+      color: json['color'],
     );
   }
 
@@ -42,6 +48,7 @@ class CartItemModel extends CartItem {
       'price': price,
       'quantity': quantity,
       'season': collection,
+      'size': size,
     };
   }
 }

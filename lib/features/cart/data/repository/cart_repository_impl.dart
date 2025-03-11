@@ -19,48 +19,28 @@ class CartRepositoryImpl implements CartRepository {
   //   final result = await connectivity.checkConnectivity();
   //   return result != ConnectivityResult.none;
   // }
-
   @override
   Future<List<CartItem>> getCartItems() async {
-    try {
-final items = await localDataSource.getCartItems();
-      print('CartRepositoryImpl.getCartItems: ${items.length}');
-      return items;
-    } catch (e) {
-      return await localDataSource.getCartItems();
-    }
+    return await localDataSource.getCartItems();
   }
 
   @override
   Future<void> addToCart(CartItem item) async {
-    final cartItemModel = CartItemModel(
-      id: item.id,
-      productId: item.productId,
-      name: item.name,
-      imageUrl: item.imageUrl,
-      price: item.price,
-      quantity: item.quantity,
-      collection: item.collection,
-    );
-
-
-    final localItems = await localDataSource.getCartItems();
-    localItems.add(cartItemModel);
-    localItems;
+    await localDataSource.addToCart(item);
   }
 
   @override
   Future<void> removeFromCart(String cartItemId) async {
-
-
-    final localItems = await localDataSource.getCartItems();
-    // localItems.removeWhere((item) => item.id == cartItemId);
-   localItems;
+    await localDataSource.removeFromCart(cartItemId);
   }
 
   @override
-  Future<void> clearCart() {
-    throw UnimplementedError();
+  Future<void> updateQuantity(String cartItemId, int quantity) async {
+    await localDataSource.updateQuantity(cartItemId, quantity);
   }
 
+  @override
+  Future<void> clearCart() async {
+    await localDataSource.clearCart();
+  }
 }

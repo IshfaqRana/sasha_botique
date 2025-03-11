@@ -25,7 +25,7 @@ class ProductLocalDataSource {
       'price': 40.00,
       'imageUrl': 'https://s3-alpha-sig.figma.com/img/2a36/6a01/f1d3a00c8c966c84506b654029d8dfc1?Expires=1740355200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=JdnxiKRbMKw7PxgGV15StsmxGxPo6JAJprYxaIQC-dGmqaLyzL-0I-~-Adae50gOP66gq0T-zrgRSHUGf4Dk2xG3-kBL46H0-sWyNY03AGSq58q~no-osT0WtPIzOtDv56rgdKhAh0b7ZYlucGAoxMr4~U8IiKUmqF7061uHtfBz6pXt5uoW8cz8UUkzJ78qSSdJkmBx0Qy~9kREv-N5LfpLg~lmOweeW0HcGAfrkq6Lesg-DD1L~DOkVS1489y3s8roIm1doAjeRIvObnTT4BOhyFFzzJqEb~LjYDY43j0IkCPLTnaX3LQ~kn-vBWWL38vZbvbh6MyrRDpnvjGFEg__',
       'category': 'men',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': true,
       'isOnSale': false,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -43,7 +43,7 @@ class ProductLocalDataSource {
       'price': 48.00,
       'imageUrl': 'https://s3-alpha-sig.figma.com/img/246c/cce8/89cab2ef94a788b71d4bfc81beec0ce3?Expires=1740355200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=Y0d2l9C8MZrnA04koZTDgnLOabuIv21uqdLLb3of9Z1OwWpPqDRrgcLwEZQgM3ghr0HeEe~I1dRjen7GINKWS6lTCKctdtTmDPZXqEUILluXzyWaLnx1JkFGnlsBQQBYenjuKB3LiLVtTt5zrN9nzlEzvTqoYKNoGLtv7YYA2mPprGG29MJfeZirqzqvMxuOsZxckN0LVJXBVPxnwLdWssfdi80fcdw2igdP7NtK1SjqLl7vaBKcZN3wVqzvz9zxSIV351eUcLvJY12D-fQ2-Ep8AY6tJBoR0ev4h~dH9jMgMrlfO7yoWHu7-OaPoRqzZYaKg~gBB-BJBJHEsusH4Q__',
       'category': 'men',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': true,
       'isOnSale': false,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -79,7 +79,7 @@ class ProductLocalDataSource {
       'price': 56.00,
       'imageUrl': 'https://s3-alpha-sig.figma.com/img/9ee5/d7da/6899d2a391133ba4f93124bb69ef58aa?Expires=1740355200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=Dt313V6Y6Lq8FpcXk8vFTkHUs8UHDTsjjK1GbZ1nzmG3VCqi2vxj2VV7FRew8ophcmIpSI1EG1tdUOkElT4YJZJOXANdKJxl6QYllQTr0nPt4sJaaVc-FWcKxZtvSr~EijNANmP2isOn1S8vAno9-z9Kun76esV2ezElMSyv~EiVpV~wXyTTPbaoJJGjxwk8nDjSknpa0V5sLUir0KZGAE8bAq~eqzQ6Drh-Gu-1Y7IahHP2J-AkcgAOUIVk1YVDG7a6zbwlItx8LOeCAR1EpH80KZDKBTy16KXo6LGadDYdYuWl2qD6yjjTwyrTFwGMpI~bfxqVy8CTp7V1uKWZYw__',
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': true,
       'isOnSale': true,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -97,7 +97,7 @@ class ProductLocalDataSource {
       'price': 60.00,
       'imageUrl': 'https://www.affordable.pk/uploads/products/thumbs/large_16847686990_Bottle_Green_Gotta_3pc_Ready_to_Wear_Suit_For_Women_11zon.jpg',
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': false,
       'isOnSale': true,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -131,7 +131,7 @@ class ProductLocalDataSource {
       'price': 10.00,
       'imageUrl': image2,
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': true,
       'isOnSale': true,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -165,7 +165,7 @@ class ProductLocalDataSource {
       'price': 80.00,
       'imageUrl': image4,
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': false,
       'isOnSale': true,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -215,7 +215,7 @@ class ProductLocalDataSource {
       'price': 45.00,
       'imageUrl': image7,
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': false,
       'isOnSale': false,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -247,7 +247,7 @@ class ProductLocalDataSource {
       'price': 50.00,
       'imageUrl': image13,
       'category': 'Women',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': false,
       'isOnSale': false,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -296,7 +296,7 @@ class ProductLocalDataSource {
       'price': 32.00,
       'imageUrl': image10,
       'category': 'men',
-      'isWishlisted': false,
+      'isWishlisted': true,
       'isPopular': true,
       'isOnSale': false,
       'createdAt': '2024-02-12T00:00:00Z',
@@ -327,6 +327,25 @@ class ProductLocalDataSource {
       filters: filters,
       sortOption: sortOption,
     );
+  }
+  Future<List<ProductModel>> searchProducts({
+    Map<String, dynamic>? filters,
+    required String query,
+  }) async {
+    List<Map<String, dynamic>> filteredData = _dummyData
+        .where((product) => product['name'].toLowerCase().contains(query.toLowerCase()) || product['category'].toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    if (filters != null && filters.isNotEmpty) {
+      filteredData = _applyFilters(filteredData, filters);
+    }
+    return filteredData.map((item)=> ProductModel.fromJson(item)).toList();
+  }
+  Future<List<ProductModel>> getFavoriteProducts() async {
+    List<Map<String, dynamic>> filteredData = _dummyData
+        .where((product) => product['isWishlisted'])
+        .toList();
+
+    return filteredData.map((element)=> ProductModel.fromJson(element)).toList();
   }
 
   Future<List<ProductModel>> getPopularProducts({

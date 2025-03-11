@@ -3,7 +3,7 @@ import '../../../../core/network/network_manager.dart';
 
 class ProductApiService {
   final NetworkManager networkManager;
-  final String _baseEndpoint = '/api/products'; // Adjust based on your API
+  final String _baseEndpoint = '/item'; // Adjust based on your API
 
   ProductApiService(this.networkManager);
 
@@ -17,16 +17,70 @@ class ProductApiService {
   }) async {
     try {
       final queryParams = {
-        'category': category,
-        'offset': offset.toString(),
+        // 'category': category,
+        'page': offset.toString(),
         'limit': limit.toString(),
         if (sortOption != null) 'sort': sortOption,
         if (filters != null) ...filters,
       };
 
       final response = await networkManager.get(
-        _baseEndpoint,
+        "$_baseEndpoint/all-items",
         queryParameters: queryParams,
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getPopularProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    try {
+      // final queryParams = {
+      //   'category': category,
+      //   'offset': offset.toString(),
+      //   'limit': limit.toString(),
+      //   if (sortOption != null) 'sort': sortOption,
+      //   if (filters != null) ...filters,
+      // };
+
+      final response = await networkManager.get(
+        "$_baseEndpoint/popular",
+        // queryParameters: queryParams,
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getSaleProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    try {
+      // final queryParams = {
+      //   'category': category,
+      //   'offset': offset.toString(),
+      //   'limit': limit.toString(),
+      //   if (sortOption != null) 'sort': sortOption,
+      //   if (filters != null) ...filters,
+      // };
+
+      final response = await networkManager.get(
+        "$_baseEndpoint/sale",
+        // queryParameters: queryParams,
       );
 
       return response.data;
@@ -44,7 +98,7 @@ class ProductApiService {
         if (filters != null) ...filters,
       };
 
-      final response = await networkManager.get(
+      final response = await networkManager.post(
         '$_baseEndpoint/search',
         queryParameters: queryParams,
       );
@@ -58,7 +112,7 @@ class ProductApiService {
 
   Future<Map<String, dynamic>> getFavoriteProducts() async {
     try {
-      final response = await networkManager.get('$_baseEndpoint/favorites');
+      final response = await networkManager.get('/wishlist');
       return response.data;
     } catch (e) {
       rethrow;
@@ -66,23 +120,48 @@ class ProductApiService {
   }
 
 
-  Future<void> addToFavorite(String productID) async {
+  Future<Map<String, dynamic>> addToFavorite(String productID, {bool addingFirstProduct= false}) async {
     try {
-      await networkManager.post(
-        '$_baseEndpoint/favorites',
-        data: {'productId': productID},
-      );
+      var response;
+      if(addingFirstProduct) {
+        response = await networkManager.post(
+          '/wishlist',
+          data: {
+            "items ": [
+              productID
+            ]
+          }
+        );
+
+      }else{
+        response = await networkManager.patch(
+          '/wishlist/add/$productID',
+          data: {'productId': productID},
+        );
+      }
+      return response.data;
     } catch (e) {
       rethrow;
     }
   }
 
 
-  Future<void> removeFromFavorite(String productID) async {
+  Future<Map<String, dynamic>> removeFromFavorite(String productID) async {
     try {
-      await networkManager.delete(
-        '$_baseEndpoint/favorites/$productID',
+      final response = await networkManager.patch(
+        '/wishlist/remove/$productID',
       );
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+  Future<Map<String, dynamic>> fetchProductDetail(String productID) async {
+    try {
+      final response = await networkManager.get(
+        '/item/$productID',
+      );
+      return response.data;
     } catch (e) {
       rethrow;
     }

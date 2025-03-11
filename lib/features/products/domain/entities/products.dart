@@ -2,20 +2,23 @@ class Product {
   final String id;
   final String name;
   final double price;
-  final String imageUrl;
+  final List<String> imageUrl;
   final String category;
   final bool isWishlisted;
   final bool isPopular;
+  final bool isBasics;
   final bool isOnSale;
   final double? salePrice;
-  final DateTime createdAt;
+  final String createdAt;
   final String gender;
   final List<String> colors;
   final List<String> sizes;
   final String productType;
   final String season;
   final String fitType;
-  final String brand;
+  final String collection;
+  final String brandName;
+  final String description;
 
   Product({
     required this.id,
@@ -26,6 +29,7 @@ class Product {
     this.isWishlisted = false,
     this.isPopular = false,
     this.isOnSale = false,
+    this.isBasics = false,
     this.salePrice,
     required this.createdAt,
     required this.gender,
@@ -34,6 +38,8 @@ class Product {
     required this.productType,
     required this.season,
     required this.fitType,
-    required this.brand,
+    required this.brandName,
+    required this.collection,
+    required this.description,
   });
 }
