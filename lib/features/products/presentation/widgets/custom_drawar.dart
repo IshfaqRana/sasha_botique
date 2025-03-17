@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
 import 'package:sasha_botique/shared/widgets/cache_image.dart';
 import 'package:sasha_botique/shared/widgets/cached_network_image.dart';
 
 import '../../../auth/presentation/pages/login.dart';
-import '../../../cart/presentation/pages/order_screen.dart';
+import '../../../orders/presentation/pages/orders_page.dart';
 import '../../../profile/domain/entities/user.dart';
 import '../../../profile/presentation/bloc/user_profile/user_profile_bloc.dart';
-import '../../../profile/presentation/pages/payment_methods_screen.dart';
 import '../../../profile/presentation/pages/user_address_screen.dart';
 import '../../../profile/presentation/pages/user_profile_screen.dart';
 import '../../../theme/presentation/theme/theme_helper.dart';
@@ -134,7 +134,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 icon: Icons.shopping_bag_outlined,
                 title: 'Orders',
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context) => OrderScreen()));
+                  Navigator.push(context, CupertinoPageRoute(builder: (context) => OrdersPage()));
 
                 },
               ),
@@ -155,10 +155,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 },
               ),
               DrawerItem(
-                icon: Icons.payment,
+                  icon: Icons.payment,
                 title: 'Payment Methods',
                 onTap: () {
-                  Navigator.push(context, CupertinoPageRoute(builder: (context) => UserPaymentMethods()));
+                  Navigator.push(context, CupertinoPageRoute(builder: (context) => PaymentMethodsScreen()));
 
                 },
               ),

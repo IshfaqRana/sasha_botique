@@ -29,7 +29,7 @@ class AppTheme {
       bodyMedium: TextStyle(
         fontFamily: 'Lato',
         fontSize: 14,
-        color: Colors.black54,
+        color: Colors.black,
       ),
       bodyLarge: TextStyle(
         fontFamily: 'Lato',

@@ -41,9 +41,9 @@ class _ProductListState extends State<ProductList> {
   }
 
   void _onScroll() {
-    // if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-    //   widget.onLoadMore();
-    // }
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      widget.onLoadMore();
+    }
   }
 
   @override
@@ -57,7 +57,7 @@ class _ProductListState extends State<ProductList> {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.62,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -65,7 +65,7 @@ class _ProductListState extends State<ProductList> {
                   (context, index) => GestureDetector(
                 onTap: () => widget.onProductTap(widget.products[index]),
                 child: SizedBox(
-                  height: 320,
+                  height: 400,
                   width: 170,
                   child: ProductCard(
                     product: widget.products[index],

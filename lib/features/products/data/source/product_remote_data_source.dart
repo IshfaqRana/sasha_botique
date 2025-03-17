@@ -1,6 +1,7 @@
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
 
 import '../models/favourite_products_response_model.dart';
+import '../models/get_all_items_response_model.dart';
 import '../models/product_model.dart';
 
 abstract class ProductRemoteDataSource {
@@ -47,9 +48,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     String? sortOption,
   }) async {
     final response = await productApiService.getProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
-    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    GetItemsResponseModel productModelResponse = GetItemsResponseModel.fromJson(response);
     if (productModelResponse.status ?? false) {
-      return productModelResponse.products ?? [];
+      return productModelResponse.payload?.products ?? [];
     }
     return [];
   }
@@ -92,12 +93,18 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     String query,
     Map<String, dynamic>? filters,
   ) async {
-    final response = await productApiService.searchProducts(query, filters);
-    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
-    if (productModelResponse.status ?? false) {
-      return productModelResponse.products ?? [];
+    try {
+      final response = await productApiService.searchProducts(query, filters);
+      GetItemsResponseModel productModelResponse = GetItemsResponseModel.fromJson(response);
+      if (productModelResponse.status ?? false) {
+        return productModelResponse.payload?.products ?? [];
+      }
+      return [];
+    }catch(e,stacktrace){
+      print(e.toString());
+      print(stacktrace.toString());
+      rethrow;
     }
-    return [];
   }
 
   @override

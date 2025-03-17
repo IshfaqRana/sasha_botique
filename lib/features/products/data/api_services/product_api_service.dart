@@ -20,13 +20,15 @@ class ProductApiService {
         // 'category': category,
         'page': offset.toString(),
         'limit': limit.toString(),
-        if (sortOption != null) 'sort': sortOption,
+         'sort': sortOption ?? "ACS",
         if (filters != null) ...filters,
       };
-
-      final response = await networkManager.get(
-        "$_baseEndpoint/all-items",
-        queryParameters: queryParams,
+        String limits = limit.toString();
+       String page = (offset+1).toString();
+      String sort = sortOption ?? "ACS";
+      final response = await networkManager.post(
+        "$_baseEndpoint/all-items?sort=$sort&page=$page&limit=$limits",
+        // queryParameters: queryParams,
       );
 
       return response.data;

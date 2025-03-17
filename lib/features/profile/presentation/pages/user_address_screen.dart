@@ -70,7 +70,7 @@ class _AddressScreenState extends State<AddressScreen> {
           // foregroundColor: Colors.white,
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text('Delivery Addresses',style: context.titleMedium,),
         ),

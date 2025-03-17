@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         child: Stack(
           children: [
-            BackgroundDesign(),
+            BackgroundDesign(height: 372,),
             Positioned(
                 child: SizedBox(
                   // height: 400,
@@ -51,8 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    SizedBox(height: 10,),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 30.0),
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
                       child: IconButton(
                         icon:  Icon(Icons.arrow_back,color: context.colors.whiteColor,size: 30,),
                         onPressed: () => Navigator.push(
@@ -78,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
@@ -86,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: context.colors.whiteColor),
                       ),
                     ),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 20),
                                   ],
                                 ),
                   ),
@@ -104,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.only(
         left: 24.0,
         right: 24,
-        top: 454,
+        top: 370,
     ),
     child: SingleChildScrollView(
               child: Form(
@@ -161,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text('Forgot Password?'),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 100),
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
                         return CustomButton(

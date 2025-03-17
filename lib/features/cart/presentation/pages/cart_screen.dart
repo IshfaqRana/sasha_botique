@@ -5,6 +5,7 @@ import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/features/cart/domain/entity/cart_item.dart';
 import 'package:sasha_botique/features/cart/presentation/bloc/cart_bloc.dart';
 
+import '../../../orders/presentation/pages/checkout_page.dart';
 import '../widgets/cart_item_card.dart';
 
 class CartScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
 
-    // cartBloc.add(LoadCartItems());
+    cartBloc.add(LoadCartItems());
     super.initState();
   }
 
@@ -87,7 +88,13 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle checkout
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                          builder: (_) => CheckoutPage(
+
+                      )
+                      ));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,

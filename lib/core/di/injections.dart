@@ -5,6 +5,10 @@ import 'package:sasha_botique/features/cart/data/api_service/api_service.dart';
 import 'package:sasha_botique/features/cart/domain/usecases/add_to_cart.dart';
 import 'package:sasha_botique/features/cart/domain/usecases/clear_cart_item.dart';
 import 'package:sasha_botique/features/cart/domain/usecases/remove_from_cart.dart';
+import 'package:sasha_botique/features/orders/domain/usecases/create_order.dart';
+import 'package:sasha_botique/features/orders/domain/usecases/get_all_orders.dart';
+import 'package:sasha_botique/features/orders/domain/usecases/get_user_by_id.dart';
+import 'package:sasha_botique/features/orders/presentation/bloc/order_bloc.dart';
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
 import 'package:sasha_botique/features/products/domain/usecases/add_to_favourite.dart';
 import 'package:sasha_botique/features/products/domain/usecases/fetch_product_detail.dart';
@@ -39,6 +43,20 @@ import '../../features/cart/domain/repository/cart_repository.dart';
 import '../../features/cart/domain/usecases/get_cart_items_usecase.dart';
 import '../../features/cart/domain/usecases/update_cart_item_quantity_usecase.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
+import '../../features/orders/data/repositories/order_repository_impl.dart';
+import '../../features/orders/data/source/order_remote_source.dart';
+import '../../features/orders/domain/repositories/order_repository.dart';
+import '../../features/orders/domain/usecases/get_promo_codes.dart';
+import '../../features/payment/data/data_source/payment_local_data_source.dart';
+import '../../features/payment/data/data_source/payment_remote_data_source.dart';
+import '../../features/payment/data/repositories/payment_repository_impl.dart';
+import '../../features/payment/domain/repositories/payment_repository.dart';
+import '../../features/payment/domain/usecases/add_payment_method.dart';
+import '../../features/payment/domain/usecases/delete_payment_method.dart';
+import '../../features/payment/domain/usecases/get_payment_methods.dart';
+import '../../features/payment/domain/usecases/set_default_payment_method.dart';
+import '../../features/payment/domain/usecases/update_payment_method.dart';
+import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/products/data/source/product_local_data_source.dart';
 import '../../features/products/data/source/product_remote_data_source.dart';
 import '../../features/products/data/repositories/product_repository_impl.dart';
@@ -63,7 +81,7 @@ import '../../features/theme/data/source/theme_data_source.dart';
 import '../../features/theme/domain/repositories/theme_repository.dart';
 import '../../features/theme/data/repositories/theme_repository_impl.dart';
 import '../../features/theme/presentation/bloc/theme_bloc.dart';
-import '../helper/hive_service.dart';
+import '../services/hive_service.dart';
 import '../helper/shared_preferences_service.dart';
 import '../router/app_router.dart';
 import '../router/navigation_service.dart';
@@ -178,6 +196,43 @@ Future<void> setup() async {
   getIt.registerSingleton<AddressBloc>(AddressBloc(getAddresses: getIt<GetUserAddress>(), addAddress: getIt<AddUserAddress>(), updateAddress: getIt<UpdateUserAddress>(), setDefaultAddress: getIt<SetDefaultAddress>(), deleteAddress: getIt<DeleteUserAddress>()));
 
 
+  // Data sources
+  getIt.registerLazySingleton<PaymentRemoteDataSource>(
+        () => PaymentRemoteDataSourceImpl(
+            getIt<NetworkManager>(),
+    ),
+  );
+  getIt.registerLazySingleton<PaymentLocalDataSource>(
+        () => PaymentLocalDataSourceImpl(getIt<HiveService>()),
+  );
+  // Repository
+  getIt.registerLazySingleton<PaymentRepository>(
+        () => PaymentRepositoryImpl(
+      remoteDataSource: getIt<PaymentRemoteDataSource>(),
+      localDataSource: getIt<PaymentLocalDataSource>(),
+    ),
+  );
+
+
+
+  // Use Cases
+  getIt.registerLazySingleton(() => GetPaymentMethods(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(() => AddPaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(() => UpdatePaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(() => DeletePaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(() => SetDefaultPaymentMethod(getIt<PaymentRepository>()));
+
+  getIt.registerSingleton(
+        PaymentBloc(
+      getPaymentMethods: getIt<GetPaymentMethods>(),
+      addPaymentMethod: getIt<AddPaymentMethod>(),
+      updatePaymentMethod: getIt<UpdatePaymentMethod>(),
+      deletePaymentMethod: getIt<DeletePaymentMethod>(),
+      setDefaultPaymentMethod: getIt<SetDefaultPaymentMethod>(),
+    ),
+  );
+
+
 
   getIt.registerLazySingleton<ProductApiService>(()=> ProductApiService(getIt<NetworkManager>()));
   // locator.registerSingleton<VideoRepository>(RemoteVideosRepository());
@@ -247,7 +302,7 @@ Future<void> setup() async {
   getIt.registerLazySingleton<CartLocalDataSource>(
     () => CartLocalDataSourceImpl(hiveService: getIt<HiveService>()),
   );
-  // Repository
+
   getIt.registerLazySingleton<CartRepository>(
     () => CartRepositoryImpl(
       remoteDataSource: getIt<CartRemoteDataSource>(),
@@ -261,14 +316,36 @@ Future<void> setup() async {
   getIt.registerLazySingleton<ClearCartUseCase>(() => ClearCartUseCase(getIt<CartRepository>()));
   getIt.registerLazySingleton<UpdateCartItemQuantityUseCase>(() => UpdateCartItemQuantityUseCase(getIt<CartRepository>()));
 
-  getIt.registerSingleton(
+  getIt.registerSingleton<CartBloc>(
     CartBloc(
         getCartItemsUsecase: getIt<GetCartItemsUsecase>(),
         addToCartItemUseCase: getIt<AddToCartItemUseCase>(),
         removeFromCartUseCase: getIt<RemoveFromCartUseCase>(),
         clearCartUseCase: getIt<ClearCartUseCase>(),
       updateCartItemQuantityUseCase: getIt<UpdateCartItemQuantityUseCase>(),
-    )..add(LoadCartItems()),
+    ),
+  );
+  ///Order Injections
+  getIt.registerLazySingleton<OrderRemoteDataSource>(
+        () => OrderRemoteDataSourceImpl( networkManager: getIt<NetworkManager>(),),
+  );
+  // Repository
+  getIt.registerLazySingleton<OrderRepository>(
+        () => OrderRepositoryImpl(
+      remoteDataSource: getIt<OrderRemoteDataSource>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<GetAllOrdersUseCase>(() => GetAllOrdersUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<GetOrderByIdUseCase>(() => GetOrderByIdUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<CreateOrderUseCase>(() => CreateOrderUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<GetPromoCodesUseCase>(() => GetPromoCodesUseCase(getIt<OrderRepository>()));
+
+
+  getIt.registerFactory<OrderBloc>(()=>
+    OrderBloc(createOrderUseCase: getIt<CreateOrderUseCase>(), getOrderByIdUseCase: getIt<GetOrderByIdUseCase>(), getAllOrdersUseCase: getIt<GetAllOrdersUseCase>(),getPromoCodes: getIt<GetPromoCodesUseCase>()
+
+    ),
   );
   //Favorite Usecase
   getIt.registerLazySingleton<AddToFavouriteUseCase>(()=> AddToFavouriteUseCase(getIt<ProductRepository>()));

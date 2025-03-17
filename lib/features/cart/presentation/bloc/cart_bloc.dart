@@ -49,6 +49,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       try {
         await addToCartItemUseCase(event.item);
         final items = await getCartItemsUsecase();
+        await Future.delayed(Duration(seconds: 1));
         emit(CartLoaded(items));
       } catch (e) {
         emit(CartError('Failed to add item to cart'));

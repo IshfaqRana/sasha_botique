@@ -27,7 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final SearchProductsUseCase searchProductsUseCase;
   final ICartCommunicationService cartService;
 
-  static const int _pageSize = 5;
+  static const int _pageSize = 10;
 
   HomeBloc({
     required this.getAllProducts,
@@ -112,16 +112,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       if (state is! HomeLoaded) {
         emit(HomeLoaded(
           categoryProducts: {CategoryMapper.getCategory(event.category): products},
-          categoryOffsets: {CategoryMapper.getCategory(event.category): _pageSize},
-          hasMoreProducts: {CategoryMapper.getCategory(event.category): products.length >= 5 ? true : false},
+          categoryOffsets: {CategoryMapper.getCategory(event.category): 1},
+          hasMoreProducts: {CategoryMapper.getCategory(event.category): products.length >= 10 ? true : false},
         ));
       } else {
         final currentState = state as HomeLoaded;
 
         emit(currentState.copyWith(
           categoryProducts: {CategoryMapper.getCategory(event.category): products},
-          categoryOffsets: {...currentState.categoryOffsets, CategoryMapper.getCategory(event.category): _pageSize},
-          hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(event.category): products.length >= 5 ? true : false},
+          categoryOffsets: {...currentState.categoryOffsets, CategoryMapper.getCategory(event.category): 1},
+          hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(event.category): products.length >= 10 ? true : false},
         ));
       }
       // debugPrint('HomeBloc._onLoadInitialProducts: categoryOffsets; ${state.categoryOffsets[CategoryMapper.getCategory(event.category)]}: ${products.length}');
@@ -168,7 +168,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     try {
       final currentOffset = currentState.categoryOffsets[CategoryMapper.getCategory(event.category)] ?? 0;
-      await Future.delayed(Duration(seconds: 3));
+      // await Future.delayed(Duration(seconds: 3));
       final List<Product> newProducts = await _loadProductsByCategory(
         event.category,
         currentOffset,
@@ -188,10 +188,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         },
         categoryOffsets: {
           ...currentState.categoryOffsets,
-          CategoryMapper.getCategory(event.category): currentOffset + _pageSize,
+          CategoryMapper.getCategory(event.category): currentOffset + 1,
         },
         isLoadingMore: false,
-        hasMoreProducts: {CategoryMapper.getCategory(event.category): newProducts.length >= 5 ? true : false},
+        hasMoreProducts: {CategoryMapper.getCategory(event.category): newProducts.length >= 10 ? true : false},
       ));
     } catch (e) {
       String errorMessage = e.toString();
@@ -288,7 +288,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(currentState.copyWith(
       categoryProducts: {CategoryMapper.getCategory(currentState.currentCategory): products},
-      categoryOffsets: {CategoryMapper.getCategory(currentState.currentCategory): _pageSize},
+      categoryOffsets: {CategoryMapper.getCategory(currentState.currentCategory): 1},
       activeFilters: event.filters,
       currentSortOption: event.sortOption,
       hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(currentState.currentCategory): true},

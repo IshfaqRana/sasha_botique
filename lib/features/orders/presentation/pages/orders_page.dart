@@ -1,0 +1,298 @@
+// lib/features/order/presentation/pages/orders_page.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:sasha_botique/core/di/injections.dart';
+import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
+import 'package:sasha_botique/shared/widgets/cache_image.dart';
+
+import '../../domain/entities/order.dart';
+import '../bloc/order_bloc.dart';
+import 'order_detail_page.dart';
+//OrderDetailsPage
+class OrdersPage extends StatefulWidget {
+  const OrdersPage({Key? key}) : super(key: key);
+
+  @override
+  State<OrdersPage> createState() => _OrdersPageState();
+}
+
+class _OrdersPageState extends State<OrdersPage> {
+
+  late final OrderBloc orderBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load orders when the page is initialized
+    orderBloc = getIt<OrderBloc>();
+    orderBloc.add(GetAllOrdersEvent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Orders'),
+      ),
+      body: BlocBuilder<OrderBloc, OrderState>(
+        bloc: orderBloc,
+        builder: (context, state) {
+          if (state is OrderLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is OrdersLoaded) {
+            if (state.orders.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No orders yet',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Start shopping to place your first order',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigate to products/home page
+                        Navigator.pushReplacementNamed(context, '/home');
+                      },
+                      child: const Text('Shop Now'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return RefreshIndicator(
+              onRefresh: () async {
+                orderBloc.add(GetAllOrdersEvent());
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: state.orders.length,
+                itemBuilder: (context, index) {
+                  return _buildOrderCard(context, state.orders[index]);
+                },
+              ),
+            );
+          } else if (state is OrderError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 60,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${state.message}',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      orderBloc.add(GetAllOrdersEvent());
+                    },
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return const Center(child: Text('No orders available'));
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(BuildContext context, Order order) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+
+    // Determine status color
+    Color statusColor;
+    switch (order.status.toLowerCase()) {
+      case 'pending':
+        statusColor = Colors.orange;
+        break;
+      case 'completed':
+        statusColor = Colors.green;
+        break;
+      case 'delivered':
+        statusColor = Colors.blue;
+        break;
+      case 'cancelled':
+        statusColor = Colors.red;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrderDetailPage(orderId: order.id),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Order #${order.id.substring(0, 8)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      order.status,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Placed on: ${dateFormat.format(order.createdAt)}',
+                style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Display first item image or placeholder
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: order.items.isNotEmpty && order.items[0].imageUrl != null
+                        ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedImage(
+                       imageUrl:  order.items[0].imageUrl?.first ?? "",
+
+                      ),
+                    )
+                        : const Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 30,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${order.items.length} ${order.items.length == 1 ? 'item' : 'items'}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          order.items.isNotEmpty
+                              ? '${order.items[0].name}${order.items.length > 1 ? ' + ${order.items.length - 1} more' : ''}'
+                              : 'No items',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${order.currency} ${order.totalAmount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        order.paymentStatus,
+                        style: TextStyle(
+                          color: order.paymentStatus.toLowerCase() == 'completed'
+                              ? Colors.green
+                              : Colors.orange,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (order.paymentStatus.toLowerCase() == 'pending')
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PaymentWebView(
+                            paymentUrl: order.paymentUrl,
+                            orderId: order.id,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    child: const Text('Complete Payment'),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

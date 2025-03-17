@@ -1,4 +1,4 @@
-import '../../../../core/helper/hive_service.dart';
+import '../../../../core/services/hive_service.dart';
 import '../models/cart_item_hive_model.dart';
 import '../../domain/entity/cart_item.dart';
 

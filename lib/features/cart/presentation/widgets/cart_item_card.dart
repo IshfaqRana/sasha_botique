@@ -90,7 +90,7 @@ class CartItemCard extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: onRemove,
+                onPressed: ()=> _confirmDeleteCartItem(context,onRemove),
                 padding: EdgeInsets.zero,
               ),
               const SizedBox(height: 8),
@@ -123,6 +123,28 @@ class CartItemCard extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+  void _confirmDeleteCartItem(BuildContext context, Function() remove) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Cart Item'),
+        content: Text('Are you sure you want to delete this item from Cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              remove();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

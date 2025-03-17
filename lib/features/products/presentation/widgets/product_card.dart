@@ -67,8 +67,8 @@ class ProductCard extends StatelessWidget {
             children: [
               Text(
                 product.name,
-                style: Theme.of(context).textTheme.titleMedium,
-                maxLines: 1,
+                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),

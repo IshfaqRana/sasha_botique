@@ -13,6 +13,7 @@ import '../../../../core/di/injections.dart';
 import '../../../../core/utils/app_utils.dart';
 import '../../../../core/utils/product_category_enum.dart';
 import '../../../../core/utils/product_category_mapper.dart';
+import '../../../payment/presentation/bloc/payment_bloc.dart';
 import '../../../profile/presentation/bloc/user_address/user_address_bloc.dart';
 import '../bloc/favorite/favorite_bloc.dart';
 import 'products_detail_screen.dart';
@@ -35,6 +36,8 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
   late final FavoriteBloc _wishlistBloc;
   late final ProfileBloc _profileBloc;
   late final AddressBloc addressBloc;
+  late final PaymentBloc paymentBloc;
+
 
   List<Product> popularProducts = <Product>[];
   List<Product> newArrivalProducts = <Product>[];
@@ -49,6 +52,8 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
     _profileBloc = getIt<ProfileBloc>()..add(GetUserProfileEvent());
     _wishlistBloc = getIt<FavoriteBloc>()..add(LoadInitialEvent());
     addressBloc = getIt<AddressBloc>()..add(GetAddressesEvent());
+    paymentBloc = getIt<PaymentBloc>()..add(GetPaymentMethodsEvent());
+
     _tabController = TabController(length: 4, vsync: this);
     homeBloc.add(LoadInitialProducts(ProductCategory.popular));
     homeBloc.add(LoadInitialProducts(ProductCategory.sale));
@@ -270,11 +275,11 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
                       hasMoreData: hasMoreData,
                       isLoading: state.isLoadingMore,
                       onLoadMore: () {
-                        if (!state.isLoadingMore && hasMoreData) {
-                          homeBloc.add(
-                            LoadMoreProducts(ProductCategory.popular),
-                          );
-                        }
+                        // if (!state.isLoadingMore && hasMoreData) {
+                        //   homeBloc.add(
+                        //     LoadMoreProducts(ProductCategory.popular),
+                        //   );
+                        // }
                       },
                       onProductTap: (product) {
                         Navigator.push(
@@ -317,11 +322,11 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
                       hasMoreData: hasMoreData,
                       isLoading: state.isLoadingMore,
                       onLoadMore: () {
-                        if (!state.isLoadingMore && hasMoreData) {
-                          homeBloc.add(
-                            LoadMoreProducts(ProductCategory.sale),
-                          );
-                        }
+                        // if (!state.isLoadingMore && hasMoreData) {
+                        //   homeBloc.add(
+                        //     LoadMoreProducts(ProductCategory.sale),
+                        //   );
+                        // }
                       },
                       onProductTap: (product) {
                         Navigator.push(
@@ -344,11 +349,11 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
                       hasMoreData: hasMoreData,
                       isLoading: state.isLoadingMore,
                       onLoadMore: () {
-                        if (!state.isLoadingMore && hasMoreData) {
-                          homeBloc.add(
-                            LoadMoreProducts(ProductCategory.newArrival),
-                          );
-                        }
+                        // if (!state.isLoadingMore && hasMoreData) {
+                        //   homeBloc.add(
+                        //     LoadMoreProducts(ProductCategory.newArrival),
+                        //   );
+                        // }
                       },
                       onProductTap: (product) {
                         Navigator.push(

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
+import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
 import 'package:sasha_botique/features/profile/presentation/pages/user_address_screen.dart';
 import 'package:sasha_botique/shared/widgets/cached_network_image.dart';
 import 'package:sasha_botique/shared/widgets/loading_overlay.dart';
@@ -189,13 +190,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () => _showPasswordChangeDialog(context),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       //
-                      _buildSupportSection(context),
+                      _buildDeliveryAddressTile(context),
+
+                      const SizedBox(height: 16),
+                      _buildPaymentMethodTile(context),
 
                       const SizedBox(height: 16),
 
                       _buildLogoutButton(context),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -291,7 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSupportSection(BuildContext context) {
+  Widget _buildDeliveryAddressTile(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -306,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       child: ListTile(
-        leading: Icon(Icons.home, color: Colors.grey.shade700),
+        leading: Icon(Icons.location_on_outlined, color: Colors.grey.shade700),
         title: Text(
           'Delivery Address',
           style: TextStyle(
@@ -317,6 +322,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
         trailing: Icon(Icons.chevron_right, color: Colors.grey.shade600),
         onTap: () {
           Navigator.push(context, CupertinoPageRoute(builder: (context) => AddressScreen()));
+
+        },
+      ),
+    );
+  }
+  Widget _buildPaymentMethodTile(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Icon(Icons.payment, color: Colors.grey.shade700),
+        title: Text(
+          'Payment Methods',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: Icon(Icons.chevron_right, color: Colors.grey.shade600),
+        onTap: () {
+          Navigator.push(context, CupertinoPageRoute(builder: (context) => PaymentMethodsScreen()));
 
         },
       ),

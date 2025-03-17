@@ -71,6 +71,7 @@ class _SearchScreenState extends State<SearchScreen> {
         listener: (context, state) {
           if (state is FoundProductsState) {
             foundedProduct = [...state.foundedProductList];
+            print(foundedProduct.length);
           }
         },
         builder: (context, state) {

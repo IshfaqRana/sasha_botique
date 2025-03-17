@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
+import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 import 'package:sasha_botique/shared/widgets/cache_image.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -55,8 +56,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return BlocBuilder<FavoriteBloc, FavoriteState>(
       bloc: _wishlistBloc,
       builder: (context, state2) {
-        bool isLoading  = false;
-        if(state2 is LoadedFavProducts){
+        bool isLoading = false;
+        if (state2 is LoadedFavProducts) {
           isLoading = state2.isLoading;
         }
         return LoadingOverlay(
@@ -198,7 +199,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       children: [
         SizedBox(
           height: 300,
-          child: product.imageUrl.isEmpty ? Center(child: Text("Sorry, No images provided against this product",style: context.headlineSmall,),) : PageView.builder(
+          child: product.imageUrl.isEmpty ? Center(child: Text("Sorry, No images provided against this product", style: context.headlineSmall,),) : PageView.builder(
             controller: _pageController,
             itemCount: product.imageUrl.length,
             onPageChanged: (index) {
@@ -407,12 +408,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             size: selectedSize,
           ));
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Product added to cart'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.black,
@@ -422,18 +418,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.shopping_bag_outlined),
-            SizedBox(width: 8),
-            Text(
-              'ADD TO CART',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        child: BlocConsumer<CartBloc, CartState>(
+          bloc: _cartBloc,
+
+          listener: (context, state) {
+            if(state is CartLoaded){
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Product added to cart'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: state is CartLoading ? [SizedBox(height: 20, width: 20,child: const CircularProgressIndicator(color: Colors.white))]: [
+                Icon(Icons.shopping_bag_outlined, color: context.colors.whiteColor,),
+                SizedBox(width: 8),
+                Text(
+                  'ADD TO CART',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
