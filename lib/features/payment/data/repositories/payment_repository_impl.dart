@@ -20,7 +20,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     // For fetching payment methods, we prioritize local data
     // since it contains the complete information
     try {
-      return await localDataSource.getPaymentMethods();
+      return await remoteDataSource.getPaymentMethods();
     } catch (e) {
       // If local fetch fails, return empty list
       print('Failed to fetch payment methods locally: $e');

@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:sasha_botique/core/di/injections.dart';
+import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
+import 'package:sasha_botique/core/extensions/toast_extension.dart';
 import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
+import 'package:sasha_botique/shared/extensions/string_extensions.dart';
 import 'package:sasha_botique/shared/widgets/cache_image.dart';
 
+import '../../../payment/presentation/bloc/payment_bloc.dart';
 import '../../domain/entities/order.dart';
 import '../bloc/order_bloc.dart';
 import 'order_detail_page.dart';
@@ -20,12 +24,15 @@ class OrdersPage extends StatefulWidget {
 class _OrdersPageState extends State<OrdersPage> {
 
   late final OrderBloc orderBloc;
+  late final PaymentBloc paymentBloc;
+
 
   @override
   void initState() {
     super.initState();
     // Load orders when the page is initialized
     orderBloc = getIt<OrderBloc>();
+    paymentBloc = getIt<PaymentBloc>();
     orderBloc.add(GetAllOrdersEvent());
   }
 
@@ -33,10 +40,36 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Orders'),
+        leading: const BackButton(),
+        title:  Text('Orders',style: context.headlineSmall?.copyWith(fontSize: 18),),
+        centerTitle: true,
       ),
-      body: BlocBuilder<OrderBloc, OrderState>(
+      body: BlocConsumer<OrderBloc, OrderState>(
+
         bloc: orderBloc,
+        listener: (context, state){
+          if (state is OrderCreateSuccess) {
+
+            // cartBloc.add(ClearCart());
+            // Navigate to payment web view
+            final paymentState = paymentBloc.state;
+            // final selectedPayment = paymentState.paymentMethods[0];
+
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PaymentWebView(
+                  paymentUrl: state.paymentUrl,
+                  orderId: state.orderId,
+                  // paymentMethodModel: selectedPayment,
+                ),
+              ),
+            );
+          } else if (state is OrderError) {
+            context.showToast(state.message);
+          }
+        },
         builder: (context, state) {
           if (state is OrderLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -180,7 +213,7 @@ class _OrdersPageState extends State<OrdersPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      order.status,
+                      order.status.capitalizeFirstLetter(),
                       style: TextStyle(
                         color: statusColor,
                         fontWeight: FontWeight.bold,
@@ -255,7 +288,7 @@ class _OrdersPageState extends State<OrdersPage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        order.paymentStatus,
+                        order.paymentStatus.capitalizeFirstLetter(),
                         style: TextStyle(
                           color: order.paymentStatus.toLowerCase() == 'completed'
                               ? Colors.green
@@ -273,15 +306,18 @@ class _OrdersPageState extends State<OrdersPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PaymentWebView(
-                            paymentUrl: order.paymentUrl,
-                            orderId: order.id,
-                          ),
-                        ),
-                      );
+                      orderBloc.add(UpdatePaymentURLEvent(orderID: order.id));
+
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => PaymentWebView(
+                      //       paymentUrl: order.paymentUrl,
+                      //       orderId: order.id,
+                      //       paymentMethodModel: paymentBloc.state.paymentMethods.isNotEmpty ? paymentBloc.state.paymentMethods.firstWhere((test)=> test.isDefault):null,
+                      //     ),
+                      //   ),
+                      // );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,

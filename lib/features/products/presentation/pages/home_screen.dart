@@ -83,12 +83,12 @@ class _HomePageState extends State<HomeScreen> with SingleTickerProviderStateMix
           ),
           backgroundColor: context.colors.whiteColor,
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.notifications_outlined,
-              ),
-              onPressed: () {},
-            ),
+            // IconButton(
+            //   icon: Icon(
+            //     Icons.notifications_outlined,
+            //   ),
+            //   onPressed: () {},
+            // ),
             IconButton(
               icon: const Icon(Icons.shopping_bag_outlined),
               onPressed: () {

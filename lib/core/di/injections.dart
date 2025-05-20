@@ -34,6 +34,7 @@ import '../../features/auth/domain/usecases/check_auth_usecase.dart';
 import '../../features/auth/domain/usecases/forget_password.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout.dart';
+import '../../features/auth/domain/usecases/reset_password_usecase.dart';
 import '../../features/auth/domain/usecases/signup_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/cart/data/repository/cart_repository_impl.dart';
@@ -47,6 +48,7 @@ import '../../features/orders/data/repositories/order_repository_impl.dart';
 import '../../features/orders/data/source/order_remote_source.dart';
 import '../../features/orders/domain/repositories/order_repository.dart';
 import '../../features/orders/domain/usecases/get_promo_codes.dart';
+import '../../features/orders/domain/usecases/update_payment_url.dart';
 import '../../features/payment/data/data_source/payment_local_data_source.dart';
 import '../../features/payment/data/data_source/payment_remote_data_source.dart';
 import '../../features/payment/data/repositories/payment_repository_impl.dart';
@@ -70,6 +72,7 @@ import '../../features/profile/data/api_services/profile_api_service.dart';
 import '../../features/profile/data/source/profile_remote_data_source.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/change_password.dart';
+import '../../features/profile/domain/usecases/delete_user.dart';
 import '../../features/profile/domain/usecases/delete_user_address.dart';
 import '../../features/profile/domain/usecases/get_user_address.dart';
 import '../../features/profile/domain/usecases/get_user_profile.dart';
@@ -140,6 +143,7 @@ Future<void> setup() async {
   getIt.registerLazySingleton(() => SignupUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => ResetPasswordUseCase(getIt<AuthRepository>()));
 
   // BLoC
   getIt.registerFactory(
@@ -149,6 +153,7 @@ Future<void> setup() async {
       signup: getIt<SignupUseCase>(),
       logout: getIt<LogoutUseCase>(),
       forgotPassword: getIt<ForgotPasswordUseCase>(),
+      resetPasswordUseCase: getIt<ResetPasswordUseCase>(),
     ),
   );
   // Route Guards
@@ -181,9 +186,10 @@ Future<void> setup() async {
   getIt.registerLazySingleton<ChangePassword>(()=> ChangePassword(getIt<ProfileRepository>()));
   getIt.registerLazySingleton<UpdateProfilePicture>(()=> UpdateProfilePicture(getIt<ProfileRepository>()));
   getIt.registerLazySingleton<UpdateUserProfile>(()=> UpdateUserProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<DeleteUser>(()=> DeleteUser(getIt<ProfileRepository>()));
 
 
-  getIt.registerSingleton<ProfileBloc>(ProfileBloc(getUserProfile: getIt<GetUserProfile>(),changePassword: getIt<ChangePassword>(), updateProfilePicture: getIt<UpdateProfilePicture>(), updateUserProfile: getIt<UpdateUserProfile>(),));
+  getIt.registerSingleton<ProfileBloc>(ProfileBloc(getUserProfile: getIt<GetUserProfile>(),changePassword: getIt<ChangePassword>(), updateProfilePicture: getIt<UpdateProfilePicture>(), updateUserProfile: getIt<UpdateUserProfile>(),deleteUser: getIt<DeleteUser>()));
 
 //Update User Address
   getIt.registerLazySingleton<UpdateUserAddress>(()=> UpdateUserAddress(getIt<ProfileRepository>()));
@@ -340,10 +346,11 @@ Future<void> setup() async {
   getIt.registerLazySingleton<GetOrderByIdUseCase>(() => GetOrderByIdUseCase(getIt<OrderRepository>()));
   getIt.registerLazySingleton<CreateOrderUseCase>(() => CreateOrderUseCase(getIt<OrderRepository>()));
   getIt.registerLazySingleton<GetPromoCodesUseCase>(() => GetPromoCodesUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<UpdatePaymentUrlUseCase>(() => UpdatePaymentUrlUseCase(getIt<OrderRepository>()));
 
 
   getIt.registerFactory<OrderBloc>(()=>
-    OrderBloc(createOrderUseCase: getIt<CreateOrderUseCase>(), getOrderByIdUseCase: getIt<GetOrderByIdUseCase>(), getAllOrdersUseCase: getIt<GetAllOrdersUseCase>(),getPromoCodes: getIt<GetPromoCodesUseCase>()
+    OrderBloc(createOrderUseCase: getIt<CreateOrderUseCase>(), getOrderByIdUseCase: getIt<GetOrderByIdUseCase>(), getAllOrdersUseCase: getIt<GetAllOrdersUseCase>(),getPromoCodes: getIt<GetPromoCodesUseCase>(),updatePaymentUrlUseCase: getIt<UpdatePaymentUrlUseCase>()
 
     ),
   );

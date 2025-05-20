@@ -28,6 +28,10 @@ class AddProductToCart extends CartEvent {
   List<Object> get props => [product, quantity, size];
 }
 
+class AddAllToCart extends CartEvent{
+
+}
+
 
 class UpdateCartItemQuantity extends CartEvent {
   final String cartItemId;

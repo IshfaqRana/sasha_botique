@@ -45,7 +45,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     addressList = result;
     emit(AddressesLoaded( addresses: result,addressList ));
     } catch (e) {
-      emit(AddressError(message: 'Failed to load profile: ${_mapFailureToMessage(e)}',addressList));
+      emit(AddressError(message: 'Failed to load address: ${_mapFailureToMessage(e)}',addressList));
     }
   }
 
@@ -59,7 +59,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     addressList = result;
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
-      emit(AddressError(message: 'Failed to add profile: ${_mapFailureToMessage(e)}',addressList));
+      emit(AddressError(message: 'Failed to add Address: ${_mapFailureToMessage(e)}',addressList));
     }
   }
 
@@ -80,7 +80,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
 
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
-      emit(AddressError(message: 'Failed to update profile: ${_mapFailureToMessage(e)}',addressList));
+      emit(AddressError(message: 'Failed to update address: ${_mapFailureToMessage(e)}',addressList));
     }
   }
 
@@ -108,7 +108,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     // });
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
-      emit(AddressError(message: 'Failed to update profile: ${_mapFailureToMessage(e)}',addressList));
+      emit(AddressError(message: 'Failed to update address: ${_mapFailureToMessage(e)}',addressList));
     }
   }
 
@@ -122,7 +122,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     addressList = result;
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
-      emit(AddressError(message: 'Failed to update profile: ${_mapFailureToMessage(e)}',addressList));
+      emit(AddressError(message: 'Failed to update address: ${_mapFailureToMessage(e)}',addressList));
     }
   }
 

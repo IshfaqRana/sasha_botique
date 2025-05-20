@@ -7,6 +7,7 @@ import '../model/order_model.dart';
 
 abstract class OrderRemoteDataSource {
   Future<CreateOrderResponseItem> createOrder(OrderModel order);
+  Future<CreateOrderResponseItem> updatePaymentUrl(String orderID);
   Future<OrderModel> getOrderById(String orderId);
   Future<List<OrderModel>> getAllOrders();
   Future<List<PromoCodeModel>> getAllPromoCodes();
@@ -27,7 +28,22 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       );
 
       final responseData = response.data['payload'];
-      var res = CreateOrderResponseModel.fromJson(responseData);
+      var res = CreateOrderResponseModel.fromJson(response.data);
+      return res.payload ?? CreateOrderResponseItem(success: false, orderId: "", paymentUrl: "");
+    } catch (e) {
+      rethrow;
+    }
+  }
+  @override
+  Future<CreateOrderResponseItem> updatePaymentUrl(String orderID) async {
+    try {
+      final response = await networkManager.post(
+        '/order/update-payment-link/$orderID',
+        // data: order.toJson(),
+      );
+
+      final responseData = response.data['payload'];
+      var res = CreateOrderResponseModel.fromJson(response.data);
       return res.payload ?? CreateOrderResponseItem(success: false, orderId: "", paymentUrl: "");
     } catch (e) {
       rethrow;

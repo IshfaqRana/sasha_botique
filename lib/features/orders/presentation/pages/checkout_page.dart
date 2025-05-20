@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sasha_botique/core/di/injections.dart';
+import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/core/extensions/toast_extension.dart';
 import 'package:sasha_botique/features/orders/domain/entities/create_order_params.dart';
 import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
@@ -50,6 +51,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
     paymentBloc = getIt<PaymentBloc>();
     cartBloc = getIt<CartBloc>();
     orderBloc.add(GetPromoCodesEvent());
+    final addressState = addressBloc.state;
+    if (addressState is AddressesLoaded) {
+      if (addressState.addresses.isNotEmpty) {
+        int index = addressState.addresses.indexWhere((element) => element.isDefault == true);
+        print("index: $index");
+        setState(() {
+          selectedAddressIndex = index;
+        });
+      }
+    }
+    final paymentState = paymentBloc.state;
+    if (paymentState is PaymentMethodsLoaded) {
+      if (paymentState.paymentMethods.isNotEmpty) {
+        int index = addressState.addressList.indexWhere((element) => element.isDefault == true);
+        print("index: $index");
+        setState(() {
+          selectedPaymentIndex = index;
+        });
+      }
+    }
   }
 
   @override
@@ -62,11 +83,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Checkout'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+        leading: const BackButton(),
+        title: Text(
+          'Check Out',
+          style: context.headlineSmall?.copyWith(fontSize: 18),
         ),
+        centerTitle: true,
       ),
       body: MultiBlocListener(
         listeners: [
@@ -74,13 +96,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
             bloc: orderBloc,
             listener: (context, state) {
               if (state is OrderCreateSuccess) {
+                cartBloc.add(ClearCart());
                 // Navigate to payment web view
+                final paymentState = paymentBloc.state;
+                final selectedPayment = paymentState.paymentMethods[selectedPaymentIndex!];
+
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (_) => PaymentWebView(
                       paymentUrl: state.paymentUrl,
                       orderId: state.orderId,
+                      paymentMethodModel: selectedPayment,
                     ),
                   ),
                 );
@@ -137,32 +164,43 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Row(
-           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-           children: [
-             const Text(
-                  'Delivery Address',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-             TextButton(
-               child: Text(
-                 'View All',
-                 style: TextStyle(fontSize: 16),
-               ),
-               onPressed: () {
-                 Navigator.pushReplacement(
-                     context,
-                     MaterialPageRoute(
-                       builder: (_) => AddressScreen(),
-                     ));
-               },
-             )
-           ],
-         ),
-
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Delivery Address',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            // TextButton(
+            //   child: Text(
+            //     'View All',
+            //     style: TextStyle(fontSize: 16),
+            //   ),
+            //   onPressed: () {
+            //     Navigator.pushReplacement(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (_) => AddressScreen(),
+            //         ));
+            //   },
+            // )
+          ],
+        ),
         const SizedBox(height: 10),
-        BlocBuilder<AddressBloc, AddressState>(
+        BlocConsumer<AddressBloc, AddressState>(
           bloc: addressBloc,
+          listener: (context, state) {
+            // print("in listener");
+            // if (state is AddressesLoaded) {
+            //   if (state.addresses.isNotEmpty) {
+            //     int index = state.addresses.indexWhere((element) => element.isDefault == true);
+            //     print("index: $index");
+            //     setState(() {
+            //       selectedAddressIndex = index;
+            //     });
+            //   }
+            // }
+          },
           builder: (context, state) {
             if (state is AddressesLoaded) {
               if (state.addresses.isEmpty) {
@@ -214,19 +252,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
               'Payment Method',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            TextButton(
-              child: Text(
-                'View All',
-                style: TextStyle(fontSize: 16),
-              ),
-              onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PaymentMethodsScreen(),
-                    ));
-              },
-            )
+            // TextButton(
+            //   child: Text(
+            //     'View All',
+            //     style: TextStyle(fontSize: 16),
+            //   ),
+            //   onPressed: () {
+            //     Navigator.pushReplacement(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (_) => PaymentMethodsScreen(),
+            //         ));
+            //   },
+            // )
           ],
         ),
         const SizedBox(height: 10),
@@ -274,9 +312,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Promo Code',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Promo Code',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (appliedPromoCode != null)
+              TextButton(
+                child: Text(
+                  'Remove Promo Code',
+                  style: TextStyle(fontSize: 16),
+                ),
+                onPressed: () {
+                  promoCodeController.clear();
+                  setState(() {
+                    promoCodeError = null;
+                    appliedPromoCode = null;
+                    discountAmount = 0.0;
+                  });
+                },
+              )
+          ],
         ),
         const SizedBox(height: 10),
         TextField(
@@ -289,33 +347,35 @@ class _CheckoutPageState extends State<CheckoutPage> {
               borderRadius: BorderRadius.circular(8),
             ),
             suffixIcon: appliedPromoCode != null
-                ? IconButton(
-              icon: Icon(Icons.close, color: Colors.red),
-              onPressed: clearPromoCode,
-            )
+                ? SizedBox()
+                // IconButton(
+                //         icon: Icon(Icons.close, color: Colors.red),
+                //         onPressed: () {
+                //           print("on tap");
+                //
+                //         },
+                //       )
                 : state is PromoCodesLoading
-                ? Container(
-              width: 80,
-              alignment: Alignment.center,
-              child: SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
-                : TextButton(
-              onPressed: state is PromoCodesLoaded
-                  ? () => validatePromoCode(state.promoCodes)
-                  : null,
-              child: const Text('Apply'),
-            ),
+                    ? Container(
+                        width: 80,
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: state is PromoCodesLoaded ? () => validatePromoCode(state.promoCodes) : null,
+                        child: const Text('Apply'),
+                      ),
           ),
         ),
         if (appliedPromoCode != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
-              'Discount applied: ${appliedPromoCode!.discount}% off',
+              'Discount applied: ${appliedPromoCode?.discount ?? 0}% off',
               style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
             ),
           ),
@@ -331,11 +391,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-
   Widget _buildOrderSummary(CartLoaded cartState) {
     final totalAmount = cartState.total;
     // Example discount calculation (this should come from your business logic)
-    final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * 0.1 : 0.0;
+    final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100) : 0.0;
     final finalAmount = totalAmount - discountAmount;
 
     return Column(
@@ -424,7 +483,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
             // Calculate final amount
             final totalAmount = cartState.total;
-            final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * 0.1 : 0.0;
+            final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100) : 0.0;
 
             // Create order params
             final orderParams = {
@@ -454,16 +513,43 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 'phone_number': profileState.user.mobileNo,
                 'is_default': selectedAddress.isDefault,
               },
-              'promoCode': promoCodeController.text,
+              'promoCode': promoCodeController.text.toUpperCase(),
               'email': profileState.user.email, // Get from user profile
             };
-            CreateOrderParams orderParam = CreateOrderParams(items: cartState.items.map((item) => ProductModel(id: item.id, isBasics: false, name: item.name, price: item.price, category: item.collection,)).toList(), totalAmount: totalAmount, currency: "USD",
-                paymentMethod: PaymentMethodModel(id: "id", type: selectedPayment.type, last4Digits: selectedPayment.last4Digits, cardHolderName: selectedPayment.cardHolderName, expiryDate: selectedPayment.expiryDate, country: selectedPayment.country, isDefault: selectedPayment.isDefault),
-                deliveryAddress: UserAddressModel(street: selectedAddress.street, city: selectedAddress.city, state: selectedAddress.state, postalCode: selectedAddress.postalCode, country: selectedAddress.country, isDefault: selectedAddress.isDefault),
-                promoCode:promoCodeController.text,
-                email: profileState.user.email,
-                name: "${profileState.user.firstName} ${profileState.user.lastName}",
-                phone: profileState.user.mobileNo,
+            CreateOrderParams orderParam = CreateOrderParams(
+              items: cartState.items
+                  .map((item) => ProductModel(
+                        id: item.productId,
+                        isBasics: false,
+                        name: item.name,
+                        price: item.price,
+                        category: item.collection,
+                      ))
+                  .toList(),
+              totalAmount: totalAmount - discountAmount,
+              currency: "USD",
+              paymentMethod: PaymentMethodModel(
+                  id: "id",
+                  type: selectedPayment.type,
+                  last4Digits: selectedPayment.last4Digits,
+                  cardHolderName: selectedPayment.cardHolderName,
+                  expiryDate: selectedPayment.expiryDate,
+                  country: selectedPayment.country,
+                  isDefault: selectedPayment.isDefault),
+              deliveryAddress: UserAddressModel(
+                  name: selectedAddress.name,
+                  instruction: selectedAddress.instruction,
+                  phone: selectedAddress.phone,
+                  street: selectedAddress.street,
+                  city: selectedAddress.city,
+                  state: selectedAddress.state,
+                  postalCode: selectedAddress.postalCode,
+                  country: selectedAddress.country,
+                  isDefault: selectedAddress.isDefault),
+              promoCode: promoCodeController.text.toUpperCase(),
+              email: profileState.user.email,
+              name: "${profileState.user.firstName} ${profileState.user.lastName}",
+              phone: profileState.user.mobileNo,
             );
 
             // Dispatch create order event
@@ -477,6 +563,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
     );
   }
+
   void validatePromoCode(List<PromoCode> availableCodes) {
     final enteredCode = promoCodeController.text.trim().toUpperCase();
 
@@ -490,11 +577,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     // Find matching promo code
-    final matchingCode = availableCodes.where((code) =>
-    code.code == enteredCode &&
-        code.isActive &&
-        code.expiresAt.isAfter(DateTime.now())
-    ).toList();
+    final matchingCode = availableCodes.where((code) => code.code == enteredCode && code.isActive && code.expiresAt.isAfter(DateTime.now())).toList();
 
     if (matchingCode.isEmpty) {
       setState(() {
@@ -522,8 +605,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void clearPromoCode() {
+    print("on tap");
+    promoCodeController.clear();
     setState(() {
-      promoCodeController.clear();
       promoCodeError = null;
       appliedPromoCode = null;
       discountAmount = 0.0;

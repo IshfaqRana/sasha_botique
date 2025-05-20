@@ -51,6 +51,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<List<UserAddress>> updateUserAddress(String id,UserAddress userAddress) async {
     UserAddressModel userAddressModel = UserAddressModel(
       street: userAddress.street,
+      name: userAddress.name,
+      instruction: userAddress.instruction,
+      phone: userAddress.phone,
       city: userAddress.city,
       state: userAddress.state,
       postalCode: userAddress.postalCode,
@@ -64,6 +67,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<List<UserAddress>> addAddress(UserAddress userAddress) async {
     UserAddressModel userAddressModel = UserAddressModel(
       street: userAddress.street,
+      name: userAddress.name,
+      instruction: userAddress.instruction,
+      phone: userAddress.phone,
       city: userAddress.city,
       state: userAddress.state,
       postalCode: userAddress.postalCode,
@@ -83,6 +89,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<List<UserAddress>> setDefaultAddress(String id,UserAddress userAddress) async {
     UserAddressModel userAddressModel = UserAddressModel(
       street: userAddress.street,
+      name: userAddress.name,
+      instruction: userAddress.instruction,
+      phone: userAddress.phone,
       city: userAddress.city,
       state: userAddress.state,
       postalCode: userAddress.postalCode,
@@ -90,5 +99,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
       isDefault: userAddress.isDefault,
     );
     return await remoteDataSource.updateUserAddress(id,userAddressModel);
+  }
+
+  @override
+  Future<void> deleteUser() async {
+
+    await remoteDataSource.deleteUser();
   }
 }

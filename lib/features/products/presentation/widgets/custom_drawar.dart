@@ -14,6 +14,7 @@ import '../../../profile/domain/entities/user.dart';
 import '../../../profile/presentation/bloc/user_profile/user_profile_bloc.dart';
 import '../../../profile/presentation/pages/user_address_screen.dart';
 import '../../../profile/presentation/pages/user_profile_screen.dart';
+import '../../../profile/presentation/pages/web_view.dart';
 import '../../../theme/presentation/theme/theme_helper.dart';
 import '../pages/favourite_products_screen.dart';
 import 'drawar_item.dart';
@@ -55,6 +56,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
             children: [
               GestureDetector(
                   onTap: () {
+                    Navigator.pop(context);
+
                     Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen()));
                     //ProfileScreen
                   },
@@ -134,6 +137,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 icon: Icons.shopping_bag_outlined,
                 title: 'Orders',
                 onTap: () {
+                  Navigator.pop(context);
                   Navigator.push(context, CupertinoPageRoute(builder: (context) => OrdersPage()));
 
                 },
@@ -142,6 +146,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 icon: Icons.favorite_border,
                 title: 'Wishlist',
                 onTap: () {
+                  Navigator.pop(context);
+
                   Navigator.push(context, CupertinoPageRoute(builder: (context) => FavouriteProductsScreen()));
 
                 },
@@ -150,6 +156,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 icon: Icons.location_on_outlined,
                 title: 'Delivery Address',
                 onTap: () {
+                  Navigator.pop(context);
+
                   Navigator.push(context, CupertinoPageRoute(builder: (context) => AddressScreen()));
 
                 },
@@ -158,29 +166,38 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   icon: Icons.payment,
                 title: 'Payment Methods',
                 onTap: () {
+                  Navigator.pop(context);
+
                   Navigator.push(context, CupertinoPageRoute(builder: (context) => PaymentMethodsScreen()));
 
                 },
               ),
+              // DrawerItem(
+              //   icon: Icons.local_offer_outlined,
+              //   title: 'Promo Code',
+              //   onTap: () {},
+              // ),
+              // DrawerItem(
+              //   icon: Icons.notifications_none,
+              //   title: 'Notifications',
+              //   onTap: () {},
+              // ),
               DrawerItem(
-                icon: Icons.local_offer_outlined,
-                title: 'Promo Code',
-                onTap: () {},
-              ),
-              DrawerItem(
-                icon: Icons.notifications_none,
-                title: 'Notifications',
-                onTap: () {},
-              ),
-              DrawerItem(
-                icon: Icons.help_outline,
-                title: 'Help',
-                onTap: () {},
+                icon: Icons.privacy_tip,
+                title: 'Privacy Policy',
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> const WebView(url: "http://sashaboutique.co.uk/privacy", privacyURL: true,)));
+
+                },
               ),
               DrawerItem(
                 icon: Icons.info_outline,
                 title: 'About',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> const WebView(url: "http://sashaboutique.co.uk/about",privacyURL: false,)));
+                  // Navigator.push(context, MaterialPageRoute(builder: (context)=> const WebView(url: "https://latsuccess.com/privacy",privacyURL: false)));
+                //
+                },
               ),
               const Spacer(),
               BlocListener<AuthBloc, AuthState>(

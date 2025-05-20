@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:sasha_botique/features/orders/domain/usecases/get_promo_codes.dart';
+import 'package:sasha_botique/features/orders/domain/usecases/update_payment_url.dart';
 
 import '../../../../core/network/network_exceptions.dart';
 import '../../../payment/data/data_model/payment_method_model.dart';
@@ -22,6 +23,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final GetOrderByIdUseCase getOrderByIdUseCase;
   final GetAllOrdersUseCase getAllOrdersUseCase;
   final GetPromoCodesUseCase getPromoCodes;
+  final UpdatePaymentUrlUseCase updatePaymentUrlUseCase;
 
 
   OrderBloc({
@@ -29,8 +31,10 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     required this.getOrderByIdUseCase,
     required this.getAllOrdersUseCase,
     required this.getPromoCodes,
+    required this.updatePaymentUrlUseCase,
   }) : super(OrderInitial()) {
     on<CreateOrderEvent>(_onCreateOrder);
+    on<UpdatePaymentURLEvent>(_updatePaymentUrl);
     on<GetOrderByIdEvent>(_onGetOrderById);
     on<GetAllOrdersEvent>(_onGetAllOrders);
     on<GetPromoCodesEvent>(_onGetPromoCodesEvent);
@@ -54,6 +58,19 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     emit(OrderLoading());
     try {
       final result = await createOrderUseCase(event.params);
+      if (result.success) {
+        emit(OrderCreateSuccess(orderId: result.orderId, paymentUrl: result.paymentUrl));
+      } else {
+        emit(OrderError("Something went wrong, Try Again!"));
+      }
+    } catch (e) {
+      emit(OrderError(_mapFailureToMessage(e)));
+    }
+  }
+  void _updatePaymentUrl(UpdatePaymentURLEvent event, Emitter<OrderState> emit) async {
+    emit(OrderLoading());
+    try {
+      final result = await updatePaymentUrlUseCase(event.orderID);
       if (result.success) {
         emit(OrderCreateSuccess(orderId: result.orderId, paymentUrl: result.paymentUrl));
       } else {

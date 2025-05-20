@@ -3,6 +3,7 @@ part of 'user_profile_bloc.dart';
 abstract class ProfileEvent {}
 
 class GetUserProfileEvent extends ProfileEvent {}
+class DeleteUserEvent extends ProfileEvent {}
 
 class UpdateUserProfileEvent extends ProfileEvent {
   final String title;

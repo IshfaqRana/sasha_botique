@@ -20,6 +20,9 @@ class AddressFormBottomSheet extends StatefulWidget {
 class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _streetController;
+  late TextEditingController _nameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _instructionsController;
   late TextEditingController _cityController;
   late TextEditingController _stateController;
   late TextEditingController _postalCodeController;
@@ -30,6 +33,9 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
   void initState() {
     super.initState();
     _streetController = TextEditingController(text: widget.existingAddress?.street ?? '');
+    _nameController = TextEditingController(text: widget.existingAddress?.name ?? '');
+    _phoneController = TextEditingController(text: widget.existingAddress?.phone?.substring(3) ?? '');
+    _instructionsController = TextEditingController(text: widget.existingAddress?.instruction ?? '');
     _cityController = TextEditingController(text: widget.existingAddress?.city ?? '');
     _stateController = TextEditingController(text: widget.existingAddress?.state ?? '');
     _postalCodeController = TextEditingController(text: widget.existingAddress?.postalCode ?? '');
@@ -40,6 +46,9 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
   @override
   void dispose() {
     _streetController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _instructionsController.dispose();
     _cityController.dispose();
     _stateController.dispose();
     _postalCodeController.dispose();
@@ -50,6 +59,7 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 600,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
@@ -71,31 +81,37 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
               children: [
                 SizedBox(height: 20,),
                 _buildFormField(
+                  label: 'Name',
+                  hint: 'Please enter your name',
+                  controller: _nameController,
+                  validator: (value) => value!.isEmpty ? '* Please enter your name' : null,
+                ),
+                _buildFormField(
                   label: 'Street',
                   hint: 'Please enter street number',
                   controller: _streetController,
-                  validator: (value) => value!.isEmpty ? 'Please enter street number' : null,
+                  validator: (value) => value!.isEmpty ? '* Please enter street number' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'City',
                   hint: 'Please enter your city',
                   controller: _cityController,
-                  validator: (value) => value!.isEmpty ? 'Please enter your city' : null,
+                  validator: (value) => value!.isEmpty ? '*  Please enter your city' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'State/Province',
                   hint: 'Please enter your state/province',
                   controller: _stateController,
-                  validator: (value) => value!.isEmpty ? 'Please enter your state/province' : null,
+                  validator: (value) => value!.isEmpty ? '* Please enter your state/province' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'Postal Code',
                   hint: 'Please enter postal code',
                   controller: _postalCodeController,
-                  validator: (value) => value!.isEmpty ? 'Please enter postal code' : null,
+                  validator: (value) => value!.isEmpty ? '* Please enter postal code' : null,
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16.0),
@@ -103,7 +119,22 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                   label: 'Country',
                   hint: 'Please enter country',
                   controller: _countryController,
-                  validator: (value) => value!.isEmpty ? 'Please enter country' : null,
+                  validator: (value) => value!.isEmpty ? '*  Please enter country' : null,
+                ),
+                const SizedBox(height: 16.0),
+                _buildFormField(
+                  label: 'Number',
+                  hint: 'Please enter phone number',
+                  controller: _phoneController,
+                  validator: (value) => value!.isEmpty ? '* Please enter phone number'  : value.length !=10 ? "Must be valid phone number"  : null,
+                  keyboardType: TextInputType.phone,
+                  isPhone: true,
+                ),const SizedBox(height: 16.0),
+                _buildFormField(
+                  label: 'Delivery Instructions',
+                  hint: 'Please enter delivery instructions',
+                  controller: _instructionsController,
+                  validator: (value) => value!.isEmpty ? '* Please enter delivery instructions' : null,
                 ),
                 const SizedBox(height: 16.0),
                 Row(
@@ -143,6 +174,8 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24.0),
+
               ],
             ),
           ),
@@ -157,6 +190,7 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
     required TextEditingController controller,
     required FormFieldValidator<String> validator,
     TextInputType keyboardType = TextInputType.text,
+    bool isPhone = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,6 +202,7 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
             fontSize: 12.0,
           ),
         ),
+        SizedBox(height: 4,),
         TextFormField(
           controller: controller,
           validator: validator,
@@ -180,13 +215,24 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
               borderSide: BorderSide(color: Colors.blue),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-            suffixIcon: Padding(
-              padding: EdgeInsets.only(right: 12.0),
-              child: Text(
-                '*',
-                style: TextStyle(color: Colors.red, fontSize: 20.0),
-              ),
-            ),
+            prefixText: isPhone ? "+44":"",
+            // SizedBox(
+            //   width: 40,
+            //   child: Text(
+            //     "+44",
+            //     style: const TextStyle(
+            //       color: Colors.grey,
+            //       fontSize: 14.0,
+            //     ),
+            //   ),
+            // ):SizedBox(),
+            // suffixIcon: Padding(
+            //   padding: EdgeInsets.only(right: 12.0),
+            //   child: Text(
+            //     '*',
+            //     style: TextStyle(color: Colors.red, fontSize: 20.0),
+            //   ),
+            // ),
             suffixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
           ),
         ),
@@ -198,6 +244,9 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
     if (_formKey.currentState!.validate()) {
       widget.onSubmit(
         UserAddressModel(
+          name: _nameController.text,
+          instruction: _instructionsController.text,
+          phone: "+44${_phoneController.text}",
           street: _streetController.text,
           city: _cityController.text,
           state: _stateController.text,

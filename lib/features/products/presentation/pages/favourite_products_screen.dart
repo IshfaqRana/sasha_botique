@@ -61,7 +61,8 @@ class _FavouriteProductsScreenState extends State<FavouriteProductsScreen> {
         },
         builder: (context, state) {
           if(state is LoadedFavProducts) {
-            return Column(
+            return favoriteProducts.isEmpty ? Center(child: Text( "Sorry, there are no products in your Wishlist.",style: context.headlineSmall,))
+          : Column(
               children: [
                 Expanded(
                   child: ListView.separated(
@@ -84,32 +85,32 @@ class _FavouriteProductsScreenState extends State<FavouriteProductsScreen> {
                         );
                       }),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton(
-                    onPressed: () {
-
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.shopping_cart, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text(
-                          'ADD ALL TO CART',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.all(16),
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //
+                //     },
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: Colors.black,
+                //       minimumSize: const Size(double.infinity, 50),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(8),
+                //       ),
+                //     ),
+                //     child: const Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Icon(Icons.shopping_cart, color: Colors.white),
+                //         SizedBox(width: 8),
+                //         Text(
+                //           'ADD ALL TO CART',
+                //           style: TextStyle(color: Colors.white),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             );
           }

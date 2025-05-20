@@ -2,6 +2,7 @@ import 'package:sasha_botique/features/auth/data/api_services/auth_api_service.d
 import 'package:sasha_botique/features/auth/data/models/login_model.dart';
 import 'package:sasha_botique/features/auth/domain/entities/auth_entity.dart';
 
+import '../../../../core/network/network_exceptions.dart';
 import '../../../profile/domain/entities/user.dart';
 
 
@@ -9,6 +10,8 @@ abstract class AuthRemoteDataSource {
   Future<AuthEntity> login(String email, String password);
   Future<AuthEntity> signup(User user, String password);
   Future<void> sendPasswordResetEmail(String email);
+  Future<void> resetPassword(String otp, String newPassword,String email);
+
 }
 
 class AuthRemoteDataSourceIml implements AuthRemoteDataSource {
@@ -42,14 +45,21 @@ class AuthRemoteDataSourceIml implements AuthRemoteDataSource {
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // await authService.sendPasswordResetEmail(email);
-
-    // In a real implementation, this would send an actual email
-    if (!email.contains('@')) {
-      throw Exception('Invalid email address');
+    try {
+      if (!email.contains('@')) {
+        throw Exception('Invalid email address');
+      }
+      await authService.sendPasswordResetEmail(email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+  @override
+  Future<void> resetPassword(String otp, String newPassword,String email) async {
+    try {
+      await authService.resetPassword(otp, newPassword,email);
+    } catch (e) {
+      rethrow;
     }
   }
 }

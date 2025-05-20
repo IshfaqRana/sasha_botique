@@ -75,8 +75,23 @@ class AuthService {
   Future<dynamic> sendPasswordResetEmail(String email) async {
     try {
       final response =await networkManager.post(
-        '$_baseEndpoint/password-reset',
+        '/account/forget-password',
         data: {'email': email},
+      );
+      return response.data;
+    } catch (e) {
+      throw _handleAuthError(e);
+    }
+  }
+  Future<dynamic> resetPassword(String otp, String newPassword,String email) async {
+    try {
+      final response = await networkManager.post(
+        '$_baseEndpoint/update-password',
+        data: {
+          'otp': otp,
+          'new_password': newPassword,
+          'email': email
+        },
       );
       return response.data;
     } catch (e) {

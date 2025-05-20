@@ -10,6 +10,9 @@ abstract class OrderRepository {
   Future<CreateOrderModel> createOrder({
     required CreateOrderParams params,
   });
+  Future<CreateOrderModel> updatePaymentURL(
+    String params,
+  );
 
   Future<Order> getOrderById(String orderId);
   Future<List<Order>> getAllOrders();

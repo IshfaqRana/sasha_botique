@@ -57,6 +57,12 @@ class _AddressScreenState extends State<AddressScreen> {
             initialLoading = false;
           });
         }
+        if (state is AddressError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+
       },
       builder: (context, state) {
 
@@ -125,7 +131,7 @@ class _AddressScreenState extends State<AddressScreen> {
         onSetDefault: () {
           UserAddress userAddress = addresses[index];
           bool defaultVal  = userAddress.isDefault ?? false;
-          UserAddress updated = UserAddress(state: userAddress.state,street: userAddress.street,city: userAddress.city,country: userAddress.country,postalCode: userAddress.postalCode,isDefault: !defaultVal);
+          UserAddress updated = UserAddress(state: userAddress.state,street: userAddress.street,city: userAddress.city,country: userAddress.country,postalCode: userAddress.postalCode,isDefault: !defaultVal,phone: userAddress.phone,name: userAddress.name,instruction: userAddress.instruction);
           addressBloc.add(
           SetDefaultAddressEvent(address: updated, id: index.toString()));
     },

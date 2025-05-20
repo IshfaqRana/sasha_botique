@@ -95,8 +95,9 @@ class ProductApiService {
   Future<Map<String, dynamic>> searchProducts(String query,
       Map<String, dynamic>? filters,) async {
     try {
+
       final queryParams = {
-        'query': query,
+        'search': query,
         if (filters != null) ...filters,
       };
 

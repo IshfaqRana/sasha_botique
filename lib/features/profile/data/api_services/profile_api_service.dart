@@ -108,4 +108,15 @@ class ProfileApiService {
       rethrow;
     }
   }
+  Future<Map<String, dynamic>> deleteUser() async {
+    try {
+      final response = await networkManager.delete(
+        "/account/remove-user",
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

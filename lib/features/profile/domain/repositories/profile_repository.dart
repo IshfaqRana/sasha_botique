@@ -7,6 +7,7 @@ abstract class ProfileRepository {
   Future<User> updateUserProfile(User user);
   Future<User> updateProfilePicture(String filePath);
   Future<User> changePassword(String newPassword);
+  Future<void> deleteUser();
   Future<List<UserAddress>> getUserAddress();
   Future<List<UserAddress>> updateUserAddress(String id,UserAddress userAddress);
   Future<List<UserAddress>> addAddress(UserAddress address);

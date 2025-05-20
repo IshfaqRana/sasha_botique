@@ -82,4 +82,14 @@ class OrderRepositoryImpl implements OrderRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<CreateOrderModel> updatePaymentURL(String orderID) async {
+   try{
+     final result = await remoteDataSource.updatePaymentUrl(orderID);
+     return result;
+   } catch (e) {
+     rethrow;
+   }
+  }
 }

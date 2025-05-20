@@ -67,18 +67,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
               );
+              setState(() {
+                isLoading =false;
+              });
             } else if (state is ProfileUpdated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Profile updated successfully')),
               );
+              setState(() {
+                isLoading =false;
+              });
             } else if (state is ProfilePictureUpdated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Profile picture updated successfully')),
               );
+              setState(() {
+                isLoading =false;
+              });
             } else if (state is PasswordChanged) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Password changed successfully')),
               );
+              setState(() {
+                isLoading =false;
+              });
             }
           },
           builder: (context, state) {
@@ -200,6 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
 
                       _buildLogoutButton(context),
+                      const SizedBox(height: 16),_deleteAccount(context),
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -240,21 +253,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.edit, size: 20),
-              onPressed: () => _showImageSourceDialog(context),
-            ),
-          ),
-        ),
+        // Positioned(
+        //   bottom: 0,
+        //   right: 0,
+        //   child: Container(
+        //     decoration: BoxDecoration(
+        //       color: Colors.white,
+        //       shape: BoxShape.circle,
+        //       border: Border.all(color: Colors.grey.shade300),
+        //     ),
+        //     child: IconButton(
+        //       icon: Icon(Icons.edit, size: 20),
+        //       onPressed: () => _showImageSourceDialog(context),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -390,6 +403,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         },
       ),
+    );
+  }
+  Widget _deleteAccount(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Icon(Icons.logout, color: Colors.red.shade400),
+        title: Text(
+          'Delete Account',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.red.shade400,
+          ),
+        ),
+        onTap: () => showDeleteAccountDialog(context),
+      ),
+    );
+  }
+  void showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Delete Account"),
+          content: Text("Are you sure you want to delete your account? This action cannot be undone."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                profileBloc.add(DeleteUserEvent());
+                // getIt<AuthBloc>().add(LogoutEvent());
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
+
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text("Delete"),
+            ),
+          ],
+        );
+      },
     );
   }
 

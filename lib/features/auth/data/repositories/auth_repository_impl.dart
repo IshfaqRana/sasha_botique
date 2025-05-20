@@ -1,6 +1,7 @@
 import 'package:sasha_botique/features/auth/domain/entities/auth_entity.dart';
 
 
+import '../../../../core/network/network_exceptions.dart';
 import '../../../profile/domain/entities/user.dart';
 import '../source/auth_local_data_source.dart';
 import '../source/auth_remote_data_source.dart';
@@ -43,6 +44,19 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     await remoteDataSource.sendPasswordResetEmail(email);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String otp,
+    required String newPassword,
+    required String email
+  }) async {
+      try {
+        await remoteDataSource.resetPassword(otp, newPassword, email);
+      } catch(e) {
+        rethrow;
+      }
   }
 }
 

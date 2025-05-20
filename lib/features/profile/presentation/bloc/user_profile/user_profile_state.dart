@@ -18,6 +18,11 @@ class ProfileLoaded extends ProfileState {
 
   ProfileLoaded(super.user);
 }
+class DeleteUserSuccess extends ProfileState {
+
+
+  DeleteUserSuccess(super.user);
+}
 
 class ProfileError extends ProfileState {
   final String message;

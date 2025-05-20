@@ -24,3 +24,14 @@ class ForgotPasswordEvent extends AuthEvent {
 
   ForgotPasswordEvent(this.email);
 }
+class ResetPasswordEvent extends AuthEvent {
+  final String otp;
+  final String newPassword;
+  final String email;
+
+  ResetPasswordEvent({
+    required this.otp,
+    required this.newPassword,
+    required this.email,
+  });
+}

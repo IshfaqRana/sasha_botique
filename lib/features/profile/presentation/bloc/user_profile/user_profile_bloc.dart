@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sasha_botique/features/profile/domain/usecases/delete_user.dart';
 import 'package:sasha_botique/features/profile/domain/usecases/get_user_address.dart';
 import 'package:sasha_botique/features/profile/domain/usecases/update_user_address.dart';
 
@@ -24,6 +25,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final UpdateUserProfile updateUserProfile;
   final UpdateProfilePicture updateProfilePicture;
   final ChangePassword changePassword;
+  final DeleteUser deleteUser;
 
   User user = initialUser;
   ProfileBloc({
@@ -31,12 +33,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     required this.updateUserProfile,
     required this.updateProfilePicture,
     required this.changePassword,
+    required this.deleteUser,
 
   }) : super(ProfileInitial(initialUser)) {
     on<GetUserProfileEvent>(_onGetUserProfile);
     on<UpdateUserProfileEvent>(_onUpdateUserProfile);
     on<UpdateProfilePictureEvent>(_onUpdateProfilePicture);
     on<ChangePasswordEvent>(_onChangePassword);
+    on<DeleteUserEvent>(_deleteUserEvent);
   }
 
   Future<void> _onGetUserProfile(
@@ -48,6 +52,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final fetchedUser = await getUserProfile();
       user = fetchedUser;
       emit(ProfileLoaded(user));
+    } catch (e) {
+      emit(ProfileError('Failed to load profile: ${e.toString()}',user));
+    }
+  }
+  Future<void> _deleteUserEvent(
+      DeleteUserEvent event,
+      Emitter<ProfileState> emit,
+      ) async {
+    emit(ProfileLoading(user));
+    try {
+      await deleteUser();
+
+      emit(DeleteUserSuccess(user));
     } catch (e) {
       emit(ProfileError('Failed to load profile: ${e.toString()}',user));
     }
