@@ -72,15 +72,15 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<void> updatePaymentMethod(PaymentMethod paymentMethod) async {
     // Create local model with full card number
-    final localPaymentMethodModel = PaymentMethodModel(
-      id: paymentMethod.id,
-      type: paymentMethod.type,
-      last4Digits: paymentMethod.last4Digits, // Full card number
-      cardHolderName: paymentMethod.cardHolderName,
-      expiryDate: paymentMethod.expiryDate,
-      country: paymentMethod.country,
-      isDefault: paymentMethod.isDefault,
-    );
+    // final localPaymentMethodModel = PaymentMethodModel(
+    //   id: paymentMethod.id,
+    //   type: paymentMethod.type,
+    //   last4Digits: paymentMethod.last4Digits, // Full card number
+    //   cardHolderName: paymentMethod.cardHolderName,
+    //   expiryDate: paymentMethod.expiryDate,
+    //   country: paymentMethod.country,
+    //   isDefault: paymentMethod.isDefault,
+    // );
 
     // Create remote model with only last 4 digits
     final remotePaymentMethodModel = PaymentMethodModel(
@@ -94,12 +94,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
     );
 
     // Update locally
-    try {
-      await localDataSource.updatePaymentMethod(localPaymentMethodModel);
-    } catch (e) {
-      print('Failed to update payment method locally: $e');
-      rethrow; // Critical error, rethrow to caller
-    }
+    // try {
+    //   await localDataSource.updatePaymentMethod(localPaymentMethodModel);
+    // } catch (e) {
+    //   print('Failed to update payment method locally: $e');
+    //   rethrow; // Critical error, rethrow to caller
+    // }
 
     // Try to update on the server
     try {
@@ -113,12 +113,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<void> deletePaymentMethod(String id) async {
     // Always delete locally first
-    try {
-      await localDataSource.deletePaymentMethod(id);
-    } catch (e) {
-      print('Failed to delete payment method locally: $e');
-      rethrow; // Critical error, rethrow to caller
-    }
+    // try {
+    //   await localDataSource.deletePaymentMethod(id);
+    // } catch (e) {
+    //   print('Failed to delete payment method locally: $e');
+    //   rethrow; // Critical error, rethrow to caller
+    // }
 
     // Try to delete from the server
     try {
@@ -130,41 +130,63 @@ class PaymentRepositoryImpl implements PaymentRepository {
   }
 
   @override
-  Future<void> setDefaultPaymentMethod(String id) async {
+  Future<void> setDefaultPaymentMethod(PaymentMethod paymentMethod, PaymentMethod paymentMethod2,bool defaultValue,) async {
     // Get the payment method from local data
     List<PaymentMethodModel> localMethods;
-    PaymentMethodModel defaultMethod;
+    PaymentMethodModel? defaultMethod;
 
-    try {
-      localMethods = await localDataSource.getPaymentMethods();
-      defaultMethod = localMethods.firstWhere((method) => method.id == id);
-    } catch (e) {
-      print('Failed to retrieve payment method locally: $e');
-      rethrow; // Critical error, rethrow to caller
-    }
+      localMethods = await remoteDataSource.getPaymentMethods();
+    // try {
+    //   localMethods = await localDataSource.getPaymentMethods();
+    //   defaultMethod = localMethods.firstWhere((method) => method.id == id);
+    // } catch (e) {
+    //   print('Failed to retrieve payment method locally: $e');
+    //   rethrow; // Critical error, rethrow to caller
+    // }
+    //
+    // // Set as default locally
+    // try {
+    //   await localDataSource.setDefaultPaymentMethod(defaultMethod);
+    // } catch (e) {
+    //   print('Failed to set default payment method locally: $e');
+    //   rethrow; // Critical error, rethrow to caller
+    // }
+    // defaultMethod = localMethods.firstWhere((method) => method.isDefault,orElse: () => PaymentMethodModel(id: "null", type: "type", last4Digits: "last4Digits", cardHolderName: "cardHolderName", expiryDate: "expiryDate", country: "country", isDefault: false));
 
-    // Set as default locally
-    try {
-      await localDataSource.setDefaultPaymentMethod(defaultMethod);
-    } catch (e) {
-      print('Failed to set default payment method locally: $e');
-      rethrow; // Critical error, rethrow to caller
-    }
+      final removeAsAnDefault = PaymentMethodModel(
+        id: paymentMethod2.id,
+        type: paymentMethod2.type,
+        last4Digits: _extractLast4Digits(paymentMethod2.last4Digits),
+        cardHolderName: paymentMethod2.cardHolderName,
+        expiryDate: paymentMethod2.expiryDate,
+        country: paymentMethod2.country,
+        isDefault: false,
+      );
+      try {
+        await remoteDataSource.updatePaymentMethod(removeAsAnDefault);
+
+      } catch (e) {
+        // Log but continue since default is set locally
+        print('Failed to set default payment method remotely: $e');
+      }
+
+
 
     // Create a remote version with only last 4 digits for setting default on server
     final remoteDefaultMethod = PaymentMethodModel(
-      id: defaultMethod.id,
-      type: defaultMethod.type,
-      last4Digits: _extractLast4Digits(defaultMethod.last4Digits),
-      cardHolderName: defaultMethod.cardHolderName,
-      expiryDate: defaultMethod.expiryDate,
-      country: defaultMethod.country,
-      isDefault: true,
+      id: paymentMethod.id,
+      type: paymentMethod.type,
+      last4Digits: _extractLast4Digits(paymentMethod.last4Digits),
+      cardHolderName: paymentMethod.cardHolderName,
+      expiryDate: paymentMethod.expiryDate,
+      country: paymentMethod.country,
+      isDefault: defaultValue,
     );
 
     // Try to set default on the server
     try {
-      await remoteDataSource.setDefaultPaymentMethod(remoteDefaultMethod);
+      await remoteDataSource.updatePaymentMethod(remoteDefaultMethod);
+
     } catch (e) {
       // Log but continue since default is set locally
       print('Failed to set default payment method remotely: $e');

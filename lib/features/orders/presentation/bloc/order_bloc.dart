@@ -57,6 +57,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   void _onCreateOrder(CreateOrderEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
+      print(event.params);
       final result = await createOrderUseCase(event.params);
       if (result.success) {
         emit(OrderCreateSuccess(orderId: result.orderId, paymentUrl: result.paymentUrl));

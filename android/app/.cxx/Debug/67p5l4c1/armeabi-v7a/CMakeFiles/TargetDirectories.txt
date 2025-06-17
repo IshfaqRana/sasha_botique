@@ -1,0 +1,2 @@
+/Users/ishfaqjalal/Documents/GitHub/sasha_botique/android/app/.cxx/Debug/67p5l4c1/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ishfaqjalal/Documents/GitHub/sasha_botique/android/app/.cxx/Debug/67p5l4c1/armeabi-v7a/CMakeFiles/rebuild_cache.dir

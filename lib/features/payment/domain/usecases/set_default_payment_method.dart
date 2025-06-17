@@ -1,3 +1,4 @@
+import '../entities/payment_method.dart';
 import '../repositories/payment_repository.dart';
 
 class SetDefaultPaymentMethod {
@@ -5,7 +6,7 @@ class SetDefaultPaymentMethod {
 
   SetDefaultPaymentMethod(this.repository);
 
-  Future<void> call(String id) async {
-    await repository.setDefaultPaymentMethod(id);
+  Future<void> call(PaymentMethod paymentMethod,PaymentMethod paymentMethod2,bool defaultValue) async {
+    await repository.setDefaultPaymentMethod(paymentMethod,paymentMethod2,defaultValue);
   }
 }

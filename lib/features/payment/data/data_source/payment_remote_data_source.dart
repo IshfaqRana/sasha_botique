@@ -1,6 +1,8 @@
 // lib/features/payment/data/datasources/payment_remote_data_source.dart
 import 'dart:convert';
+import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:sasha_botique/core/utils/app_utils.dart';
 
 import '../../../../core/network/network_exceptions.dart';
 import '../../../../core/network/network_manager.dart';
@@ -92,6 +94,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         '/account/payment-method/${paymentMethod.id}',
         data: json.encode(paymentMethod.toJson()),
       );
+      debugPrinter('/account/payment-method/${paymentMethod.id}');
       UpdatePaymentResponseModel paymentResponseModel = UpdatePaymentResponseModel.fromJson(response.data);
 
       return paymentResponseModel.payload ?? PaymentMethodModel(id: "", type: "", last4Digits: "", cardHolderName: "", expiryDate: "", country: "", isDefault: false);

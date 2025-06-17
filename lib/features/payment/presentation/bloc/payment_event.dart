@@ -38,10 +38,11 @@ class DeletePaymentMethodEvent extends PaymentEvent {
 }
 
 class SetDefaultPaymentMethodEvent extends PaymentEvent {
-  final String id;
+  final PaymentMethod paymentMethod; final PaymentMethod paymentMethod2;
+  final bool defaultValue;
 
-  const SetDefaultPaymentMethodEvent(this.id);
+  const SetDefaultPaymentMethodEvent(this.paymentMethod,this.paymentMethod2,this.defaultValue);
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [paymentMethod,paymentMethod2,defaultValue];
 }

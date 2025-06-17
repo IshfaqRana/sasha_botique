@@ -13,8 +13,9 @@ import '../widgets/card_input_formatter.dart';
 
 class AddPaymentMethodScreen extends StatefulWidget {
   final PaymentMethod? paymentMethod;
+  final int? index;
 
-  const AddPaymentMethodScreen({Key? key, this.paymentMethod}) : super(key: key);
+  const AddPaymentMethodScreen({Key? key, this.paymentMethod,required this.index}) : super(key: key);
 
   @override
   State<AddPaymentMethodScreen> createState() => _AddPaymentMethodScreenState();
@@ -504,7 +505,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
       }
 
       final paymentMethod = PaymentMethod(
-        id: widget.paymentMethod?.id ?? state.paymentMethods.length.toString(),
+        id: widget.paymentMethod != null ? widget.index.toString() : state.paymentMethods.length.toString(),
         type: _cardType,
         last4Digits: last4Digits,
         cardHolderName: _nameController.text,

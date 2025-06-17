@@ -146,15 +146,15 @@ class PaymentMethodCard extends StatelessWidget {
               // Set as default button
               Expanded(
                 child: TextButton.icon(
-                  onPressed: paymentMethod.isDefault ? null : onSetDefault,
+                  onPressed: onSetDefault,
                   icon: Icon(
                     Icons.check_circle_outline,
-                    color: paymentMethod.isDefault ? Colors.grey : Colors.green,
+                    color: !paymentMethod.isDefault ? Colors.grey : Colors.green,
                   ),
                   label: Text(
                     'Set as Default',
                     style: TextStyle(
-                      color: paymentMethod.isDefault ? Colors.grey : Colors.green,
+                      color: !paymentMethod.isDefault ? Colors.grey : Colors.green,
                     ),
                   ),
                   style: TextButton.styleFrom(

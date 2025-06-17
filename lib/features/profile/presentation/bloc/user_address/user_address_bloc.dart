@@ -106,6 +106,8 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     //   print(item.city);
     //   print(item.isDefault);
     // });
+    print("addressList.length");
+    print(result.length);
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
       emit(AddressError(message: 'Failed to update address: ${_mapFailureToMessage(e)}',addressList));

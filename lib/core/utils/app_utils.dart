@@ -3,7 +3,7 @@ import 'package:sasha_botique/features/products/domain/entities/products.dart';
 
 void debugPrinter(Object? object) {
   if (kDebugMode) {
-    print(object);
+    // print(object);
   }
 }
 

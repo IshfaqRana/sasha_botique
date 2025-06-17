@@ -124,7 +124,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       ) async {
     emit(PaymentLoading(loadedPaymentMethods));
     try {
-      await setDefaultPaymentMethod(event.id);
+      await setDefaultPaymentMethod(event.paymentMethod,event.paymentMethod2,event.defaultValue);
       emit( PaymentOperationSuccess('Default payment method set successfully',loadedPaymentMethods));
 
       // Reload payment methods

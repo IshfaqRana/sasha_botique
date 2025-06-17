@@ -47,7 +47,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.initState();
     orderBloc = getIt<OrderBloc>();
     profileBloc = getIt<ProfileBloc>();
-    addressBloc = getIt<AddressBloc>();
+    addressBloc = getIt<AddressBloc>()..add(GetAddressesEvent());
     paymentBloc = getIt<PaymentBloc>();
     cartBloc = getIt<CartBloc>();
     orderBloc.add(GetPromoCodesEvent());
@@ -203,16 +203,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
           },
           builder: (context, state) {
             if (state is AddressesLoaded) {
-              if (state.addresses.isEmpty) {
+              if (state.addressList.isEmpty) {
                 return const Text('No saved addresses. Please add an address.');
               }
 
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.addresses.length,
+                itemCount: state.addressList.length,
                 itemBuilder: (context, index) {
-                  final address = state.addresses[index];
+                  final address = state.addressList[index];
                   return RadioListTile(
                     value: index,
                     groupValue: selectedAddressIndex,
@@ -367,7 +367,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       )
                     : TextButton(
                         onPressed: state is PromoCodesLoaded ? () => validatePromoCode(state.promoCodes) : null,
-                        child: const Text('Apply'),
+                        child: const Text('Apply',style: TextStyle(color: Colors.black),),
                       ),
           ),
         ),
@@ -546,7 +546,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   postalCode: selectedAddress.postalCode,
                   country: selectedAddress.country,
                   isDefault: selectedAddress.isDefault),
-              promoCode: promoCodeController.text.toUpperCase(),
+              promoCode: promoCodeController.text.isEmpty ? " ":  promoCodeController.text.toUpperCase(),
               email: profileState.user.email,
               name: "${profileState.user.firstName} ${profileState.user.lastName}",
               phone: profileState.user.mobileNo,

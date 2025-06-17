@@ -6,5 +6,5 @@ abstract class PaymentRepository {
   Future<void> addPaymentMethod(PaymentMethod paymentMethod);
   Future<void> updatePaymentMethod(PaymentMethod paymentMethod);
   Future<void> deletePaymentMethod(String id);
-  Future<void> setDefaultPaymentMethod(String id);
+  Future<void> setDefaultPaymentMethod(PaymentMethod paymentMethod,PaymentMethod paymentMethod2,bool defaultValue,);
 }

@@ -18,6 +18,8 @@ class PaymentMethodsScreen extends StatefulWidget {
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   late final PaymentBloc paymentBloc;
+  int defaultIndex = -1;
+
   @override
   void initState() {
     super.initState();
@@ -71,12 +73,19 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                           itemCount: paymentMethods.length,
                           itemBuilder: (context, index) {
                             final paymentMethod = paymentMethods[index];
+                            final bool isDefault = paymentMethod.isDefault;
+                            if(isDefault){
+                              // setState(() {
+                              defaultIndex = index;
+
+                              // });
+                            }
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
                               child: PaymentMethodCard(
                                 paymentMethod: paymentMethod,
                                 onDelete: () {
-                                  _confirmDeletePaymentMethod(context, paymentMethod);
+                                  _confirmDeletePaymentMethod(context, paymentMethod,index);
                                 },
                                 onEdit: () {
                                   Navigator.push(
@@ -84,14 +93,38 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                     MaterialPageRoute(
                                       builder: (_) => AddPaymentMethodScreen(
                                         paymentMethod: paymentMethod,
+                                        index: index,
                                       ),
                                     ),
                                   );
                                 },
                                 onSetDefault: () {
+                                 // int? defaultMethod = state.paymentMethods.indexWhere((method) => method.isDefault,);
+                                  final unDefault = PaymentMethod(
+                                    id: defaultIndex.toString() ?? "",
+                                    type: state.paymentMethods[defaultIndex].type,
+                                    last4Digits: state.paymentMethods[defaultIndex].last4Digits,
+                                    cardHolderName: state.paymentMethods[defaultIndex].cardHolderName,
+                                    expiryDate: state.paymentMethods[defaultIndex].expiryDate,
+                                    country: state.paymentMethods[defaultIndex].country,
+                                    isDefault: false,
+                                  );
+                                  final paymentMethod2 = PaymentMethod(
+                                    id: index.toString(),
+                                    type: paymentMethod.type,
+                                    last4Digits: paymentMethod.last4Digits,
+                                    cardHolderName: paymentMethod.cardHolderName,
+                                    expiryDate: paymentMethod.expiryDate,
+                                    country: paymentMethod.country,
+                                    isDefault: paymentMethod.isDefault,
+                                  );
                                   if (!paymentMethod.isDefault) {
                                     paymentBloc.add(
-                                      SetDefaultPaymentMethodEvent(paymentMethod.id),
+                                      SetDefaultPaymentMethodEvent(paymentMethod2,unDefault,true),
+                                    );
+                                  }else{
+                                    paymentBloc.add(
+                                      SetDefaultPaymentMethodEvent(paymentMethod2,unDefault,false),
                                     );
                                   }
                                 },
@@ -99,7 +132,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             );
                           },
                         )
-                  : const Center(child: Text('Something went wrong')),
+                  : state is PaymentError ? const Center(child: Text('Something went wrong')):const Center(child: Text('Updating...')),
 
           // floatingActionButton: FloatingActionButton(
           //   onPressed: () {
@@ -119,7 +152,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const AddPaymentMethodScreen(),
+                    builder: (_) => const AddPaymentMethodScreen(index: 0,),
                   ),
                 );
               },
@@ -142,7 +175,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     );
   }
 
-  void _confirmDeletePaymentMethod(BuildContext context, PaymentMethod paymentMethod) {
+  void _confirmDeletePaymentMethod(BuildContext context, PaymentMethod paymentMethod,int index) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -156,7 +189,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              paymentBloc.add(DeletePaymentMethodEvent(paymentMethod.id));
+              paymentBloc.add(DeletePaymentMethodEvent(index.toString()));
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),

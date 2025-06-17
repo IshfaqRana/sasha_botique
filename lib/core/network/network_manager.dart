@@ -7,7 +7,7 @@ import 'network_exceptions.dart';
 class NetworkManager {
   late final Dio _dio;
   // final String baseUrl = "https://f989-31-205-209-114.ngrok-free.app/api/v1";
-  // final String baseUrl = "http://api.sashaboutique.co.uk";
+  // final String baseUrl = "http://api.sashaboutique.co.uk/api/v1";
   final String baseUrl = "http://3.8.218.244:3000/api/v1";
   final SharedPreferencesService preferencesService;
   late AuthService authService;

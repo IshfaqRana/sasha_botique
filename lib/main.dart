@@ -11,6 +11,7 @@ import 'features/theme/presentation/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // print("Main Called");
   await setup();
   runApp(const MyApp());
 }

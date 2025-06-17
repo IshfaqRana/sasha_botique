@@ -112,76 +112,78 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         builder: (context, state) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 60),
-
-                OtpTextField(
-                  numberOfFields: 4,
-                  borderColor: Color(0xFF512DA8),
-                  //set to true to show as box or false to show as dash
-                  showFieldAsBox: true,
-                  //runs when a code is typed in
-                  onCodeChanged: (String code) {
-                    // Update the OTP controller's text with the full OTP
-                    // _otpController.text = code; // This will replace the OTP text with the full value each time
-                  },
-                  onSubmit: (String code) {
-                    // This can be used when you want to handle the OTP submission after all fields are filled
-                    print('OTP Entered: $code');
-                    _otpController.text = code;
-                  },
-                ),
-                const SizedBox(height: 40),
-                if (!_canResendOtp)
-                  Center(child: Text('Resend OTP in $_remainingResendTime seconds')),
-                const SizedBox(height: 40),
-                _buildResendButton(),
-                const SizedBox(height: 100),
-                CustomTextField(
-                  label: 'New Password',
-                  controller: _passwordController,
-                  obscureText: !_isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 60),
+              
+                  OtpTextField(
+                    numberOfFields: 4,
+                    borderColor: Color(0xFF512DA8),
+                    //set to true to show as box or false to show as dash
+                    showFieldAsBox: true,
+                    //runs when a code is typed in
+                    onCodeChanged: (String code) {
+                      // Update the OTP controller's text with the full OTP
+                      // _otpController.text = code; // This will replace the OTP text with the full value each time
+                    },
+                    onSubmit: (String code) {
+                      // This can be used when you want to handle the OTP submission after all fields are filled
+                      print('OTP Entered: $code');
+                      _otpController.text = code;
                     },
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                CustomTextField(
-                  label: 'Confirm Password',
-                  controller: _confirmPasswordController,
-                  obscureText: !_isConfirmPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                  const SizedBox(height: 40),
+                  if (!_canResendOtp)
+                    Center(child: Text('Resend OTP in $_remainingResendTime seconds')),
+                  const SizedBox(height: 40),
+                  _buildResendButton(),
+                  const SizedBox(height: 100),
+                  CustomTextField(
+                    label: 'New Password',
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                      });
-                    },
                   ),
-                ),
-                const SizedBox(height: 60),
-                CustomButton(
-                  text: 'Reset Password',
-                  onPressed: _resetPassword,
-                  isLoading: state is AuthLoading,
-                ),
-                const SizedBox(height: 16),
-
-              ],
+                  const SizedBox(height: 16),
+              
+                  CustomTextField(
+                    label: 'Confirm Password',
+                    controller: _confirmPasswordController,
+                    obscureText: !_isConfirmPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 60),
+                  CustomButton(
+                    text: 'Reset Password',
+                    onPressed: _resetPassword,
+                    isLoading: state is AuthLoading,
+                  ),
+                  const SizedBox(height: 16),
+              
+                ],
+              ),
             ),
           );
         },

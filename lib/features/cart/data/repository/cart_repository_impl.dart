@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../domain/entity/cart_item.dart';
 import '../../domain/repository/cart_repository.dart';

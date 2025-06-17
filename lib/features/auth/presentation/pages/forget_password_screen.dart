@@ -64,43 +64,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: context.colors.whiteColor),
                       ),
                       const SizedBox(height: 200),
-                      CustomTextField(
-                        label: 'Email address',
-                        controller: _emailController,
-                        prefixIcon: const Icon(Icons.email_outlined),
-                      ),
-                      const SizedBox(height: 32),
-                      BlocConsumer<AuthBloc, AuthState>(
-                        // bloc: authBloc,
-                        listener: (context, state) {
-                          if (state is PasswordResetEmailSent) {
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Password reset email sent!')),
-                            );
-                            // Navigator.pop(context);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordScreen(email: _emailController.text)));
-
-                          } else if (state is AuthError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.message)),
-                            );
-                          }
-                        },
-                        builder: (context, state) {
-                          return CustomButton(
-                            text: 'SUBMIT',
-                            isLoading: state is AuthLoading,
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                context.read<AuthBloc>().add(
-                                      ForgotPasswordEvent(_emailController.text),
-                                    );
-                              }
-                            },
-                          );
-                        },
-                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(children: [
+                            CustomTextField(
+                              label: 'Email address',
+                              controller: _emailController,
+                              prefixIcon: const Icon(Icons.email_outlined),
+                            ),
+                            const SizedBox(height: 32),
+                            BlocConsumer<AuthBloc, AuthState>(
+                              // bloc: authBloc,
+                              listener: (context, state) {
+                                if (state is PasswordResetEmailSent) {
+                          
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Password reset email sent!')),
+                                  );
+                                  // Navigator.pop(context);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordScreen(email: _emailController.text)));
+                          
+                                } else if (state is AuthError) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(state.message)),
+                                  );
+                                }
+                              },
+                              builder: (context, state) {
+                                return CustomButton(
+                                  text: 'SUBMIT',
+                                  isLoading: state is AuthLoading,
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<AuthBloc>().add(
+                                        ForgotPasswordEvent(_emailController.text),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],),
+                        ),
+                      )
                     ],
                   ),
                 ),
