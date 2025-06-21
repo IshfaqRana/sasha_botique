@@ -115,11 +115,11 @@ class NetworkManager {
         // Now handle based on status code
           switch (statusCode) {
             case 400:
-              return NetworkException(errorMessage);
+              return BadRequestException("Bad request $errorMessage");
             case 401:
               return UnauthorizedException(errorMessage);
             case 403:
-              return NetworkException('Access denied: $errorMessage');
+              return ForbiddenException('Access denied: $errorMessage');
             case 404:
               return NotFoundException(errorMessage);
             case 500:

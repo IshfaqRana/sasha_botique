@@ -134,6 +134,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     switch (exception) {
       case NotFoundException _:
         return exception.message;
+      case BadRequestException _:
+        return exception.message;
+      case ForbiddenException _:
+        return exception.message;
       case ServerException _:
         return 'Server Error: Please try again later';
       case NetworkException _:

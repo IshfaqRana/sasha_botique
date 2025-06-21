@@ -503,6 +503,8 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
         final cardNumber = _cardNumberController.text.replaceAll(' ', '');
         last4Digits = cardNumber.substring(cardNumber.length - 4);
       }
+      print("_isDefault");
+      print(_isDefault);
 
       final paymentMethod = PaymentMethod(
         id: widget.paymentMethod != null ? widget.index.toString() : state.paymentMethods.length.toString(),

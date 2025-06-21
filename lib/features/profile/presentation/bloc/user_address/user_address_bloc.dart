@@ -90,6 +90,24 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
       ) async {
     emit(AddressLoading(addressList));
     try{
+    int? defaultAddress = addressList.indexWhere((test)=> test.isDefault ?? false,);
+    if(defaultAddress != -1){
+      UserAddress unDefaultAddress = UserAddress(
+        street: event.address.street,
+        name: event.address.name,
+        city: event.address.city,
+        state: event.address.state,
+        postalCode: event.address.postalCode,
+        country: event.address.country,
+        phone: event.address.phone,
+        instruction: event.address.instruction,
+        isDefault: false,
+      );
+    final unDefaultAddressResult = await setDefaultAddress(defaultAddress.toString(), unDefaultAddress);
+
+      addressList.removeAt(defaultAddress);
+      addressList.insert(defaultAddress, unDefaultAddressResult.first);
+    }
     final result = await setDefaultAddress(event.id,event.address);
     // print('AddressBloc._onSetDefaultAddress: Before Updating at ${event.id} >>>>>>>>>');
     //   addressList.forEach((item) {
@@ -100,6 +118,9 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     int index = int.parse(event.id);
     addressList.removeAt(index);
     addressList.insert(index, result.first);
+
+    // addressList.clear();
+    // addressList = result;
     // print('AddressBloc._onSetDefaultAddress: After Updating at $index >>>>>>>>>');
     // addressList.forEach((item) {
     //   // print(item.country);
@@ -131,6 +152,10 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
   String _mapFailureToMessage( exception) {
     switch (exception) {
       case NotFoundException _:
+        return exception.message;
+      case BadRequestException _:
+        return exception.message;
+      case ForbiddenException _:
         return exception.message;
       case ServerException _:
         return 'Server Error: Please try again later';

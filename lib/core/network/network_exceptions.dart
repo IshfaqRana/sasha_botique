@@ -27,3 +27,12 @@ class CartException implements Exception {
   final String message;
   CartException(this.message);
 }
+class BadRequestException implements Exception {
+  final String message;
+  BadRequestException(this.message );
+}
+
+class ForbiddenException implements Exception {
+  final String message;
+  ForbiddenException(this.message);
+}

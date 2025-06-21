@@ -51,7 +51,6 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<Order> getOrderById(String orderId) async {
-
       try {
         final result = await remoteDataSource.getOrderById(orderId);
         return result;
