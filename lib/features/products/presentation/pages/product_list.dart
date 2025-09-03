@@ -37,78 +37,117 @@ class _ProductListState extends State<ProductList> {
     super.initState();
     widget.onInitial();
     _scrollController.addListener(_onScroll);
-    debugPrinter('_ProductListState.initState: ProductList: ${widget.products.length}');
+    debugPrinter(
+        '_ProductListState.initState: ProductList: ${widget.products.length}');
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       widget.onLoadMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final isMediumScreen = screenWidth < 900;
+
+    // Responsive grid configuration
+    int crossAxisCount;
+    double childAspectRatio;
+    double crossAxisSpacing;
+    double mainAxisSpacing;
+
+    if (isSmallScreen) {
+      crossAxisCount = 2;
+      childAspectRatio =
+          0.8; // Adjusted to accommodate increased content height
+      crossAxisSpacing = 12;
+      mainAxisSpacing = 12;
+    } else if (isMediumScreen) {
+      crossAxisCount = 3;
+      childAspectRatio =
+          0.85; // Adjusted to accommodate increased content height
+      crossAxisSpacing = 16;
+      mainAxisSpacing = 16;
+    } else {
+      crossAxisCount = 4;
+      childAspectRatio =
+          0.9; // Adjusted to accommodate increased content height
+      crossAxisSpacing = 20;
+      mainAxisSpacing = 20;
+    }
+
     return widget.isGridView
         ? CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.58,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) => GestureDetector(
-                onTap: () => widget.onProductTap(widget.products[index]),
-                child: SizedBox(
-                  height: 400,
-                  width: 170,
-                  child: ProductCard(
-                    product: widget.products[index],
-                    index: index + 1,
+            controller: _scrollController,
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: childAspectRatio,
+                    crossAxisSpacing: crossAxisSpacing,
+                    mainAxisSpacing: mainAxisSpacing,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => GestureDetector(
+                      onTap: () => widget.onProductTap(widget.products[index]),
+                      child: ProductCard(
+                        product: widget.products[index],
+                        index: index + 1,
+                      ),
+                    ),
+                    childCount: widget.products.length,
                   ),
                 ),
               ),
-              childCount: widget.products.length,
-            ),
-          ),
-        ),
-        // Footer
-        if (widget.products.isNotEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12.0,right: 12, top: 20,bottom: 50),
-              child: !widget.hasMoreData
-                  ? EmptyProductList(emptyList: false)
-                  : widget.isLoading
-                  ? AppLoading()
-                  : SizedBox(),
-            ),
-          ),
-      ],
-    )
+              // Footer
+              if (widget.products.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: isSmallScreen ? 8.0 : 12.0,
+                      right: isSmallScreen ? 8.0 : 12.0,
+                      top: 20,
+                      bottom: 50,
+                    ),
+                    child: !widget.hasMoreData
+                        ? EmptyProductList(emptyList: false)
+                        : widget.isLoading
+                            ? AppLoading()
+                            : SizedBox(),
+                  ),
+                ),
+            ],
+          )
         : ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
             itemCount: widget.products.length + 1,
             itemBuilder: (context, index) => GestureDetector(
               onTap: () => widget.onProductTap(widget.products[index]),
               child: index < widget.products.length
-                  ? ProductCard(
-                      product: widget.products[index],
-                      isListView: true,
-                      index: index + 1,
+                  ? Padding(
+                      padding: EdgeInsets.only(bottom: isSmallScreen ? 12 : 16),
+                      child: ProductCard(
+                        product: widget.products[index],
+                        isListView: true,
+                        index: index + 1,
+                      ),
                     )
                   : Padding(
-                padding: const EdgeInsets.only(left: 12.0,right: 12, top: 30,bottom: 30),
+                      padding: EdgeInsets.only(
+                        left: isSmallScreen ? 8.0 : 12.0,
+                        right: isSmallScreen ? 8.0 : 12.0,
+                        top: 30,
+                        bottom: 30,
+                      ),
                       child: !widget.hasMoreData
-                          ? EmptyProductList(
-                              emptyList: false,
-                            )
+                          ? EmptyProductList(emptyList: false)
                           : widget.isLoading
                               ? AppLoading()
                               : SizedBox(),
