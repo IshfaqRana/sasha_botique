@@ -12,7 +12,11 @@ class CategoryMapper {
       case ProductCategory.gender:
         return "gender";
       case ProductCategory.sale:
-        return "sale";
+        return "clearance";
+      case ProductCategory.accessories:
+        return "accessories";
+      case ProductCategory.sashaB:
+        return "sasha-b";
     }
   }
 }

@@ -1,5 +1,6 @@
 // lib/features/address/presentation/widgets/address_form_bottom_sheet.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../data/models/user_address_reponse_model.dart';
 import '../../domain/entities/user_address.dart';
 
@@ -32,14 +33,27 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _streetController = TextEditingController(text: widget.existingAddress?.street ?? '');
-    _nameController = TextEditingController(text: widget.existingAddress?.name ?? '');
-    _phoneController = TextEditingController(text: widget.existingAddress?.phone?.substring(3) ?? '');
-    _instructionsController = TextEditingController(text: widget.existingAddress?.instruction ?? '');
-    _cityController = TextEditingController(text: widget.existingAddress?.city ?? '');
-    _stateController = TextEditingController(text: widget.existingAddress?.state ?? '');
-    _postalCodeController = TextEditingController(text: widget.existingAddress?.postalCode ?? '');
-    _countryController = TextEditingController(text: widget.existingAddress?.country ?? '');
+    _streetController =
+        TextEditingController(text: widget.existingAddress?.street ?? '');
+    _nameController =
+        TextEditingController(text: widget.existingAddress?.name ?? '');
+    final existingPhone = widget.existingAddress?.phone ?? '';
+    // Expect stored format to be +44XXXXXXXXXX; strip +44 if present for editing
+    final phoneWithoutCode =
+        existingPhone.startsWith('+44') && existingPhone.length > 3
+            ? existingPhone.substring(3)
+            : existingPhone;
+    _phoneController = TextEditingController(text: phoneWithoutCode);
+    _instructionsController =
+        TextEditingController(text: widget.existingAddress?.instruction ?? '');
+    _cityController =
+        TextEditingController(text: widget.existingAddress?.city ?? '');
+    _stateController =
+        TextEditingController(text: widget.existingAddress?.state ?? '');
+    _postalCodeController =
+        TextEditingController(text: widget.existingAddress?.postalCode ?? '');
+    _countryController =
+        TextEditingController(text: widget.existingAddress?.country ?? '');
     _isDefault = widget.existingAddress?.isDefault ?? false;
   }
 
@@ -79,39 +93,47 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(height: 20,),
+                SizedBox(
+                  height: 20,
+                ),
                 _buildFormField(
                   label: 'Name',
                   hint: 'Please enter your name',
                   controller: _nameController,
-                  validator: (value) => value!.isEmpty ? '* Please enter your name' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? '* Please enter your name' : null,
                 ),
                 _buildFormField(
                   label: 'Street',
                   hint: 'Please enter street number',
                   controller: _streetController,
-                  validator: (value) => value!.isEmpty ? '* Please enter street number' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? '* Please enter street number' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'City',
                   hint: 'Please enter your city',
                   controller: _cityController,
-                  validator: (value) => value!.isEmpty ? '*  Please enter your city' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? '*  Please enter your city' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'State/Province',
                   hint: 'Please enter your state/province',
                   controller: _stateController,
-                  validator: (value) => value!.isEmpty ? '* Please enter your state/province' : null,
+                  validator: (value) => value!.isEmpty
+                      ? '* Please enter your state/province'
+                      : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'Postal Code',
                   hint: 'Please enter postal code',
                   controller: _postalCodeController,
-                  validator: (value) => value!.isEmpty ? '* Please enter postal code' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? '* Please enter postal code' : null,
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16.0),
@@ -119,22 +141,38 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                   label: 'Country',
                   hint: 'Please enter country',
                   controller: _countryController,
-                  validator: (value) => value!.isEmpty ? '*  Please enter country' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? '*  Please enter country' : null,
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'Number',
                   hint: 'Please enter phone number',
                   controller: _phoneController,
-                  validator: (value) => value!.isEmpty ? '* Please enter phone number'  : value.length !=10 ? "Must be valid phone number"  : null,
+                  validator: (value) {
+                    final input = (value ?? '').trim();
+                    if (input.isEmpty) return '* Please enter phone number';
+                    // UK mobile local format: 7XXXXXXXXX (10 digits, starts with 7)
+                    final isUkMobile = RegExp(r'^7\d{9}').hasMatch(input);
+                    if (!isUkMobile)
+                      return 'Enter valid UK mobile (starts with 7, 10 digits)';
+                    return null;
+                  },
                   keyboardType: TextInputType.phone,
                   isPhone: true,
-                ),const SizedBox(height: 16.0),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
                 _buildFormField(
                   label: 'Delivery Instructions',
                   hint: 'Please enter delivery instructions',
                   controller: _instructionsController,
-                  validator: (value) => value!.isEmpty ? '* Please enter delivery instructions' : null,
+                  validator: (value) => value!.isEmpty
+                      ? '* Please enter delivery instructions'
+                      : null,
                 ),
                 const SizedBox(height: 16.0),
                 Row(
@@ -169,13 +207,14 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: Text(
-                      widget.existingAddress == null ? 'ADD ADDRESS' : 'UPDATE ADDRESS',
+                      widget.existingAddress == null
+                          ? 'ADD ADDRESS'
+                          : 'UPDATE ADDRESS',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
                 const SizedBox(height: 24.0),
-
               ],
             ),
           ),
@@ -191,6 +230,7 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
     required FormFieldValidator<String> validator,
     TextInputType keyboardType = TextInputType.text,
     bool isPhone = false,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,20 +242,25 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
             fontSize: 12.0,
           ),
         ),
-        SizedBox(height: 4,),
+        SizedBox(
+          height: 4,
+        ),
         TextFormField(
           controller: controller,
           validator: validator,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           style: const TextStyle(color: Colors.black),
           decoration: InputDecoration(
             hintText: hint,
+            errorMaxLines: 3,
             border: OutlineInputBorder(),
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.blue),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-            prefixText: isPhone ? "+44":"",
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+            prefixText: isPhone ? "+44" : "",
             // SizedBox(
             //   width: 40,
             //   child: Text(

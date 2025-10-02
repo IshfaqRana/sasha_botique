@@ -93,14 +93,14 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     int? defaultAddress = addressList.indexWhere((test)=> test.isDefault ?? false,);
     if(defaultAddress != -1){
       UserAddress unDefaultAddress = UserAddress(
-        street: event.address.street,
-        name: event.address.name,
-        city: event.address.city,
-        state: event.address.state,
-        postalCode: event.address.postalCode,
-        country: event.address.country,
-        phone: event.address.phone,
-        instruction: event.address.instruction,
+        street: addressList[defaultAddress].street,
+        name: addressList[defaultAddress].name,
+        city: addressList[defaultAddress].city,
+        state: addressList[defaultAddress].state,
+        postalCode: addressList[defaultAddress].postalCode,
+        country: addressList[defaultAddress].country,
+        phone: addressList[defaultAddress].phone,
+        instruction: addressList[defaultAddress].instruction,
         isDefault: false,
       );
     final unDefaultAddressResult = await setDefaultAddress(defaultAddress.toString(), unDefaultAddress);

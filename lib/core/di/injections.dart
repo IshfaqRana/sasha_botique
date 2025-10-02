@@ -13,10 +13,11 @@ import 'package:sasha_botique/features/products/data/api_services/product_api_se
 import 'package:sasha_botique/features/products/domain/usecases/add_to_favourite.dart';
 import 'package:sasha_botique/features/products/domain/usecases/fetch_product_detail.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
-import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_popular_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_products_by_gender.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_products_on_sale.dart';
+import 'package:sasha_botique/features/products/domain/usecases/get_clearance_products.dart';
+import 'package:sasha_botique/features/products/domain/usecases/get_accessories_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/remove_from_favourite.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/search/search_bloc.dart';
@@ -100,27 +101,30 @@ Future<void> setup() async {
   getIt.registerSingleton<HiveService>(HiveService());
   await getIt<HiveService>().init();
 
-
-
   // Register SharedPreferencesService
   getIt.registerSingleton<SharedPreferencesService>(
     SharedPreferencesService(getIt<SharedPreferences>()),
   );
 
-  getIt.registerLazySingleton<ThemeLocalDataSource>(() => ThemeLocalDataSourceImpl(getIt<SharedPreferencesService>()));
+  getIt.registerLazySingleton<ThemeLocalDataSource>(
+      () => ThemeLocalDataSourceImpl(getIt<SharedPreferencesService>()));
 
   // Repositories
-  getIt.registerLazySingleton<ThemeRepository>(() => ThemeRepositoryImpl(getIt<ThemeLocalDataSource>()));
+  getIt.registerLazySingleton<ThemeRepository>(
+      () => ThemeRepositoryImpl(getIt<ThemeLocalDataSource>()));
 
   // BLoCs
   getIt.registerFactory<ThemeBloc>(() => ThemeBloc(getIt<ThemeRepository>()));
   // Core
   getIt.registerSingleton<NavigationService>(NavigationService());
-  getIt.registerSingleton<NetworkManager>(NetworkManager(preferencesService: getIt<SharedPreferencesService>()));
+  getIt.registerSingleton<NetworkManager>(
+      NetworkManager(preferencesService: getIt<SharedPreferencesService>()));
 
   //Auth Service
 
-  getIt.registerSingleton<AuthService>(AuthService(networkManager: getIt<NetworkManager>(), preferencesService: getIt<SharedPreferencesService>()));
+  getIt.registerSingleton<AuthService>(AuthService(
+      networkManager: getIt<NetworkManager>(),
+      preferencesService: getIt<SharedPreferencesService>()));
 
   // Data sources
   getIt.registerLazySingleton<AuthLocalDataSource>(
@@ -138,12 +142,15 @@ Future<void> setup() async {
     ),
   );
 
-  getIt.registerLazySingleton(() => CheckAuthStatusUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(
+      () => CheckAuthStatusUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => LoginUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => SignupUseCase(getIt<AuthRepository>()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepository>()));
-  getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt<AuthRepository>()));
-  getIt.registerLazySingleton(() => ResetPasswordUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(
+      () => ForgotPasswordUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(
+      () => ResetPasswordUseCase(getIt<AuthRepository>()));
 
   // BLoC
   getIt.registerFactory(
@@ -166,70 +173,92 @@ Future<void> setup() async {
     () => AppRouter(getIt<RouteGuards>()),
   );
   getIt.registerLazySingleton<ICartCommunicationService>(
-        () => CartCommunicationService(getIt<CartBloc>()),
+    () => CartCommunicationService(getIt<CartBloc>()),
   );
   //Profile Injections
-  getIt.registerLazySingleton<ProfileApiService>(()=> ProfileApiService(getIt<NetworkManager>(),getIt<SharedPreferencesService>()));
+  getIt.registerLazySingleton<ProfileApiService>(() => ProfileApiService(
+      getIt<NetworkManager>(), getIt<SharedPreferencesService>()));
 
   getIt.registerLazySingleton<ProfileRemoteDataSource>(
-        () => ProfileRemoteDataSourceImpl(getIt<ProfileApiService>()), // Implement this class for API calls
+    () => ProfileRemoteDataSourceImpl(
+        getIt<ProfileApiService>()), // Implement this class for API calls
   );
 
   getIt.registerLazySingleton<ProfileRepository>(
-        () => ProfileRepositoryImpl(
-
+    () => ProfileRepositoryImpl(
       getIt<ProfileRemoteDataSource>(),
     ),
   );
 
-  getIt.registerLazySingleton<GetUserProfile>(()=> GetUserProfile(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<ChangePassword>(()=> ChangePassword(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<UpdateProfilePicture>(()=> UpdateProfilePicture(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<UpdateUserProfile>(()=> UpdateUserProfile(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<DeleteUser>(()=> DeleteUser(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<GetUserProfile>(
+      () => GetUserProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<ChangePassword>(
+      () => ChangePassword(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateProfilePicture>(
+      () => UpdateProfilePicture(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateUserProfile>(
+      () => UpdateUserProfile(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<DeleteUser>(
+      () => DeleteUser(getIt<ProfileRepository>()));
 
-
-  getIt.registerSingleton<ProfileBloc>(ProfileBloc(getUserProfile: getIt<GetUserProfile>(),changePassword: getIt<ChangePassword>(), updateProfilePicture: getIt<UpdateProfilePicture>(), updateUserProfile: getIt<UpdateUserProfile>(),deleteUser: getIt<DeleteUser>()));
+  getIt.registerSingleton<ProfileBloc>(ProfileBloc(
+      getUserProfile: getIt<GetUserProfile>(),
+      changePassword: getIt<ChangePassword>(),
+      updateProfilePicture: getIt<UpdateProfilePicture>(),
+      updateUserProfile: getIt<UpdateUserProfile>(),
+      deleteUser: getIt<DeleteUser>()));
 
 //Update User Address
-  getIt.registerLazySingleton<UpdateUserAddress>(()=> UpdateUserAddress(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<GetUserAddress>(()=> GetUserAddress(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<AddUserAddress>(()=> AddUserAddress(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<DeleteUserAddress>(()=> DeleteUserAddress(getIt<ProfileRepository>()));
-  getIt.registerLazySingleton<SetDefaultAddress>(()=> SetDefaultAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<UpdateUserAddress>(
+      () => UpdateUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<GetUserAddress>(
+      () => GetUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<AddUserAddress>(
+      () => AddUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<DeleteUserAddress>(
+      () => DeleteUserAddress(getIt<ProfileRepository>()));
+  getIt.registerLazySingleton<SetDefaultAddress>(
+      () => SetDefaultAddress(getIt<ProfileRepository>()));
 
   //User Address Bloc
-  getIt.registerSingleton<AddressBloc>(AddressBloc(getAddresses: getIt<GetUserAddress>(), addAddress: getIt<AddUserAddress>(), updateAddress: getIt<UpdateUserAddress>(), setDefaultAddress: getIt<SetDefaultAddress>(), deleteAddress: getIt<DeleteUserAddress>()));
-
+  getIt.registerSingleton<AddressBloc>(AddressBloc(
+      getAddresses: getIt<GetUserAddress>(),
+      addAddress: getIt<AddUserAddress>(),
+      updateAddress: getIt<UpdateUserAddress>(),
+      setDefaultAddress: getIt<SetDefaultAddress>(),
+      deleteAddress: getIt<DeleteUserAddress>()));
 
   // Data sources
   getIt.registerLazySingleton<PaymentRemoteDataSource>(
-        () => PaymentRemoteDataSourceImpl(
-            getIt<NetworkManager>(),
+    () => PaymentRemoteDataSourceImpl(
+      getIt<NetworkManager>(),
     ),
   );
   getIt.registerLazySingleton<PaymentLocalDataSource>(
-        () => PaymentLocalDataSourceImpl(getIt<HiveService>()),
+    () => PaymentLocalDataSourceImpl(getIt<HiveService>()),
   );
   // Repository
   getIt.registerLazySingleton<PaymentRepository>(
-        () => PaymentRepositoryImpl(
+    () => PaymentRepositoryImpl(
       remoteDataSource: getIt<PaymentRemoteDataSource>(),
       localDataSource: getIt<PaymentLocalDataSource>(),
     ),
   );
 
-
-
   // Use Cases
-  getIt.registerLazySingleton(() => GetPaymentMethods(getIt<PaymentRepository>()));
-  getIt.registerLazySingleton(() => AddPaymentMethod(getIt<PaymentRepository>()));
-  getIt.registerLazySingleton(() => UpdatePaymentMethod(getIt<PaymentRepository>()));
-  getIt.registerLazySingleton(() => DeletePaymentMethod(getIt<PaymentRepository>()));
-  getIt.registerLazySingleton(() => SetDefaultPaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(
+      () => GetPaymentMethods(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(
+      () => AddPaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(
+      () => UpdatePaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(
+      () => DeletePaymentMethod(getIt<PaymentRepository>()));
+  getIt.registerLazySingleton(
+      () => SetDefaultPaymentMethod(getIt<PaymentRepository>()));
 
   getIt.registerSingleton(
-        PaymentBloc(
+    PaymentBloc(
       getPaymentMethods: getIt<GetPaymentMethods>(),
       addPaymentMethod: getIt<AddPaymentMethod>(),
       updatePaymentMethod: getIt<UpdatePaymentMethod>(),
@@ -238,18 +267,17 @@ Future<void> setup() async {
     ),
   );
 
-
-
-  getIt.registerLazySingleton<ProductApiService>(()=> ProductApiService(getIt<NetworkManager>()));
+  getIt.registerLazySingleton<ProductApiService>(
+      () => ProductApiService(getIt<NetworkManager>()));
   // locator.registerSingleton<VideoRepository>(RemoteVideosRepository());
   getIt.registerLazySingleton<ProductLocalDataSource>(
     () => ProductLocalDataSource(),
   );
 
   getIt.registerLazySingleton<ProductRemoteDataSource>(
-    () => ProductRemoteDataSourceImpl(getIt<ProductApiService>()), // Implement this class for API calls
+    () => ProductRemoteDataSourceImpl(
+        getIt<ProductApiService>()), // Implement this class for API calls
   );
-
 
   // Home Feature Repositories
   getIt.registerLazySingleton<ProductRepository>(
@@ -258,7 +286,6 @@ Future<void> setup() async {
       remoteDataSource: getIt<ProductRemoteDataSource>(),
     ),
   );
-
 
   getIt.registerLazySingleton<GetAllProductsUseCase>(
     () => GetAllProductsUseCase(getIt<ProductRepository>()),
@@ -280,6 +307,12 @@ Future<void> setup() async {
   getIt.registerLazySingleton<GetPopularProductsUseCase>(
     () => GetPopularProductsUseCase(getIt<ProductRepository>()),
   );
+  getIt.registerLazySingleton<GetClearanceProductsUseCase>(
+    () => GetClearanceProductsUseCase(getIt<ProductRepository>()),
+  );
+  getIt.registerLazySingleton<GetAccessoriesProductsUseCase>(
+    () => GetAccessoriesProductsUseCase(getIt<ProductRepository>()),
+  );
 
   // Products Feature BLoC
   getIt.registerFactory<HomeBloc>(
@@ -290,16 +323,22 @@ Future<void> setup() async {
       getGenderProductsUseCase: getIt<GetGenderProductsUseCase>(),
       getNewArrivalProductsUseCase: getIt<GetNewArrivalProductsUseCase>(),
       getPopularProducts: getIt<GetPopularProductsUseCase>(),
+      getClearanceProductsUseCase: getIt<GetClearanceProductsUseCase>(),
+      getAccessoriesProductsUseCase: getIt<GetAccessoriesProductsUseCase>(),
       cartService: getIt<ICartCommunicationService>(),
     ),
   );
 
-  getIt.registerLazySingleton<FetchProductDetailUseCase>(()=> FetchProductDetailUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton<FetchProductDetailUseCase>(
+      () => FetchProductDetailUseCase(getIt<ProductRepository>()));
 
-  getIt.registerFactory<ProductDetailBloc>(()=> ProductDetailBloc(fetchProductDetailUseCase: getIt<FetchProductDetailUseCase>(),  ));
+  getIt.registerFactory<ProductDetailBloc>(() => ProductDetailBloc(
+        fetchProductDetailUseCase: getIt<FetchProductDetailUseCase>(),
+      ));
 
   //Cart Feature Dependencies
-  getIt.registerLazySingleton<CartApiService>(() => CartApiService(getIt<NetworkManager>()));
+  getIt.registerLazySingleton<CartApiService>(
+      () => CartApiService(getIt<NetworkManager>()));
   // Data sources
   getIt.registerLazySingleton<CartRemoteDataSource>(
     () => CartRemoteDataSourceImpl(getIt<CartApiService>()),
@@ -316,51 +355,72 @@ Future<void> setup() async {
     ),
   );
 
-  getIt.registerLazySingleton<GetCartItemsUsecase>(() => GetCartItemsUsecase(getIt<CartRepository>()));
-  getIt.registerLazySingleton<AddToCartItemUseCase>(() => AddToCartItemUseCase(getIt<CartRepository>()));
-  getIt.registerLazySingleton<RemoveFromCartUseCase>(() => RemoveFromCartUseCase(getIt<CartRepository>()));
-  getIt.registerLazySingleton<ClearCartUseCase>(() => ClearCartUseCase(getIt<CartRepository>()));
-  getIt.registerLazySingleton<UpdateCartItemQuantityUseCase>(() => UpdateCartItemQuantityUseCase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<GetCartItemsUsecase>(
+      () => GetCartItemsUsecase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<AddToCartItemUseCase>(
+      () => AddToCartItemUseCase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<RemoveFromCartUseCase>(
+      () => RemoveFromCartUseCase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<ClearCartUseCase>(
+      () => ClearCartUseCase(getIt<CartRepository>()));
+  getIt.registerLazySingleton<UpdateCartItemQuantityUseCase>(
+      () => UpdateCartItemQuantityUseCase(getIt<CartRepository>()));
 
   getIt.registerSingleton<CartBloc>(
     CartBloc(
-        getCartItemsUsecase: getIt<GetCartItemsUsecase>(),
-        addToCartItemUseCase: getIt<AddToCartItemUseCase>(),
-        removeFromCartUseCase: getIt<RemoveFromCartUseCase>(),
-        clearCartUseCase: getIt<ClearCartUseCase>(),
+      getCartItemsUsecase: getIt<GetCartItemsUsecase>(),
+      addToCartItemUseCase: getIt<AddToCartItemUseCase>(),
+      removeFromCartUseCase: getIt<RemoveFromCartUseCase>(),
+      clearCartUseCase: getIt<ClearCartUseCase>(),
       updateCartItemQuantityUseCase: getIt<UpdateCartItemQuantityUseCase>(),
     ),
   );
+
   ///Order Injections
   getIt.registerLazySingleton<OrderRemoteDataSource>(
-        () => OrderRemoteDataSourceImpl( networkManager: getIt<NetworkManager>(),),
+    () => OrderRemoteDataSourceImpl(
+      networkManager: getIt<NetworkManager>(),
+    ),
   );
   // Repository
   getIt.registerLazySingleton<OrderRepository>(
-        () => OrderRepositoryImpl(
+    () => OrderRepositoryImpl(
       remoteDataSource: getIt<OrderRemoteDataSource>(),
     ),
   );
 
-  getIt.registerLazySingleton<GetAllOrdersUseCase>(() => GetAllOrdersUseCase(getIt<OrderRepository>()));
-  getIt.registerLazySingleton<GetOrderByIdUseCase>(() => GetOrderByIdUseCase(getIt<OrderRepository>()));
-  getIt.registerLazySingleton<CreateOrderUseCase>(() => CreateOrderUseCase(getIt<OrderRepository>()));
-  getIt.registerLazySingleton<GetPromoCodesUseCase>(() => GetPromoCodesUseCase(getIt<OrderRepository>()));
-  getIt.registerLazySingleton<UpdatePaymentUrlUseCase>(() => UpdatePaymentUrlUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<GetAllOrdersUseCase>(
+      () => GetAllOrdersUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<GetOrderByIdUseCase>(
+      () => GetOrderByIdUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<CreateOrderUseCase>(
+      () => CreateOrderUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<GetPromoCodesUseCase>(
+      () => GetPromoCodesUseCase(getIt<OrderRepository>()));
+  getIt.registerLazySingleton<UpdatePaymentUrlUseCase>(
+      () => UpdatePaymentUrlUseCase(getIt<OrderRepository>()));
 
-
-  getIt.registerFactory<OrderBloc>(()=>
-    OrderBloc(createOrderUseCase: getIt<CreateOrderUseCase>(), getOrderByIdUseCase: getIt<GetOrderByIdUseCase>(), getAllOrdersUseCase: getIt<GetAllOrdersUseCase>(),getPromoCodes: getIt<GetPromoCodesUseCase>(),updatePaymentUrlUseCase: getIt<UpdatePaymentUrlUseCase>()
-
-    ),
+  getIt.registerFactory<OrderBloc>(
+    () => OrderBloc(
+        createOrderUseCase: getIt<CreateOrderUseCase>(),
+        getOrderByIdUseCase: getIt<GetOrderByIdUseCase>(),
+        getAllOrdersUseCase: getIt<GetAllOrdersUseCase>(),
+        getPromoCodes: getIt<GetPromoCodesUseCase>(),
+        updatePaymentUrlUseCase: getIt<UpdatePaymentUrlUseCase>()),
   );
   //Favorite Usecase
-  getIt.registerLazySingleton<AddToFavouriteUseCase>(()=> AddToFavouriteUseCase(getIt<ProductRepository>()));
-  getIt.registerLazySingleton<GetFavoriteProductsUseCase>(()=> GetFavoriteProductsUseCase(getIt<ProductRepository>()));
-  getIt.registerLazySingleton<RemoveFromFavoriteUseCase>(()=> RemoveFromFavoriteUseCase(getIt<ProductRepository>()));
- //Fav and Search  Blocs
+  getIt.registerLazySingleton<AddToFavouriteUseCase>(
+      () => AddToFavouriteUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton<GetFavoriteProductsUseCase>(
+      () => GetFavoriteProductsUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton<RemoveFromFavoriteUseCase>(
+      () => RemoveFromFavoriteUseCase(getIt<ProductRepository>()));
+  //Fav and Search  Blocs
   // getIt.registerSingleton<FavoriteBloc>(() => FavoriteBloc(removeFromFavoriteUseCase: getIt<RemoveFromFavoriteUseCase>(), addToFavouriteUseCase: getIt<AddToFavouriteUseCase>(), getFavoriteProductsUseCase: getIt<GetFavoriteProductsUseCase>()));
-  getIt.registerSingleton<FavoriteBloc>(FavoriteBloc(removeFromFavoriteUseCase: getIt<RemoveFromFavoriteUseCase>(), addToFavouriteUseCase: getIt<AddToFavouriteUseCase>(), getFavoriteProductsUseCase: getIt<GetFavoriteProductsUseCase>()));
-  getIt.registerFactory<SearchBloc>(()=>SearchBloc(searchProductsUseCase: getIt<SearchProductsUseCase>()));
-
+  getIt.registerSingleton<FavoriteBloc>(FavoriteBloc(
+      removeFromFavoriteUseCase: getIt<RemoveFromFavoriteUseCase>(),
+      addToFavouriteUseCase: getIt<AddToFavouriteUseCase>(),
+      getFavoriteProductsUseCase: getIt<GetFavoriteProductsUseCase>()));
+  getIt.registerFactory<SearchBloc>(
+      () => SearchBloc(searchProductsUseCase: getIt<SearchProductsUseCase>()));
 }

@@ -1,1 +1,9 @@
-enum ProductCategory{popular, newArrival, all,gender,sale }
+enum ProductCategory {
+  popular,
+  newArrival,
+  all,
+  gender,
+  sale,
+  accessories,
+  sashaB
+}

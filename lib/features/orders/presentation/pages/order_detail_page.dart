@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/core/extensions/toast_extension.dart';
 import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
@@ -12,7 +13,6 @@ import '../../../../core/di/injections.dart';
 import '../../../../shared/widgets/cache_image.dart';
 import '../../domain/entities/order.dart';
 import '../bloc/order_bloc.dart';
-
 
 class OrderDetailPage extends StatefulWidget {
   final String orderId;
@@ -37,19 +37,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title:  Text('Order Details',style: context.headlineSmall?.copyWith(fontSize: 18),),
+        title: Text(
+          'Order Details',
+          style: context.headlineSmall?.copyWith(fontSize: 18),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<OrderBloc, OrderState>(
         bloc: _orderBloc,
-        listener: (context, state){
+        listener: (context, state) {
           if (state is OrderCreateSuccess) {
-
             // cartBloc.add(ClearCart());
             // Navigate to payment web view
             // final paymentState = paymentBloc.state;
             // final selectedPayment = paymentState.paymentMethods[0];
-
 
             Navigator.pushReplacement(
               context,
@@ -63,6 +64,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             );
           } else if (state is OrderError) {
             context.showToast(state.message);
+            // If it's a payment error, show a more detailed error dialog
+            if (state.message.contains('Payment setup error') ||
+                state.message.contains('Payment processing error')) {
+              _showPaymentErrorDialog(context, state.message);
+            }
           }
         },
         builder: (context, state) {
@@ -116,6 +122,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       case 'pending':
         statusColor = Colors.orange;
         break;
+      case 'paid':
       case 'completed':
         statusColor = Colors.green;
         break;
@@ -140,7 +147,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             children: [
               Expanded(
                 child: Text(
-                  'Order #${order.id.substring(0, 8)}',
+                  'Order #${order.id.substring(0, order.id.length > 8 ? 8 : order.id.length)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
@@ -204,17 +211,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: order.paymentStatus.toLowerCase() == 'completed'
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.orange.withOpacity(0.1),
+                          color:
+                              order.paymentStatus.toLowerCase() == 'completed'
+                                  ? Colors.green.withOpacity(0.1)
+                                  : Colors.orange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           order.paymentStatus.capitalizeFirstLetter(),
                           style: TextStyle(
-                            color: order.paymentStatus.toLowerCase() == 'completed'
-                                ? Colors.green
-                                : Colors.orange,
+                            color:
+                                order.paymentStatus.toLowerCase() == 'completed'
+                                    ? Colors.green
+                                    : Colors.orange,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -222,31 +231,130 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _buildInfoRow('Payment Method:', order.paymentMethod.cardHolderName),
+                  _buildInfoRow('Payment Method:',
+                      order.paymentMethod?.cardHolderName ?? 'Stripe Payment'),
                   if (order.revolutOrderId.isNotEmpty)
                     _buildInfoRow('Transaction ID:', order.revolutOrderId),
-
-                  // Show payment button if payment is pending
-                  if (order.paymentStatus.toLowerCase() == 'pending')
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _orderBloc.add(UpdatePaymentURLEvent(orderID: order.id));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                          ),
-                          child: const Text('Complete Payment'),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
           ),
+
+          // Show tracking button if tracking URL is available
+          if (order.trackingUrl != null && order.trackingUrl!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openTrackingUrl(order.trackingUrl!),
+                    icon: const Icon(Icons.local_shipping, size: 18),
+                    label: const Text('Track Package'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          // Delivery Information
+          const Text(
+            'Delivery Information',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Delivery Status:'),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              _getDeliveryStatusColor(order).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _getDeliveryStatus(order),
+                          style: TextStyle(
+                            color: _getDeliveryStatusColor(order),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildDeliveryStatusDetails(order),
+                  if (order.trackingId != null && order.trackingId!.isNotEmpty)
+                    _buildInfoRow('Tracking ID:', order.trackingId!),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          // Payment Actions
+          if (order.paymentStatus.toLowerCase() == 'pending') ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Payment Required',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _orderBloc.add(UpdatePaymentURLEvent(orderID: order.id));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Complete Payment'),
+                  ),
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 16),
 
@@ -295,8 +403,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(order.deliveryAddress.street ?? ""),
-
-                  Text('${order.deliveryAddress.city}, ${order.deliveryAddress.postalCode}'),
+                  Text(
+                      '${order.deliveryAddress.city ?? ""}, ${order.deliveryAddress.postalCode ?? ""}'),
                   Text(order.deliveryAddress.country ?? ""),
                 ],
               ),
@@ -340,16 +448,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         ),
                         child: item.imageUrl.isNotEmpty
                             ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedImage(
-                            imageUrl: item.imageUrl.first,
-                          ),
-                        )
+                                borderRadius: BorderRadius.circular(8),
+                                child: CachedImage(
+                                  imageUrl: item.imageUrl.first,
+                                ),
+                              )
                             : const Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 30,
-                          color: Colors.grey,
-                        ),
+                                Icons.image_not_supported_outlined,
+                                size: 30,
+                                color: Colors.grey,
+                              ),
                       ),
                       const SizedBox(width: 16),
                       // Product details
@@ -371,19 +479,32 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             //   Text('Size: ${item.size}'),
                             // const SizedBox(height: 4),
                             Text(
-                              'Quantity: ${item.collection}',
+                              'Quantity: ${item.quantity}',
                               style: TextStyle(color: Colors.grey.shade700),
                             ),
                           ],
                         ),
                       ),
                       // Price
-                      Text(
-                        '${order.currency} ${(item.price).toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${order.currency} ${(item.price * item.quantity).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (item.quantity > 1)
+                            Text(
+                              '${order.currency} ${item.price.toStringAsFixed(2)} × ${item.quantity}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
@@ -403,7 +524,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildPriceRow('Subtotal:', order.totalAmount + order.discountAmount),
+                  _buildPriceRow(
+                      'Subtotal:', order.totalAmount + order.discountAmount),
                   if (order.discountAmount > 0)
                     _buildPriceRow(
                       'Discount (${order.promoCode}):',
@@ -457,7 +579,35 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  Widget _buildPriceRow(String label, double amount, {bool isBold = false, bool isDiscount = false}) {
+  Future<void> _openTrackingUrl(String url) async {
+    try {
+      // Clean the URL by removing invalid characters like @ at the beginning
+      String cleanedUrl = url.trim();
+      if (cleanedUrl.startsWith('@')) {
+        cleanedUrl = cleanedUrl.substring(1);
+      }
+
+      // Ensure the URL has a proper protocol
+      if (!cleanedUrl.startsWith('http://') &&
+          !cleanedUrl.startsWith('https://')) {
+        cleanedUrl = 'https://$cleanedUrl';
+      }
+
+      final Uri uri = Uri.parse(cleanedUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        // Show error message if URL cannot be launched
+        context.showToast('Cannot open tracking URL');
+      }
+    } catch (e) {
+      // Show error message if there's an exception
+      context.showToast('Error opening tracking URL: $e');
+    }
+  }
+
+  Widget _buildPriceRow(String label, double amount,
+      {bool isBold = false, bool isDiscount = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -471,9 +621,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ),
           ),
           Text(
-            '${isDiscount ? "-" : ""}${_orderBloc
-                .state is OrderDetailsLoaded ? (_orderBloc
-                .state as OrderDetailsLoaded).order.currency : ""} ${amount.abs().toStringAsFixed(2)}',
+            '${isDiscount ? "-" : ""}${_orderBloc.state is OrderDetailsLoaded ? (_orderBloc.state as OrderDetailsLoaded).order.currency : ""} ${amount.abs().toStringAsFixed(2)}',
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
               fontSize: isBold ? 16 : 14,
@@ -507,32 +655,150 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
         ),
       );
-    } else if (order.status.toLowerCase() == 'completed' && order.paymentStatus.toLowerCase() == 'completed') {
-      buttons.add(
-          SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement track order functionality
-                },
-                icon: const Icon(Icons.location_on),
-                // label: const Text('Track Order'),
-                label: const Text('In Progress'),
+    } else if ((order.status.toLowerCase() == 'completed' ||
+            order.status.toLowerCase() == 'paid') &&
+        order.paymentStatus.toLowerCase() == 'completed') {
+      buttons.add(SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // TODO: Implement track order functionality
+            },
+            icon: const Icon(Icons.location_on),
+            // label: const Text('Track Order'),
+            label: const Text('In Progress'),
 
-                style: ElevatedButton.styleFrom(),)));
-    }else{
+            style: ElevatedButton.styleFrom(),
+          )));
+    } else {
       buttons.add(SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () {
               _orderBloc.add(UpdatePaymentURLEvent(orderID: order.id));
-
             },
             icon: const Icon(Icons.shopping_basket),
-            label:  Text(order.status),
-            style: ElevatedButton.styleFrom(),)));
+            label: Text(order.status),
+            style: ElevatedButton.styleFrom(),
+          )));
     }
     return buttons.first;
+  }
 
+  void _showPaymentErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Payment Error'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(errorMessage),
+              const SizedBox(height: 16),
+              const Text(
+                'This error usually occurs when there\'s an issue with the payment setup. You can:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('• Contact customer support'),
+              const Text('• Try creating a new order'),
+              const Text('• Check if your payment method is valid'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Optionally refresh the order details
+                if (_orderBloc.state is OrderDetailsLoaded) {
+                  final orderId =
+                      (_orderBloc.state as OrderDetailsLoaded).order.id;
+                  _orderBloc.add(GetOrderByIdEvent(orderId));
+                }
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _getDeliveryStatus(Order order) {
+    // If payment is not completed, show payment pending
+    if (order.paymentStatus.toLowerCase() != 'completed') {
+      return 'Payment Pending';
+    }
+
+    // If payment is completed but no tracking ID, show "In Shipment"
+    if (order.trackingId == null || order.trackingId!.isEmpty) {
+      return 'In Shipment';
+    }
+
+    // If payment is completed and tracking ID exists, show "Delivered"
+    return 'Delivered';
+  }
+
+  Color _getDeliveryStatusColor(Order order) {
+    // If payment is not completed, show orange
+    if (order.paymentStatus.toLowerCase() != 'completed') {
+      return Colors.orange;
+    }
+
+    // If payment is completed but no tracking ID, show blue (in shipment)
+    if (order.trackingId == null || order.trackingId!.isEmpty) {
+      return Colors.blue;
+    }
+
+    // If payment is completed and tracking ID exists, show green (delivered)
+    return Colors.green;
+  }
+
+  Widget _buildDeliveryStatusDetails(Order order) {
+    if (order.paymentStatus.toLowerCase() != 'completed') {
+      return const Padding(
+        padding: EdgeInsets.only(top: 8),
+        child: Text(
+          'Your order will be processed once payment is completed.',
+          style: TextStyle(
+            color: Colors.orange,
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    if (order.trackingId == null || order.trackingId!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 8),
+        child: Text(
+          'Your order has been shipped and is on its way to you.',
+          style: TextStyle(
+            color: Colors.blue,
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    return const Padding(
+      padding: EdgeInsets.only(top: 8),
+      child: Text(
+        'Your order has been delivered successfully.',
+        style: TextStyle(
+          color: Colors.green,
+          fontSize: 12,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
   }
 }

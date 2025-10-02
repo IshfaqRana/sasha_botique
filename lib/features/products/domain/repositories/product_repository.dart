@@ -30,6 +30,20 @@ abstract class ProductRepository {
     String? sortOption,
   });
 
+  Future<List<Product>> getClearanceProducts({
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
+
+  Future<List<Product>> getAccessoriesProducts({
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
+
   Future<List<Product>> getProductsByGender({
     required String gender,
     required int offset,
@@ -38,12 +52,12 @@ abstract class ProductRepository {
     String? sortOption,
   });
 
-  Future<List<Product>> searchProducts(String query,Map<String, dynamic>? filters);
+  Future<List<Product>> searchProducts(
+      String query, Map<String, dynamic>? filters);
 
   Future<List<Product>> getFavouriteProducts();
 
   Future<void> addToFav(String productID);
   Future<Product?> fetchProductDetail(String productID);
   Future<void> removeFromFav(String productID);
-
 }

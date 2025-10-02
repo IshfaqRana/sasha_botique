@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sasha_botique/core/utils/app_utils.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   final Map<String, dynamic> initialFilters;
@@ -66,6 +65,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     debugPrint('FilterBottomSheet dispose called');
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -91,13 +91,25 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           Expanded(
             child: ListView(
               children: [
-                _buildExpandableFilter('Color', ['Red', 'Blue', 'Black', 'White']),
-                _buildExpandableFilter('Product Type', ['Shirt', 'Pants', 'Dress']),
-                _buildExpandableFilter('Size', ['S', 'M', 'L', 'XL']),
-                _buildExpandableFilter('Season', ['Summer', 'Winter', 'Spring']),
-                _buildExpandableFilter('Price', []),
-                _buildExpandableFilter('Gender', ['Men', 'Women', 'Unisex']),
-                _buildExpandableFilter('Fit Type', ['Regular', 'Slim', 'Loose']),
+                // Only show filters that backend supports
+                _buildExpandableFilter(
+                    'Brand Name', ['Bilal A', 'Maria B', 'SASHA BASICS']),
+                _buildExpandableFilter('Product Type',
+                    ['Stitched', 'Unstitched', 'Semi-Stitched']),
+                _buildExpandableFilter(
+                    'Season', ['Summer', 'Winter', 'Spring', 'Fall']),
+                _buildExpandableFilter(
+                    'Fit Type', ['Regular', 'Slim', 'Loose']),
+                _buildExpandableFilter('Collection', [
+                  'Eid Collection 2025',
+                  'Summer Collection',
+                  'Winter Collection'
+                ]),
+                // Comment out unsupported filters for now
+                // _buildExpandableFilter('Color', ['Red', 'Blue', 'Black', 'White']),
+                // _buildExpandableFilter('Size', ['S', 'M', 'L', 'XL']),
+                // _buildExpandableFilter('Price', []),
+                // _buildExpandableFilter('Gender', ['Men', 'Women', 'Unisex']),
                 _buildSortDropdown(),
               ],
             ),
@@ -120,7 +132,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     setState(() {
                       _filters.clear();
                       _sortOption = 'Featured';
-                      widget.onCancelFilter(_filters,_sortOption);
+                      widget.onCancelFilter(_filters, _sortOption);
                     });
                   },
                   child: const Text('Clear All'),
@@ -132,33 +144,63 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       ),
     );
   }
+
   Widget _buildExpandableFilter(String title, List<String> options) {
+    // Map UI titles to backend filter keys
+    String filterKey = _getFilterKey(title);
 
     return ExpansionTile(
       title: Text(title),
       children: [
-        if (title == 'Price') _buildPriceRangeFilter()
-        else Wrap(
-          spacing: 8,
-          children: options.map((option) => FilterChip(
-            label: Text(option),
-            selected: (_filters[title.toLowerCase()] ?? []).contains(option),
-            onSelected: (selected) {
-              setState(() {
-                final List<String> currentFilters =
-                List.from(_filters[title.toLowerCase()] ?? []);
-                if (selected) {
-                  currentFilters.add(option);
-                } else {
-                  currentFilters.remove(option);
-                }
-                _filters[title.toLowerCase()] = currentFilters;
-              });
-            },
-          )).toList(),
-        ),
+        if (title == 'Price')
+          _buildPriceRangeFilter()
+        else
+          Wrap(
+            spacing: 8,
+            children: options
+                .map((option) => FilterChip(
+                      label: Text(option),
+                      selected: (_filters[filterKey] ?? []).contains(option),
+                      onSelected: (selected) {
+                        setState(() {
+                          final List<String> currentFilters =
+                              List.from(_filters[filterKey] ?? []);
+                          if (selected) {
+                            currentFilters.add(option);
+                          } else {
+                            currentFilters.remove(option);
+                          }
+                          _filters[filterKey] = currentFilters;
+                        });
+                      },
+                    ))
+                .toList(),
+          ),
       ],
     );
+  }
+
+  String _getFilterKey(String title) {
+    switch (title) {
+      case 'Brand Name':
+        return 'brand_name';
+      case 'Product Type':
+        return 'product_type';
+      case 'Season':
+        return 'season';
+      case 'Fit Type':
+        return 'fit_type';
+      case 'Collection':
+        return 'collection';
+      case 'Color':
+        return 'colors';
+      case 'Size':
+        return 'sizes';
+      case 'Gender':
+        return 'gender';
+      default:
+        return title.toLowerCase().replaceAll(' ', '_');
+    }
   }
 
   Widget _buildPriceRangeFilter() {

@@ -6,6 +6,7 @@ import '../../core/di/injections.dart';
 import '../../core/utils/app_utils.dart';
 import '../../features/products/domain/entities/products.dart';
 import '../../features/products/presentation/bloc/favorite/favorite_bloc.dart';
+import 'auth_required_dialog.dart';
 
 class FavouriteIconWidget extends StatefulWidget {
   Product product;
@@ -35,11 +36,19 @@ class _FavouriteIconWidgetState extends State<FavouriteIconWidget> {
         }
 
         return IconButton(
-          onPressed: () {
-            if (isWishlisted) {
-              _wishlistBloc.add(RemoveFromFavoriteEvent(widget.product));
-            } else {
-              _wishlistBloc.add(AddToFavoriteEvent(widget.product));
+          onPressed: () async {
+            final isAuthenticated = await AuthRequiredMixin.checkAuthAndPrompt(
+              context,
+              title: 'Login Required',
+              message: 'You need to login to add items to your wishlist.',
+            );
+
+            if (isAuthenticated) {
+              if (isWishlisted) {
+                _wishlistBloc.add(RemoveFromFavoriteEvent(widget.product));
+              } else {
+                _wishlistBloc.add(AddToFavoriteEvent(widget.product));
+              }
             }
           },
           icon: Icon(

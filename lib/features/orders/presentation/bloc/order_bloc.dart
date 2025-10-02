@@ -25,7 +25,6 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   final GetPromoCodesUseCase getPromoCodes;
   final UpdatePaymentUrlUseCase updatePaymentUrlUseCase;
 
-
   OrderBloc({
     required this.createOrderUseCase,
     required this.getOrderByIdUseCase,
@@ -38,42 +37,29 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     on<GetOrderByIdEvent>(_onGetOrderById);
     on<GetAllOrdersEvent>(_onGetAllOrders);
     on<GetPromoCodesEvent>(_onGetPromoCodesEvent);
-
   }
   Future<void> _onGetPromoCodesEvent(
-      GetPromoCodesEvent event,
-      Emitter<OrderState> emit,
-      ) async {
+    GetPromoCodesEvent event,
+    Emitter<OrderState> emit,
+  ) async {
     emit(PromoCodesLoading());
     try {
       final result = await getPromoCodes();
 
-            emit(PromoCodesLoaded(result));
-
-    }catch(e){
+      emit(PromoCodesLoaded(result));
+    } catch (e) {
       emit(PromoCodesError('Failed to load promo codes'));
     }
   }
+
   void _onCreateOrder(CreateOrderEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
       print(event.params);
       final result = await createOrderUseCase(event.params);
       if (result.success) {
-        emit(OrderCreateSuccess(orderId: result.orderId, paymentUrl: result.paymentUrl));
-      } else {
-        emit(OrderError("Something went wrong, Try Again!"));
-      }
-    } catch (e) {
-      emit(OrderError(_mapFailureToMessage(e)));
-    }
-  }
-  void _updatePaymentUrl(UpdatePaymentURLEvent event, Emitter<OrderState> emit) async {
-    emit(OrderLoading());
-    try {
-      final result = await updatePaymentUrlUseCase(event.orderID);
-      if (result.success) {
-        emit(OrderCreateSuccess(orderId: result.orderId, paymentUrl: result.paymentUrl));
+        emit(OrderCreateSuccess(
+            orderId: result.orderId, paymentUrl: result.paymentUrl));
       } else {
         emit(OrderError("Something went wrong, Try Again!"));
       }
@@ -82,7 +68,24 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     }
   }
 
-  void _onGetOrderById(GetOrderByIdEvent event, Emitter<OrderState> emit) async {
+  void _updatePaymentUrl(
+      UpdatePaymentURLEvent event, Emitter<OrderState> emit) async {
+    emit(OrderLoading());
+    try {
+      final result = await updatePaymentUrlUseCase(event.orderID);
+      if (result.success) {
+        emit(OrderCreateSuccess(
+            orderId: result.orderId, paymentUrl: result.paymentUrl));
+      } else {
+        emit(OrderError("Something went wrong, Try Again!"));
+      }
+    } catch (e) {
+      emit(OrderError(_mapFailureToMessage(e)));
+    }
+  }
+
+  void _onGetOrderById(
+      GetOrderByIdEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
       final result = await getOrderByIdUseCase(event.orderId);
@@ -93,7 +96,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
     }
   }
 
-  void _onGetAllOrders(GetAllOrdersEvent event, Emitter<OrderState> emit) async {
+  void _onGetAllOrders(
+      GetAllOrdersEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
       final result = await getAllOrdersUseCase();
@@ -103,7 +107,8 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       emit(OrderError(_mapFailureToMessage(e)));
     }
   }
-  String _mapFailureToMessage( exception) {
+
+  String _mapFailureToMessage(exception) {
     switch (exception) {
       case NotFoundException _:
         return exception.message;
@@ -118,7 +123,17 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
       case UnauthorizedException _:
         return exception.message;
       default:
-        return exception?.toString() ?? 'Something went wrong. Please try again';
+        // Handle Stripe-specific errors
+        String errorMessage =
+            exception?.toString() ?? 'Something went wrong. Please try again';
+        if (errorMessage
+            .contains('You must specify either `product` or `product_data`')) {
+          return 'Payment setup error: Please contact support or try creating a new order.';
+        }
+        if (errorMessage.contains('Stripe')) {
+          return 'Payment processing error: Please try again or contact support.';
+        }
+        return errorMessage;
     }
   }
 }

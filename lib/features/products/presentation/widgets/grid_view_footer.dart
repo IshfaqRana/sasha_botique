@@ -30,14 +30,14 @@ class SliverGridFooter extends StatelessWidget {
           child: isLoading
               ? AppLoading()
               : hasMoreData
-              ? EmptyProductList(emptyList: false)
-              : const Text(
-            'Sorry, No more products.',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
-            ),
-          ),
+                  ? EmptyProductList(emptyList: false)
+                  : const Text(
+                      'Sorry, No more products.',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
         ),
       ),
     );

@@ -17,7 +17,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthEntity> login(String email, String password) async {
     final authEntity = await remoteDataSource.login(email, password);
     if(authEntity.success) {
-      await localDataSource.saveToken(authEntity.token ?? "");
+      final token = authEntity.token ?? "";
+      await localDataSource.saveToken(token);
+      print('🔐 Auth Debug: Token saved after login - ${token.substring(0, token.length > 20 ? 20 : token.length)}...');
+    } else {
+      print('🔐 Auth Debug: Login failed, no token to save');
     }
     return authEntity;
   }
@@ -34,7 +38,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> isAuthenticated() async {
     final token = await localDataSource.getToken();
-    return token != null;
+    final isAuth = token != null && token.isNotEmpty;
+    print('🔍 Auth Check Debug: Token exists: $isAuth, Token length: ${token?.length ?? 0}');
+    return isAuth;
   }
 
   @override

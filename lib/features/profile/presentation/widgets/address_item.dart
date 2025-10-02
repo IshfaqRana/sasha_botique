@@ -20,7 +20,7 @@ class AddressListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     String addressLine1 = address.street ?? "";
     String addressLine2 = '${address.city}, ${address.state}, ${address.postalCode}';
-    String addressType =  'Home';
+    String addressType = address.name ?? 'Home';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),

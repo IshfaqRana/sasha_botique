@@ -6,10 +6,8 @@ import '../../../../shared/widgets/custom_app_button.dart';
 import '../../../splash/presentation/widgets/splash_logo.dart';
 import 'login.dart';
 
-
-class WelcomeScreen extends StatelessWidget{
+class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +35,14 @@ class WelcomeScreen extends StatelessWidget{
             child: Container(
               height: double.infinity,
               width: double.infinity,
-              decoration: BoxDecoration(image: DecorationImage(
-                image: AssetImage('assets/images/welcome.png'),
-                fit: BoxFit.cover,
-                colorFilter:
-                ColorFilter.mode(Colors.black.withOpacity(0.1),
-                    BlendMode.dstATop),
-
-              ),
-              // color: Colors.white,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/sashaBg.jpeg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.1), BlendMode.dstATop),
+                ),
+                // color: Colors.white,
               ),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -54,45 +51,48 @@ class WelcomeScreen extends StatelessWidget{
                   children: [
                     SizedBox(height: 120),
                     Text(
-                      "SASHA'S",
+                      "SASHA",
                       style: context.headlineLarge?.copyWith(fontSize: 40),
                     ),
                     SizedBox(height: 130),
-              
                     Text(
                       'Create your fashion\nin your own way',
                       textAlign: TextAlign.center,
                       style: context.headlineLarge?.copyWith(fontSize: 24),
-              
                     ),
                     SizedBox(height: 16),
                     Text(
                       'Each women has their own style. We help you to\ncreate your unique style.',
                       textAlign: TextAlign.center,
                       style: context.titleSmall?.copyWith(fontSize: 14),
-              
                     ),
                     SizedBox(height: 48),
                     CustomButton(
                       width: 200,
                       onPressed: () {
                         Navigator.push(
-                            context, MaterialPageRoute(builder: (context) =>  LoginScreen()));
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen()));
                       },
                       text: 'LOG IN',
-                        foregroundColor: Colors.black, backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      backgroundColor: Colors.white,
                       textStyle: context.headlineLarge?.copyWith(fontSize: 12),
-              
                     ),
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 110.0),
-                      child:  Row(
+                      child: Row(
                         children: [
                           Expanded(child: Divider()),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('OR',style: context.headlineMedium?.copyWith(fontSize: 14),),
+                            child: Text(
+                              'OR',
+                              style: context.headlineMedium
+                                  ?.copyWith(fontSize: 14),
+                            ),
                           ),
                           Expanded(child: Divider()),
                         ],
@@ -103,15 +103,15 @@ class WelcomeScreen extends StatelessWidget{
                       width: 200,
                       onPressed: () {
                         Navigator.push(
-                            context, MaterialPageRoute(builder: (context) =>  SignupScreen()));
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SignupScreen()));
                       },
                       text: 'REGISTER',
-              
-                        foregroundColor: Colors.white, backgroundColor: Colors.black,
-                      textStyle: context.headlineLarge?.copyWith(fontSize: 12,color:  Colors.white),
-              
-              
-              
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.black,
+                      textStyle: context.headlineLarge
+                          ?.copyWith(fontSize: 12, color: Colors.white),
                     ),
                   ],
                 ),

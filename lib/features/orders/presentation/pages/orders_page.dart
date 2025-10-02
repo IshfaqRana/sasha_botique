@@ -13,6 +13,7 @@ import '../../../payment/presentation/bloc/payment_bloc.dart';
 import '../../domain/entities/order.dart';
 import '../bloc/order_bloc.dart';
 import 'order_detail_page.dart';
+
 //OrderDetailsPage
 class OrdersPage extends StatefulWidget {
   const OrdersPage({Key? key}) : super(key: key);
@@ -22,10 +23,8 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-
   late final OrderBloc orderBloc;
   late final PaymentBloc paymentBloc;
-
 
   @override
   void initState() {
@@ -41,20 +40,20 @@ class _OrdersPageState extends State<OrdersPage> {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title:  Text('Orders',style: context.headlineSmall?.copyWith(fontSize: 18),),
+        title: Text(
+          'Orders',
+          style: context.headlineSmall?.copyWith(fontSize: 18),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<OrderBloc, OrderState>(
-
         bloc: orderBloc,
-        listener: (context, state){
+        listener: (context, state) {
           if (state is OrderCreateSuccess) {
-
             // cartBloc.add(ClearCart());
             // Navigate to payment web view
-            final paymentState = paymentBloc.state;
+            // final paymentState = paymentBloc.state;
             // final selectedPayment = paymentState.paymentMethods[0];
-
 
             Navigator.pushReplacement(
               context,
@@ -68,6 +67,11 @@ class _OrdersPageState extends State<OrdersPage> {
             );
           } else if (state is OrderError) {
             context.showToast(state.message);
+            // If it's a payment error, show a more detailed error dialog
+            if (state.message.contains('Payment setup error') ||
+                state.message.contains('Payment processing error')) {
+              _showPaymentErrorDialog(context, state.message);
+            }
           }
         },
         builder: (context, state) {
@@ -164,6 +168,7 @@ class _OrdersPageState extends State<OrdersPage> {
       case 'pending':
         statusColor = Colors.orange;
         break;
+      case 'paid':
       case 'completed':
         statusColor = Colors.green;
         break;
@@ -241,19 +246,19 @@ class _OrdersPageState extends State<OrdersPage> {
                       border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: order.items.isNotEmpty && order.items[0].imageUrl != null
+                    child: order.items.isNotEmpty &&
+                            order.items[0].imageUrl.isNotEmpty
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedImage(
-                       imageUrl:  order.items[0].imageUrl?.first ?? "",
-
-                      ),
-                    )
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedImage(
+                              imageUrl: order.items[0].imageUrl.first,
+                            ),
+                          )
                         : const Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 30,
-                      color: Colors.grey,
-                    ),
+                            Icons.shopping_bag_outlined,
+                            size: 30,
+                            color: Colors.grey,
+                          ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -290,9 +295,10 @@ class _OrdersPageState extends State<OrdersPage> {
                       Text(
                         order.paymentStatus.capitalizeFirstLetter(),
                         style: TextStyle(
-                          color: order.paymentStatus.toLowerCase() == 'completed'
-                              ? Colors.green
-                              : Colors.orange,
+                          color:
+                              order.paymentStatus.toLowerCase() == 'completed'
+                                  ? Colors.green
+                                  : Colors.orange,
                           fontSize: 12,
                         ),
                       ),
@@ -329,6 +335,47 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showPaymentErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Payment Error'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(errorMessage),
+              const SizedBox(height: 16),
+              const Text(
+                'This error usually occurs when there\'s an issue with the payment setup. You can:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('• Contact customer support'),
+              const Text('• Try creating a new order'),
+              const Text('• Check if your payment method is valid'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Optionally refresh the orders list
+                orderBloc.add(GetAllOrdersEvent());
+              },
+              child: const Text('Refresh'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

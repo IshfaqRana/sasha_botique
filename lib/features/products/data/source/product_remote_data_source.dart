@@ -26,8 +26,22 @@ abstract class ProductRemoteDataSource {
     Map<String, dynamic>? filters,
     String? sortOption,
   });
+  Future<List<ProductModel>> getClearanceProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
+  Future<List<ProductModel>> getAccessoriesProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  });
   Future<List<ProductModel>> searchProducts(
-   String query,
+    String query,
     Map<String, dynamic>? filters,
   );
   Future<List<ProductModel>> getFavoriteProducts();
@@ -47,8 +61,14 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     Map<String, dynamic>? filters,
     String? sortOption,
   }) async {
-    final response = await productApiService.getProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
-    GetItemsResponseModel productModelResponse = GetItemsResponseModel.fromJson(response);
+    final response = await productApiService.getProducts(
+        category: category,
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption);
+    GetItemsResponseModel productModelResponse =
+        GetItemsResponseModel.fromJson(response);
     if (productModelResponse.status ?? false) {
       return productModelResponse.payload?.products ?? [];
     }
@@ -63,8 +83,58 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     Map<String, dynamic>? filters,
     String? sortOption,
   }) async {
-    final response = await productApiService.getSaleProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
-    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    final response = await productApiService.getSaleProducts(
+        category: category,
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption);
+    ProductModelResponse productModelResponse =
+        ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
+    return [];
+  }
+
+  @override
+  Future<List<ProductModel>> getClearanceProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    final response = await productApiService.getClearanceProducts(
+        category: category,
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption);
+    ProductModelResponse productModelResponse =
+        ProductModelResponse.fromJson(response);
+    if (productModelResponse.status ?? false) {
+      return productModelResponse.products ?? [];
+    }
+    return [];
+  }
+
+  @override
+  Future<List<ProductModel>> getAccessoriesProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    final response = await productApiService.getAccessoriesProducts(
+        category: category,
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption);
+    ProductModelResponse productModelResponse =
+        ProductModelResponse.fromJson(response);
     if (productModelResponse.status ?? false) {
       return productModelResponse.products ?? [];
     }
@@ -80,8 +150,14 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     String? sortOption,
   }) async {
     print(filters);
-    final response = await productApiService.getPopularProducts(category: category, offset: offset, limit: limit, filters: filters, sortOption: sortOption);
-    ProductModelResponse productModelResponse = ProductModelResponse.fromJson(response);
+    final response = await productApiService.getPopularProducts(
+        category: category,
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption);
+    ProductModelResponse productModelResponse =
+        ProductModelResponse.fromJson(response);
     if (productModelResponse.status ?? false) {
       return productModelResponse.products ?? [];
     }
@@ -95,12 +171,13 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   ) async {
     try {
       final response = await productApiService.searchProducts(query, filters);
-      GetItemsResponseModel productModelResponse = GetItemsResponseModel.fromJson(response);
+      GetItemsResponseModel productModelResponse =
+          GetItemsResponseModel.fromJson(response);
       if (productModelResponse.status ?? false) {
         return productModelResponse.payload?.products ?? [];
       }
       return [];
-    }catch(e,stacktrace){
+    } catch (e, stacktrace) {
       print(e.toString());
       print(stacktrace.toString());
       rethrow;
@@ -110,7 +187,8 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<List<ProductModel>> getFavoriteProducts() async {
     final response = await productApiService.getFavoriteProducts();
-    FavouriteProductsResponseModel favouriteProductsResponseModel = FavouriteProductsResponseModel.fromJson(response);
+    FavouriteProductsResponseModel favouriteProductsResponseModel =
+        FavouriteProductsResponseModel.fromJson(response);
     if (favouriteProductsResponseModel.status ?? false) {
       return favouriteProductsResponseModel.payload?.products ?? [];
     }
@@ -131,12 +209,13 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<ProductModel?> fetchProductDetail(String productID) async {
     try {
       final response = await productApiService.fetchProductDetail(productID);
-      SingleProductModelResponse productModelResponse = SingleProductModelResponse.fromJson(response);
+      SingleProductModelResponse productModelResponse =
+          SingleProductModelResponse.fromJson(response);
       if (productModelResponse.status ?? false) {
         return productModelResponse.product;
       }
       return null;
-    }catch (e){
+    } catch (e) {
       return null;
     }
   }

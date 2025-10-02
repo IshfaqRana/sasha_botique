@@ -5,7 +5,6 @@ import 'package:sasha_botique/features/products/domain/usecases/get_products_by_
 import 'package:sasha_botique/features/products/domain/usecases/get_products_on_sale.dart';
 
 import '../../../../../core/services/cart_product_communication_service/cart_product_comm_service.dart';
-import '../../../../../core/utils/app_utils.dart';
 import '../../../../../core/utils/cart_operation_enum.dart';
 import '../../../../../core/utils/product_category_enum.dart';
 import '../../../../../core/utils/product_category_mapper.dart';
@@ -14,6 +13,8 @@ import '../../../domain/usecases/get_new_arrival_products.dart';
 import '../../../domain/usecases/get_all_products.dart';
 import '../../../domain/usecases/get_popular_products.dart';
 import '../../../domain/usecases/search_products.dart';
+import '../../../domain/usecases/get_clearance_products.dart';
+import '../../../domain/usecases/get_accessories_products.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -24,6 +25,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetNewArrivalProductsUseCase getNewArrivalProductsUseCase;
   final GetGenderProductsUseCase getGenderProductsUseCase;
   final GetProductsOnSaleUseCase getProductsOnSaleUseCase;
+  final GetClearanceProductsUseCase getClearanceProductsUseCase;
+  final GetAccessoriesProductsUseCase getAccessoriesProductsUseCase;
   final SearchProductsUseCase searchProductsUseCase;
   final ICartCommunicationService cartService;
 
@@ -36,6 +39,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required this.getProductsOnSaleUseCase,
     required this.getGenderProductsUseCase,
     required this.getNewArrivalProductsUseCase,
+    required this.getClearanceProductsUseCase,
+    required this.getAccessoriesProductsUseCase,
     required this.cartService,
   }) : super(HomeInitial()) {
     on<LoadInitialProducts>(_onLoadInitialProducts);
@@ -56,23 +61,30 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       // Update status to adding
       emit(currentState.copyWith(
-        productCartStatuses: Map.from(currentState.productCartStatuses)..addAll({event.productId: CartOperationStatus.adding}),
+        productCartStatuses: Map.from(currentState.productCartStatuses)
+          ..addAll({event.productId: CartOperationStatus.adding}),
       ));
 
       try {
-        cartService.addToCart(event.productId, event.quantity, event.name, event.imageURL, event.price, event.collection, "");
+        cartService.addToCart(event.productId, event.quantity, event.name,
+            event.imageURL, event.price, event.collection, "");
 
         // Update status to added and add to productsInCart
         emit(currentState.copyWith(
-          productCartStatuses: Map.from(currentState.productCartStatuses)..addAll({event.productId: CartOperationStatus.added}),
-          productsInCart: Set.from(currentState.productsInCart)..add(event.productId),
-          cartErrors: Map.from(currentState.cartErrors)..remove(event.productId),
+          productCartStatuses: Map.from(currentState.productCartStatuses)
+            ..addAll({event.productId: CartOperationStatus.added}),
+          productsInCart: Set.from(currentState.productsInCart)
+            ..add(event.productId),
+          cartErrors: Map.from(currentState.cartErrors)
+            ..remove(event.productId),
         ));
       } catch (e) {
         // Update status to error and add error message
         emit(currentState.copyWith(
-          productCartStatuses: Map.from(currentState.productCartStatuses)..addAll({event.productId: CartOperationStatus.error}),
-          cartErrors: Map.from(currentState.cartErrors)..addAll({event.productId: e.toString()}),
+          productCartStatuses: Map.from(currentState.productCartStatuses)
+            ..addAll({event.productId: CartOperationStatus.error}),
+          cartErrors: Map.from(currentState.cartErrors)
+            ..addAll({event.productId: e.toString()}),
         ));
       }
     }
@@ -98,8 +110,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       if (state is HomeLoaded) {
         final currentState = state as HomeLoaded;
         emit(currentState.copyWith(
-          categoryProducts: {CategoryMapper.getCategory(currentState.currentCategory): []},
-          hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(event.category): true},
+          categoryProducts: {
+            CategoryMapper.getCategory(currentState.currentCategory): []
+          },
+          hasMoreProducts: {
+            ...currentState.hasMoreProducts,
+            CategoryMapper.getCategory(event.category): true
+          },
         ));
       }
 
@@ -111,17 +128,31 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       if (state is! HomeLoaded) {
         emit(HomeLoaded(
-          categoryProducts: {CategoryMapper.getCategory(event.category): products},
+          categoryProducts: {
+            CategoryMapper.getCategory(event.category): products
+          },
           categoryOffsets: {CategoryMapper.getCategory(event.category): 1},
-          hasMoreProducts: {CategoryMapper.getCategory(event.category): products.length >= 10 ? true : false},
+          hasMoreProducts: {
+            CategoryMapper.getCategory(event.category):
+                products.length >= 10 ? true : false
+          },
         ));
       } else {
         final currentState = state as HomeLoaded;
 
         emit(currentState.copyWith(
-          categoryProducts: {CategoryMapper.getCategory(event.category): products},
-          categoryOffsets: {...currentState.categoryOffsets, CategoryMapper.getCategory(event.category): 1},
-          hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(event.category): products.length >= 10 ? true : false},
+          categoryProducts: {
+            CategoryMapper.getCategory(event.category): products
+          },
+          categoryOffsets: {
+            ...currentState.categoryOffsets,
+            CategoryMapper.getCategory(event.category): 1
+          },
+          hasMoreProducts: {
+            ...currentState.hasMoreProducts,
+            CategoryMapper.getCategory(event.category):
+                products.length >= 10 ? true : false
+          },
         ));
       }
       // debugPrint('HomeBloc._onLoadInitialProducts: categoryOffsets; ${state.categoryOffsets[CategoryMapper.getCategory(event.category)]}: ${products.length}');
@@ -148,7 +179,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         errorMessage = e.message;
       }
 
-      emit(HomeError(errorMessage, previousState: currentState)); // Emit error with previous state
+      emit(HomeError(errorMessage,
+          previousState: currentState)); // Emit error with previous state
     }
   }
 
@@ -167,7 +199,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ));
 
     try {
-      final currentOffset = currentState.categoryOffsets[CategoryMapper.getCategory(event.category)] ?? 0;
+      final currentOffset = currentState
+              .categoryOffsets[CategoryMapper.getCategory(event.category)] ??
+          0;
       // await Future.delayed(Duration(seconds: 3));
       final List<Product> newProducts = await _loadProductsByCategory(
         event.category,
@@ -191,7 +225,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           CategoryMapper.getCategory(event.category): currentOffset + 1,
         },
         isLoadingMore: false,
-        hasMoreProducts: {CategoryMapper.getCategory(event.category): newProducts.length >= 10 ? true : false},
+        hasMoreProducts: {
+          CategoryMapper.getCategory(event.category):
+              newProducts.length >= 10 ? true : false
+        },
       ));
     } catch (e) {
       String errorMessage = e.toString();
@@ -254,7 +291,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           sortOption: sortOption,
         );
       case ProductCategory.sale:
-        return await getProductsOnSaleUseCase(
+        return await getClearanceProductsUseCase(
+          offset: offset,
+          limit: limit,
+          filters: filters,
+          sortOption: sortOption,
+        );
+      case ProductCategory.accessories:
+        return await getAccessoriesProductsUseCase(
+          offset: offset,
+          limit: limit,
+          filters: filters,
+          sortOption: sortOption,
+        );
+      case ProductCategory.sashaB:
+        return await getAllProducts(
+          category: "sasha-b",
           offset: offset,
           limit: limit,
           filters: filters,
@@ -267,32 +319,78 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ApplyFilters event,
     Emitter<HomeState> emit,
   ) async {
+    if (state is! HomeLoaded) return;
     final currentState = state as HomeLoaded;
 
     emit(currentState.copyWith(
-      categoryProducts: {CategoryMapper.getCategory(currentState.currentCategory): []},
+      categoryProducts: {
+        CategoryMapper.getCategory(currentState.currentCategory): []
+      },
     ));
 
-    // Reload products with new filters
-    final List<Product> products = await _loadProductsByCategory(
-      currentState.currentCategory,
-      0,
-      _pageSize,
-      event.filters,
-      event.sortOption,
-    );
-    final currentState2 = state as HomeLoaded;
+    try {
+      // When filters are applied, use search API instead of category-specific endpoints
+      final List<Product> products = await searchProductsUseCase(
+        "", // Empty query to search all products
+        event.filters,
+      );
 
-    // debugPrinter('HomeBloc.Sort Options${event.sortOption}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
-    // debugPrinter('HomeBloc.hasMoreProducts${currentState2.hasMoreProducts}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
+      // debugPrinter('HomeBloc.Sort Options${event.sortOption}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
+      // debugPrinter('HomeBloc.hasMoreProducts${currentState.hasMoreProducts}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
 
-    emit(currentState.copyWith(
-      categoryProducts: {CategoryMapper.getCategory(currentState.currentCategory): products},
-      categoryOffsets: {CategoryMapper.getCategory(currentState.currentCategory): 1},
-      activeFilters: event.filters,
-      currentSortOption: event.sortOption,
-      hasMoreProducts: {...currentState.hasMoreProducts, CategoryMapper.getCategory(currentState.currentCategory): true},
-    ));
+      emit(currentState.copyWith(
+        categoryProducts: {
+          CategoryMapper.getCategory(currentState.currentCategory): products
+        },
+        categoryOffsets: {
+          CategoryMapper.getCategory(currentState.currentCategory): 1
+        },
+        activeFilters: event.filters,
+        currentSortOption: event.sortOption,
+        hasMoreProducts: {
+          ...currentState.hasMoreProducts,
+          CategoryMapper.getCategory(currentState.currentCategory):
+              false // Search doesn't support pagination
+        },
+      ));
+    } catch (e) {
+      // Handle "No data found" as empty result instead of error
+      if (e is BadRequestException && e.message.contains("No data found")) {
+        emit(currentState.copyWith(
+          categoryProducts: {
+            CategoryMapper.getCategory(currentState.currentCategory): []
+          },
+          categoryOffsets: {
+            CategoryMapper.getCategory(currentState.currentCategory): 1
+          },
+          activeFilters: event.filters,
+          currentSortOption: event.sortOption,
+          hasMoreProducts: {
+            ...currentState.hasMoreProducts,
+            CategoryMapper.getCategory(currentState.currentCategory): false
+          },
+        ));
+        return;
+      }
+
+      String errorMessage = e.toString();
+      if (e is NetworkException) {
+        errorMessage = e.message;
+      }
+      if (e is UnauthorizedException) {
+        errorMessage = e.message;
+      }
+      if (e is NotFoundException) {
+        errorMessage = e.message;
+      }
+      if (e is ServerException) {
+        errorMessage = e.message;
+      }
+      if (e is TimeoutException) {
+        errorMessage = e.message;
+      }
+      emit(HomeError(errorMessage, previousState: currentState));
+    }
   }
 
   void _onChangeCategory(
@@ -303,7 +401,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final currentState = state as HomeLoaded;
       ProductCategory prevCategory = currentState.currentCategory;
 
-      emit(currentState.copyWith(categoryProducts: {CategoryMapper.getCategory(prevCategory): []}, currentCategory: event.category));
+      emit(currentState.copyWith(
+          categoryProducts: {CategoryMapper.getCategory(prevCategory): []},
+          currentCategory: event.category));
     }
   }
 

@@ -35,6 +35,7 @@ class ProductRepositoryImpl implements ProductRepository {
       rethrow;
     }
   }
+
   @override
   Future<List<Product>> getPopularProducts({
     required int offset,
@@ -47,12 +48,14 @@ class ProductRepositoryImpl implements ProductRepository {
         offset: offset,
         limit: limit,
         filters: filters,
-        sortOption: sortOption, category: 'popular',
+        sortOption: sortOption,
+        category: 'popular',
       );
     } catch (e) {
       rethrow;
     }
   }
+
   @override
   Future<List<Product>> getSaleProducts({
     required int offset,
@@ -65,12 +68,54 @@ class ProductRepositoryImpl implements ProductRepository {
         offset: offset,
         limit: limit,
         filters: filters,
-        sortOption: sortOption, category: 'sale',
+        sortOption: sortOption,
+        category: 'sale',
       );
     } catch (e) {
       rethrow;
     }
   }
+
+  @override
+  Future<List<Product>> getClearanceProducts({
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    try {
+      return await remoteDataSource.getClearanceProducts(
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption,
+        category: 'clearance',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Product>> getAccessoriesProducts({
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    try {
+      return await remoteDataSource.getAccessoriesProducts(
+        offset: offset,
+        limit: limit,
+        filters: filters,
+        sortOption: sortOption,
+        category: 'accessories',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   @override
   Future<List<Product>> getProductsByGender({
     required int offset,
@@ -91,6 +136,7 @@ class ProductRepositoryImpl implements ProductRepository {
       rethrow;
     }
   }
+
   @override
   Future<List<Product>> getNewArrivals({
     required int offset,
@@ -110,12 +156,15 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-
   @override
-  Future<List<Product>> searchProducts(String query,Map<String,dynamic>? filters) async {
+  Future<List<Product>> searchProducts(
+      String query, Map<String, dynamic>? filters) async {
     try {
       // return await remoteDataSource.searchProducts(query,filters);
-      List<Product> foundedProducts =  await remoteDataSource.searchProducts(query,  filters, );
+      List<Product> foundedProducts = await remoteDataSource.searchProducts(
+        query,
+        filters,
+      );
       debugPrinter("foundedProducts Products");
       debugPrinter(foundedProducts.length);
       return foundedProducts;
@@ -127,23 +176,22 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> addToFav(String productID) async {
-    try{
+    try {
       await remoteDataSource.addToFavorite(productID);
-    }catch(e){
+    } catch (e) {
       debugPrinter(e.toString());
-
     }
   }
 
   @override
   Future<List<Product>> getFavouriteProducts() async {
-    try{
+    try {
       final items = await remoteDataSource.getFavoriteProducts();
       debugPrinter("Favorite Products");
       debugPrinter(items.length);
       // final items = await remoteDataSource.getFavoriteProducts();
       return items;
-    }catch(e,stacktrace){
+    } catch (e, stacktrace) {
       debugPrinter(e.toString());
       debugPrinter(stacktrace.toString());
 
@@ -153,23 +201,21 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> removeFromFav(String productID) async {
-    try{
+    try {
       await remoteDataSource.removeFromFavorite(productID);
-    }catch(e){
+    } catch (e) {
       debugPrinter(e.toString());
     }
   }
 
   @override
   Future<Product?> fetchProductDetail(String productID) async {
-    try{
-     final response = await remoteDataSource.fetchProductDetail(productID);
-     return response;
-    }catch(e){
+    try {
+      final response = await remoteDataSource.fetchProductDetail(productID);
+      return response;
+    } catch (e) {
       debugPrinter(e.toString());
       throw Exception('Sorry,Failed in fetching product details.');
-
     }
   }
-
 }

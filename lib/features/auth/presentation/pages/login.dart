@@ -27,181 +27,218 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is Authenticated) {
-            Navigator.pushAndRemoveUntil(
-                context, MaterialPageRoute(builder: (context) =>  HomeScreen()),(Route<dynamic> route) => false);
-
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
-        child: Stack(
-          children: [
-            BackgroundDesign(height: 372,),
-            Positioned(
-                child: SizedBox(
-                  // height: 400,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 10,),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0),
-                      child: IconButton(
-                        icon:  Icon(Icons.arrow_back,color: context.colors.whiteColor,size: 30,),
-                        onPressed: () => Navigator.push(
-                            context, MaterialPageRoute(builder: (context) =>  WelcomeScreen())),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Welcome Back!',
-                        style: Theme.of(context).textTheme.headlineLarge!.copyWith(color: context.colors.whiteColor),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 300,
-                        child: Text(
-                          'Yay! You\'re back! Thanks for shopping with us. We have excited deals and promotions going on, grab your pick now!',
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: context.colors.whiteColor),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        body: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is Authenticated) {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                  (Route<dynamic> route) => false);
+            } else if (state is AuthError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: context.colors.blackWhite,
+                pinned: false,
+                expandedHeight: 332,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    children: [
+                      BackgroundDesign(height: 372),
+                      SafeArea(
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.arrow_back,
+                                    color: context.colors.whiteColor,
+                                    size: 30,
+                                  ),
+                                  onPressed: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              WelcomeScreen())),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Welcome Back!',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge!
+                                      .copyWith(
+                                          color: context.colors.whiteColor),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 300,
+                                  child: Text(
+                                    'Yay! You\'re back! Thanks for shopping with us. We have excited deals and promotions going on, grab your pick now!',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium!
+                                        .copyWith(
+                                            color: context.colors.whiteColor),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'LOG IN',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium!
+                                      .copyWith(
+                                          color: context.colors.whiteColor),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'LOG IN',
-                        style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: context.colors.whiteColor),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 24.0, right: 24, top: 24, bottom: 0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomTextField(
+                            prefixIcon: Icon(Icons.email),
+                            label: 'Email address',
+                            controller: _emailController,
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'Please enter your email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          CustomTextField(
+                            prefixIcon: Icon(Icons.lock_outline),
+                            label: 'Password',
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            validator: (value) {
+                              if (value?.isEmpty ?? true) {
+                                return 'Please enter your password';
+                              }
+                              return null;
+                            },
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ForgotPasswordScreen()));
+                              },
+                              child: const Text('Forgot Password?'),
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          BlocBuilder<AuthBloc, AuthState>(
+                            builder: (context, state) {
+                              return CustomButton(
+                                text: 'LOG IN',
+                                isLoading: state is AuthLoading,
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(
+                                          LoginEvent(
+                                            _emailController.text,
+                                            _passwordController.text,
+                                          ),
+                                        );
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Not registered yet?"),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              SignupScreen()));
+                                },
+                                child: const Text('Create an Account'),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                              height: MediaQuery.of(context).viewInsets.bottom),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-                                  ],
-                                ),
                   ),
-                )),
-            loginForm(context),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Positioned loginForm(BuildContext context) {
-    return Positioned(
-            child: Padding(
-        padding: const EdgeInsets.only(
-        left: 24.0,
-        right: 24,
-        top: 390,
-          bottom: 40
-    ),
-    child: SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    const SizedBox(height: 40),
-                    CustomTextField(
-                      prefixIcon: Icon(Icons.email),
-                      label: 'Email address',
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Please enter your email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    CustomTextField(
-                      prefixIcon: Icon(Icons.lock_outline),
-                      label: 'Password',
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'Please enter your password';
-                        }
-                        return null;
-                      },
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context, MaterialPageRoute(builder: (context) =>  ForgotPasswordScreen()));
-                        },
-                        child: const Text('Forgot Password?'),
-                      ),
-                    ),
-                    const SizedBox(height: 100),
-                    BlocBuilder<AuthBloc, AuthState>(
-                      builder: (context, state) {
-                        return CustomButton(
-                          text: 'LOG IN',
-                          isLoading: state is AuthLoading,
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<AuthBloc>().add(
-                                LoginEvent(
-                                  _emailController.text,
-                                  _passwordController.text,
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Not registered yet?"),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context, MaterialPageRoute(builder: (context) =>  SignupScreen()));
-
-                          },
-                          child: const Text('Create an Account'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-    ),
-            ),
-          );
-  }
+  // (legacy loginForm removed in Sliver refactor)
 }

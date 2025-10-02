@@ -1,22 +1,23 @@
 // lib/features/order/presentation/pages/checkout_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Temporarily commented out
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/core/extensions/toast_extension.dart';
 import 'package:sasha_botique/features/orders/domain/entities/create_order_params.dart';
 import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
-import 'package:sasha_botique/features/payment/data/data_model/payment_method_model.dart';
-import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
+// import 'package:sasha_botique/features/payment/data/data_model/payment_method_model.dart'; // Temporarily commented out
+// import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart'; // Temporarily commented out
 import 'package:sasha_botique/features/products/data/models/product_model.dart';
 import 'package:sasha_botique/features/profile/data/models/user_address_reponse_model.dart';
 import 'package:sasha_botique/features/profile/presentation/bloc/user_profile/user_profile_bloc.dart';
+import 'package:sasha_botique/shared/widgets/auth_required_dialog.dart';
 
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../payment/presentation/bloc/payment_bloc.dart';
 import '../../../profile/presentation/bloc/user_address/user_address_bloc.dart';
-import '../../../profile/presentation/pages/user_address_screen.dart';
+// import '../../../profile/presentation/pages/user_address_screen.dart'; // Temporarily commented out
 import '../../domain/entities/promo_code_entity.dart';
 import '../bloc/order_bloc.dart';
 
@@ -54,7 +55,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final addressState = addressBloc.state;
     if (addressState is AddressesLoaded) {
       if (addressState.addresses.isNotEmpty) {
-        int index = addressState.addresses.indexWhere((element) => element.isDefault == true);
+        int index = addressState.addresses
+            .indexWhere((element) => element.isDefault == true);
         print("index: $index");
         setState(() {
           selectedAddressIndex = index;
@@ -64,7 +66,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final paymentState = paymentBloc.state;
     if (paymentState is PaymentMethodsLoaded) {
       if (paymentState.paymentMethods.isNotEmpty) {
-        int index = addressState.addressList.indexWhere((element) => element.isDefault == true);
+        int index = addressState.addressList
+            .indexWhere((element) => element.isDefault == true);
         print("index: $index");
         setState(() {
           selectedPaymentIndex = index;
@@ -97,9 +100,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
             listener: (context, state) {
               if (state is OrderCreateSuccess) {
                 cartBloc.add(ClearCart());
-                // Navigate to payment web view
-                final paymentState = paymentBloc.state;
-                final selectedPayment = paymentState.paymentMethods[selectedPaymentIndex!];
+                // Navigate to payment web view - payment method handled by Stripe
+                // final paymentState = paymentBloc.state;
+                // final selectedPayment =
+                //     paymentState.paymentMethods[selectedPaymentIndex!];
 
                 Navigator.pushReplacement(
                   context,
@@ -107,7 +111,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     builder: (_) => PaymentWebView(
                       paymentUrl: state.paymentUrl,
                       orderId: state.orderId,
-                      paymentMethodModel: selectedPayment,
+                      // paymentMethodModel: selectedPayment, // Temporarily commented out
                     ),
                   ),
                 );
@@ -133,9 +137,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           _buildAddressSection(),
                           const SizedBox(height: 20),
 
-                          // Payment Method Section
-                          _buildPaymentMethodSection(),
-                          const SizedBox(height: 20),
+                          // Payment Method Section - Temporarily commented out
+                          // _buildPaymentMethodSection(),
+                          // const SizedBox(height: 20),
 
                           // Promo Code Section
                           _buildPromoCodeSection(orderBloc.state),
@@ -147,8 +151,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ),
                   ),
-                  // Place Order Button
-                  _buildPlaceOrderButton(cartState),
+                  // Place Order Button wrapped in SafeArea to keep visible
+                  SafeArea(
+                      top: false, child: _buildPlaceOrderButton(cartState)),
                 ],
               );
             } else {
@@ -273,7 +278,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           builder: (context, state) {
             if (state is PaymentMethodsLoaded) {
               if (state.paymentMethods.isEmpty) {
-                return const Text('No saved payment methods. Please add a payment method.');
+                return const Text(
+                    'No saved payment methods. Please add a payment method.');
               }
 
               return ListView.builder(
@@ -366,8 +372,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ),
                       )
                     : TextButton(
-                        onPressed: state is PromoCodesLoaded ? () => validatePromoCode(state.promoCodes) : null,
-                        child: const Text('Apply',style: TextStyle(color: Colors.black),),
+                        onPressed: state is PromoCodesLoaded
+                            ? () => validatePromoCode(state.promoCodes)
+                            : null,
+                        child: const Text(
+                          'Apply',
+                          style: TextStyle(color: Colors.black),
+                        ),
                       ),
           ),
         ),
@@ -376,7 +387,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               'Discount applied: ${appliedPromoCode?.discount ?? 0}% off',
-              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
             ),
           ),
         if (state is PromoCodesError)
@@ -394,7 +406,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget _buildOrderSummary(CartLoaded cartState) {
     final totalAmount = cartState.total;
     // Example discount calculation (this should come from your business logic)
-    final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100) : 0.0;
+    final discountAmount = promoCodeController.text.isNotEmpty
+        ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100)
+        : 0.0;
     final finalAmount = totalAmount - discountAmount;
 
     return Column(
@@ -410,8 +424,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                _buildSummaryItem('Subtotal', '\$${totalAmount.toStringAsFixed(2)}'),
-                _buildSummaryItem('Discount', '-\$${discountAmount.toStringAsFixed(2)}'),
+                _buildSummaryItem(
+                    'Subtotal', '\$${totalAmount.toStringAsFixed(2)}'),
+                _buildSummaryItem(
+                    'Discount', '-\$${discountAmount.toStringAsFixed(2)}'),
                 const Divider(),
                 _buildSummaryItem(
                   'Total',
@@ -468,54 +484,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
             return;
           }
 
-          if (selectedPaymentIndex == null) {
-            context.showToast('Please select a payment method');
-            return;
-          }
+          // Payment method validation temporarily commented out
+          // if (selectedPaymentIndex == null) {
+          //   context.showToast('Please select a payment method');
+          //   return;
+          // }
 
           final addressState = addressBloc.state;
-          final paymentState = paymentBloc.state;
+          // final paymentState = paymentBloc.state; // Temporarily commented out
           final profileState = profileBloc.state;
 
-          if (addressState is AddressesLoaded && paymentState is PaymentMethodsLoaded && profileState is ProfileLoaded) {
-            final selectedAddress = addressState.addresses[selectedAddressIndex!];
-            final selectedPayment = paymentState.paymentMethods[selectedPaymentIndex!];
+          if (addressState is AddressesLoaded &&
+              profileState is ProfileLoaded) {
+            final selectedAddress =
+                addressState.addresses[selectedAddressIndex!];
+            // Payment method temporarily commented out
+            // final selectedPayment =
+            //     paymentState.paymentMethods[selectedPaymentIndex!];
 
             // Calculate final amount
             final totalAmount = cartState.total;
-            final discountAmount = promoCodeController.text.isNotEmpty ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100) : 0.0;
+            final discountAmount = promoCodeController.text.isNotEmpty
+                ? totalAmount * ((appliedPromoCode?.discount ?? 0) / 100)
+                : 0.0;
 
-            // Create order params
-            final orderParams = {
-              'items': cartState.items
-                  .map((item) => {
-                        '_id': item.id,
-                        'price': item.price,
-                        // 'quantity': item.quantity,
-                      })
-                  .toList(),
-              'totalAmount': totalAmount - discountAmount,
-              'currency': 'USD', // Or fetch from settings
-              'paymentMethod': {
-                'type': selectedPayment.type,
-                'last4_digits': selectedPayment.last4Digits,
-                'card_holder_name': selectedPayment.cardHolderName,
-                'expiry_date': selectedPayment.expiryDate,
-                'country': selectedPayment.country,
-                'is_default': selectedPayment.isDefault,
-              },
-              'deliveryAddress': {
-                'full_name': "${profileState.user.firstName} ${profileState.user.lastName}",
-                'address_line_1': selectedAddress.street,
-                'city': selectedAddress.city,
-                'postal_code': selectedAddress.postalCode,
-                'country': selectedAddress.country,
-                'phone_number': profileState.user.mobileNo,
-                'is_default': selectedAddress.isDefault,
-              },
-              'promoCode': promoCodeController.text.toUpperCase(),
-              'email': profileState.user.email, // Get from user profile
-            };
+            // Debug: Print cart items and total
+            print('=== CART DEBUG ===');
+            for (var item in cartState.items) {
+              print(
+                  'Item: ${item.name}, Price: \$${item.price}, Quantity: ${item.quantity}, Subtotal: \$${(item.price * item.quantity).toStringAsFixed(2)}');
+            }
+            print('Cart Total: \$${totalAmount.toStringAsFixed(2)}');
+            print(
+                'Final Amount (after discount): \$${(totalAmount - discountAmount).toStringAsFixed(2)}');
+            print('==================');
+
+            // Note: orderParams is not used as we use CreateOrderParams instead
             CreateOrderParams orderParam = CreateOrderParams(
               items: cartState.items
                   .map((item) => ProductModel(
@@ -524,18 +528,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         name: item.name,
                         price: item.price,
                         category: item.collection,
+                        quantity: item.quantity,
                       ))
                   .toList(),
               totalAmount: totalAmount - discountAmount,
-              currency: "USD",
-              paymentMethod: PaymentMethodModel(
-                  id: "id",
-                  type: selectedPayment.type,
-                  last4Digits: selectedPayment.last4Digits,
-                  cardHolderName: selectedPayment.cardHolderName,
-                  expiryDate: selectedPayment.expiryDate,
-                  country: selectedPayment.country,
-                  isDefault: selectedPayment.isDefault),
+              currency: "GBP",
+              // Payment method temporarily commented out - will be handled by Stripe
+              // paymentMethod: PaymentMethodModel(
+              //     id: "id",
+              //     type: selectedPayment.type,
+              //     last4Digits: selectedPayment.last4Digits,
+              //     cardHolderName: selectedPayment.cardHolderName,
+              //     expiryDate: selectedPayment.expiryDate,
+              //     country: selectedPayment.country,
+              //     isDefault: selectedPayment.isDefault),
               deliveryAddress: UserAddressModel(
                   name: selectedAddress.name,
                   instruction: selectedAddress.instruction,
@@ -546,9 +552,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   postalCode: selectedAddress.postalCode,
                   country: selectedAddress.country,
                   isDefault: selectedAddress.isDefault),
-              promoCode: promoCodeController.text.isEmpty ? " ":  promoCodeController.text.toUpperCase(),
+              promoCode: promoCodeController.text.isEmpty
+                  ? " "
+                  : promoCodeController.text.toUpperCase(),
               email: profileState.user.email,
-              name: "${profileState.user.firstName} ${profileState.user.lastName}",
+              name:
+                  "${profileState.user.firstName} ${profileState.user.lastName}",
               phone: profileState.user.mobileNo,
             );
 
@@ -577,7 +586,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     // Find matching promo code
-    final matchingCode = availableCodes.where((code) => code.code == enteredCode && code.isActive && code.expiresAt.isAfter(DateTime.now())).toList();
+    final matchingCode = availableCodes
+        .where((code) =>
+            code.code == enteredCode &&
+            code.isActive &&
+            code.expiresAt.isAfter(DateTime.now()))
+        .toList();
 
     if (matchingCode.isEmpty) {
       setState(() {
@@ -597,7 +611,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Promo code applied! You save Amount ${discountAmount.toStringAsFixed(2)}'),
+          content: Text(
+              'Promo code applied! You save Amount ${discountAmount.toStringAsFixed(2)}'),
           backgroundColor: Colors.green,
         ),
       );

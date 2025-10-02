@@ -1,9 +1,9 @@
-
 import 'package:dio/dio.dart';
 
 import '../../features/auth/data/api_services/auth_api_service.dart';
 import '../helper/shared_preferences_service.dart';
 import 'network_exceptions.dart';
+
 class NetworkManager {
   late final Dio _dio;
   // final String baseUrl = "https://f989-31-205-209-114.ngrok-free.app/api/v1";
@@ -12,7 +12,6 @@ class NetworkManager {
   final SharedPreferencesService preferencesService;
   late AuthService authService;
 
-
   NetworkManager({required this.preferencesService}) {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
@@ -20,7 +19,8 @@ class NetworkManager {
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ));
-    authService = AuthService(networkManager: this, preferencesService: preferencesService);
+    authService = AuthService(
+        networkManager: this, preferencesService: preferencesService);
     _setupInterceptors();
   }
 
@@ -36,6 +36,9 @@ class NetworkManager {
         final token = preferencesService.getUserToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          print('🔐 Network Debug: Token added to request - ${token.substring(0, token.length > 20 ? 20 : token.length)}...');
+        } else {
+          print('🔐 Network Debug: No token found for request to ${options.path}');
         }
         return handler.next(options);
       },
@@ -69,6 +72,7 @@ class NetworkManager {
       },
     ));
   }
+
   Exception _handleError(dynamic error) {
     if (error is DioException) {
       // First try to extract error data from response
@@ -94,9 +98,8 @@ class NetworkManager {
 
       if (responseData != null) {
         // Try different common fields for error messages
-        errorMessage =
-            responseData['payload'] ??
-                responseData['message'] ??
+        errorMessage = responseData['payload'] ??
+            responseData['message'] ??
             responseData['error'] ??
             errorMessage;
       } else if (error.message != null && error.message!.isNotEmpty) {
@@ -108,11 +111,12 @@ class NetworkManager {
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.receiveTimeout:
         case DioExceptionType.sendTimeout:
-          return TimeoutException('Request timed out. Please check your internet connection.');
+          return TimeoutException(
+              'Request timed out. Please check your internet connection.');
         case DioExceptionType.connectionError:
           return NetworkException('No internet connection available.');
         case DioExceptionType.badResponse:
-        // Now handle based on status code
+          // Now handle based on status code
           switch (statusCode) {
             case 400:
               return BadRequestException("Bad request $errorMessage");
@@ -130,7 +134,7 @@ class NetworkManager {
         case DioExceptionType.cancel:
           return NetworkException('Request was cancelled');
         case DioExceptionType.unknown:
-        // For unknown errors, try to provide as much context as possible
+          // For unknown errors, try to provide as much context as possible
           if (statusCode != null) {
             switch (statusCode) {
               case 400:
@@ -154,14 +158,15 @@ class NetworkManager {
     }
 
     // For non-Dio exceptions
-    return NetworkException('An unexpected error occurred: ${error.toString()}');
+    return NetworkException(
+        'An unexpected error occurred: ${error.toString()}');
   }
 
   Future<Response> get<T>(
-      String path, {
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-      }) async {
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
     try {
       final response = await _dio.get(
         path,
@@ -185,16 +190,24 @@ class NetworkManager {
   }
 
   Future<Response> post<T>(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+  }) async {
     try {
+      // Debug: Print what's being sent
+      print('=== NETWORK MANAGER DEBUG ===');
+      print('POST to: $path');
+      print('Data: $data');
+      print('Data type: ${data.runtimeType}');
+      print('=============================');
+
       final response = await _dio.post(
         path,
         data: data,
-        queryParameters: queryParameters
+        queryParameters: queryParameters,
+        options: headers != null ? Options(headers: headers) : null,
       );
 
       // Check status code manually
@@ -211,10 +224,11 @@ class NetworkManager {
       throw _handleError(e);
     }
   }
+
   Future<Response> patch<T>(
-      String path, {
-        dynamic data,
-      }) async {
+    String path, {
+    dynamic data,
+  }) async {
     try {
       final response = await _dio.patch(
         path,
@@ -237,11 +251,11 @@ class NetworkManager {
   }
 
   Future<Response> delete<T>(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
     try {
       final response = await _dio.delete(
         path,
@@ -264,6 +278,4 @@ class NetworkManager {
       throw _handleError(e);
     }
   }
-
-
 }

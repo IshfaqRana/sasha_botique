@@ -6,9 +6,11 @@ import '../../domain/entities/products.dart';
 
 import 'dart:convert';
 
-ProductModelResponse productModelResponseFromJson(String str) => ProductModelResponse.fromJson(json.decode(str));
+ProductModelResponse productModelResponseFromJson(String str) =>
+    ProductModelResponse.fromJson(json.decode(str));
 
-String productModelResponseToJson(ProductModelResponse data) => json.encode(data.toJson());
+String productModelResponseToJson(ProductModelResponse data) =>
+    json.encode(data.toJson());
 
 class ProductModelResponse {
   bool? status;
@@ -23,24 +25,32 @@ class ProductModelResponse {
     this.products,
   });
 
-  factory ProductModelResponse.fromJson(Map<String, dynamic> json) => ProductModelResponse(
+  factory ProductModelResponse.fromJson(Map<String, dynamic> json) =>
+      ProductModelResponse(
         status: json["status"],
         statusCode: json["statusCode"],
         message: json["message"],
-        products: json["payload"] == null ? [] : List<ProductModel>.from(json["payload"]!.map((x) => ProductModel.fromJson(x))),
+        products: json["payload"] == null
+            ? []
+            : List<ProductModel>.from(
+                json["payload"]!.map((x) => ProductModel.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "status": status,
         "statusCode": statusCode,
         "message": message,
-        "payload": products == null ? [] : List<dynamic>.from(products!.map((x) => x.toJson())),
+        "payload": products == null
+            ? []
+            : List<dynamic>.from(products!.map((x) => x.toJson())),
       };
 }
 
-SingleProductModelResponse singleProductModelResponseFromJson(String str) => SingleProductModelResponse.fromJson(json.decode(str));
+SingleProductModelResponse singleProductModelResponseFromJson(String str) =>
+    SingleProductModelResponse.fromJson(json.decode(str));
 
-String singleProductModelResponseToJson(SingleProductModelResponse data) => json.encode(data.toJson());
+String singleProductModelResponseToJson(SingleProductModelResponse data) =>
+    json.encode(data.toJson());
 
 class SingleProductModelResponse {
   bool? status;
@@ -55,11 +65,12 @@ class SingleProductModelResponse {
     this.product,
   });
 
-  factory SingleProductModelResponse.fromJson(Map<String, dynamic> json) => SingleProductModelResponse(
+  factory SingleProductModelResponse.fromJson(Map<String, dynamic> json) =>
+      SingleProductModelResponse(
         status: json["status"],
         statusCode: json["statusCode"],
         message: json["message"],
-        product:  ProductModel.fromJson(json["payload"]),
+        product: ProductModel.fromJson(json["payload"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -71,6 +82,8 @@ class SingleProductModelResponse {
 }
 
 class ProductModel extends Product {
+  final int quantity;
+
   ProductModel({
     required bool isBasics,
     required String id,
@@ -95,6 +108,7 @@ class ProductModel extends Product {
     String? createdAt,
     int? v,
     String? description,
+    this.quantity = 1,
   }) : super(
           isBasics: isBasics,
           id: id,
@@ -121,13 +135,19 @@ class ProductModel extends Product {
         id: json["_id"],
         name: json["name"],
         price: (json["price"] as int).toDouble(),
-        imageUrl: json["imageUrl"] == null ? [] : List<String>.from(json["imageUrl"]!.map((x) => x)),
+        imageUrl: json["imageUrl"] == null
+            ? []
+            : List<String>.from(json["imageUrl"]!.map((x) => x)),
         category: json["category"],
         gender: json["gender"] ?? "women",
         isPopular: json["is_popular"] ?? false,
         isOnSale: json["is_on_sale"] ?? false,
-        colors: json["colors"] == null ? [] : List<String>.from(json["colors"]!.map((x) => x)),
-        sizes: json["sizes"] == null ? [] : List<String>.from(json["sizes"]!.map((x) => x)),
+        colors: json["colors"] == null
+            ? []
+            : List<String>.from(json["colors"]!.map((x) => x)),
+        sizes: json["sizes"] == null
+            ? []
+            : List<String>.from(json["sizes"]!.map((x) => x)),
         productType: json["product_type"],
         season: json["season"],
         fitType: json["fit_type"],
@@ -140,6 +160,7 @@ class ProductModel extends Product {
         createdAt: json["createdAt"],
         v: json["__v"],
         description: json["description"],
+        quantity: json["quantity"] ?? 1,
       );
 
   Map<String, dynamic> toJson() => {
@@ -147,13 +168,13 @@ class ProductModel extends Product {
         "_id": id,
         "name": name,
         "price": price,
-        "imageUrl": imageUrl == null ? [] : List<dynamic>.from(imageUrl.map((x) => x)),
+        "imageUrl": List<dynamic>.from(imageUrl.map((x) => x)),
         "category": category,
         "gender": gender,
         "is_popular": isPopular,
         "is_on_sale": isOnSale,
-        "colors": colors == null ? [] : List<dynamic>.from(colors.map((x) => x)),
-        "sizes": sizes == null ? [] : List<dynamic>.from(sizes.map((x) => x)),
+        "colors": List<dynamic>.from(colors.map((x) => x)),
+        "sizes": List<dynamic>.from(sizes.map((x) => x)),
         "product_type": productType,
         "season": season,
         "fit_type": fitType,
@@ -166,6 +187,7 @@ class ProductModel extends Product {
         "createdAt": createdAt,
         // "__v": v,
         "description": description,
+        "quantity": quantity,
       };
 }
 //

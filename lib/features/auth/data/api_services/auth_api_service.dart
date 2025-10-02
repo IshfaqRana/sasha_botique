@@ -1,6 +1,7 @@
 import '../../../../core/helper/shared_preferences_service.dart';
 import '../../../../core/network/network_exceptions.dart';
 import '../../../../core/network/network_manager.dart';
+import '../../../../core/utils/ip_detector.dart';
 import '../../../profile/domain/entities/user.dart';
 
 class AuthService {
@@ -37,11 +38,18 @@ class AuthService {
   }
   Future<dynamic> login(String email, String password) async {
     try {
+      // Get client IP address quickly
+      final clientIp = await IPDetector.getQuickIP();
+      print('🌐 Auth Debug: Client IP detected: $clientIp');
+
       final response = await networkManager.post(
         '$_baseEndpoint/login',
         data: {
           'email': email,
           'password': password,
+        },
+        headers: {
+          'clientIp': clientIp,
         },
       );
 

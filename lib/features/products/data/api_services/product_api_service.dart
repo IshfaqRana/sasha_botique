@@ -1,4 +1,3 @@
-
 import '../../../../core/network/network_manager.dart';
 
 class ProductApiService {
@@ -6,7 +5,6 @@ class ProductApiService {
   final String _baseEndpoint = '/item'; // Adjust based on your API
 
   ProductApiService(this.networkManager);
-
 
   Future<Map<String, dynamic>> getProducts({
     required String category,
@@ -20,11 +18,11 @@ class ProductApiService {
         // 'category': category,
         'page': offset.toString(),
         'limit': limit.toString(),
-         'sort': sortOption ?? "ACS",
+        'sort': sortOption ?? "ACS",
         if (filters != null) ...filters,
       };
-        String limits = limit.toString();
-       String page = (offset+1).toString();
+      String limits = limit.toString();
+      String page = (offset + 1).toString();
       String sort = sortOption ?? "ACS";
       final response = await networkManager.post(
         "$_baseEndpoint/all-items?sort=$sort&page=$page&limit=$limits",
@@ -91,19 +89,25 @@ class ProductApiService {
     }
   }
 
-
-  Future<Map<String, dynamic>> searchProducts(String query,
-      Map<String, dynamic>? filters,) async {
+  Future<Map<String, dynamic>> getClearanceProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
     try {
+      // final queryParams = {
+      //   'category': category,
+      //   'offset': offset.toString(),
+      //   'limit': limit.toString(),
+      //   if (sortOption != null) 'sort': sortOption,
+      //   if (filters != null) ...filters,
+      // };
 
-      final queryParams = {
-        'search': query,
-        if (filters != null) ...filters,
-      };
-
-      final response = await networkManager.post(
-        '$_baseEndpoint/search',
-        queryParameters: queryParams,
+      final response = await networkManager.get(
+        "$_baseEndpoint/clearance",
+        // queryParameters: queryParams,
       );
 
       return response.data;
@@ -112,6 +116,86 @@ class ProductApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getAccessoriesProducts({
+    required String category,
+    required int offset,
+    required int limit,
+    Map<String, dynamic>? filters,
+    String? sortOption,
+  }) async {
+    try {
+      // final queryParams = {
+      //   'category': category,
+      //   'offset': offset.toString(),
+      //   'limit': limit.toString(),
+      //   if (sortOption != null) 'sort': sortOption,
+      //   if (filters != null) ...filters,
+      // };
+
+      final response = await networkManager.get(
+        "$_baseEndpoint/accessories",
+        // queryParameters: queryParams,
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> searchProducts(
+    String query,
+    Map<String, dynamic>? filters,
+  ) async {
+    try {
+      // Prepare filter data for backend - always send all filter fields
+      Map<String, dynamic> filterData = {
+        "brand_name": "",
+        "product_type": "",
+        "season": "",
+        "fit_type": "",
+        "collection": ""
+      };
+
+      // Update with actual filter values if provided
+      if (filters != null && filters.isNotEmpty) {
+        if (filters.containsKey('brand_name') &&
+            filters['brand_name'] != null &&
+            (filters['brand_name'] as List).isNotEmpty) {
+          filterData['brand_name'] = (filters['brand_name'] as List).first;
+        }
+        if (filters.containsKey('product_type') &&
+            filters['product_type'] != null &&
+            (filters['product_type'] as List).isNotEmpty) {
+          filterData['product_type'] = (filters['product_type'] as List).first;
+        }
+        if (filters.containsKey('season') &&
+            filters['season'] != null &&
+            (filters['season'] as List).isNotEmpty) {
+          filterData['season'] = (filters['season'] as List).first;
+        }
+        if (filters.containsKey('fit_type') &&
+            filters['fit_type'] != null &&
+            (filters['fit_type'] as List).isNotEmpty) {
+          filterData['fit_type'] = (filters['fit_type'] as List).first;
+        }
+        if (filters.containsKey('collection') &&
+            filters['collection'] != null &&
+            (filters['collection'] as List).isNotEmpty) {
+          filterData['collection'] = (filters['collection'] as List).first;
+        }
+      }
+
+      final response = await networkManager.post(
+        '$_baseEndpoint/search?search=$query&sort=ACS&page=1&limit=10',
+        data: filterData,
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   Future<Map<String, dynamic>> getFavoriteProducts() async {
     try {
@@ -122,21 +206,15 @@ class ProductApiService {
     }
   }
 
-
-  Future<Map<String, dynamic>> addToFavorite(String productID, {bool addingFirstProduct= false}) async {
+  Future<Map<String, dynamic>> addToFavorite(String productID,
+      {bool addingFirstProduct = false}) async {
     try {
       var response;
-      if(addingFirstProduct) {
-        response = await networkManager.post(
-          '/wishlist',
-          data: {
-            "items ": [
-              productID
-            ]
-          }
-        );
-
-      }else{
+      if (addingFirstProduct) {
+        response = await networkManager.post('/wishlist', data: {
+          "items ": [productID]
+        });
+      } else {
         response = await networkManager.patch(
           '/wishlist/add/$productID',
           data: {'productId': productID},
@@ -148,7 +226,6 @@ class ProductApiService {
     }
   }
 
-
   Future<Map<String, dynamic>> removeFromFavorite(String productID) async {
     try {
       final response = await networkManager.patch(
@@ -159,6 +236,7 @@ class ProductApiService {
       rethrow;
     }
   }
+
   Future<Map<String, dynamic>> fetchProductDetail(String productID) async {
     try {
       final response = await networkManager.get(

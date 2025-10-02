@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sasha_botique/core/extensions/get_size_extensions.dart';
 
 class SplashLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: double.infinity,
-      child: Image.asset(
-        'assets/images/splash.png',
-        fit: BoxFit.fitWidth,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/sashaBg.jpeg'),
+          fit: BoxFit.cover, // Full screen coverage
+          alignment: Alignment.center,
+        ),
+      ),
+      child: Container(
+        color: Colors.black.withOpacity(0.1), // Optional: subtle overlay
       ),
     );
   }

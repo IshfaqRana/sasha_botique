@@ -6,6 +6,7 @@ import 'core/di/injections.dart';
 import 'core/router/app_router.dart';
 import 'core/router/navigation_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/cart/presentation/bloc/cart_bloc.dart';
 import 'features/theme/presentation/bloc/theme_bloc.dart';
 import 'features/theme/presentation/theme/app_theme.dart';
 
@@ -24,12 +25,13 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-          getIt<ThemeBloc>()
-            ..add(LoadThemeEvent()),
+          create: (_) => getIt<ThemeBloc>()..add(LoadThemeEvent()),
         ),
         BlocProvider<AuthBloc>(
           create: (_) => getIt<AuthBloc>()..add(CheckAuthStatusEvent()),
+        ),
+        BlocProvider<CartBloc>(
+          create: (_) => getIt<CartBloc>()..add(LoadCartItems()),
         ),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
@@ -43,6 +45,14 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: state.themeMode,
             home: SplashScreen(),
+            // builder: (context, child) {
+            //   return MediaQuery(
+            //     data: MediaQuery.of(context).copyWith(
+            //       padding: EdgeInsets.zero,
+            //     ),
+            //     child: child!,
+            //   );
+            // },
           );
         },
       ),

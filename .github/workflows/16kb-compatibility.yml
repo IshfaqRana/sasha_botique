@@ -1,0 +1,72 @@
+name: 16KB Page Size Compatibility Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  check-16kb-compatibility:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.2'
+        channel: 'stable'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.pub-cache
+          ~/.gradle/caches
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+          
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Run 16KB compatibility check
+      run: ./scripts/check_16kb_compatibility.sh
+      
+    - name: Build release APK
+      run: flutter build apk --release
+      
+    - name: Run CI 16KB test
+      run: ./scripts/ci_16kb_test.sh
+      
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-release-16kb-compatible
+        path: build/app/outputs/flutter-apk/app-release.apk
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ **16KB Page Size Compatibility Check Passed**\n\nThis PR is compatible with Google Play\'s 16KB page size requirement for Android 15+.\n\n- ✅ Native libraries properly aligned\n- ✅ Build configuration updated\n- ✅ APK built successfully\n\nReady for Google Play submission!'
+          })

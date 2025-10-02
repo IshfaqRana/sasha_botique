@@ -76,14 +76,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     try {
      AuthEntity entity = await login(event.email, event.password);
-     print(entity.success);
-     print(entity.success);
+     print('🔐 AuthBloc Debug: Login result - Success: ${entity.success}, Message: ${entity.message}, Token: ${entity.token?.substring(0, 20)}...');
      if(entity.success) {
-       emit(Authenticated());
+       print('🔐 AuthBloc Debug: Login successful, verifying auth status...');
+
+       // Double-check authentication status after login
+       final isAuthenticated = await checkAuthStatus();
+       if (isAuthenticated) {
+         print('🔐 AuthBloc Debug: Auth verified, emitting Authenticated state');
+         emit(Authenticated());
+       } else {
+         print('🔐 AuthBloc Debug: Auth verification failed, token might not be saved properly');
+         emit(AuthError('Authentication failed after login'));
+       }
      }else{
+       print('🔐 AuthBloc Debug: Login failed, emitting error');
        emit(AuthError(entity.message));
      }
     } catch (e) {
+      print('🔐 AuthBloc Debug: Login exception: $e');
       emit(AuthError(_mapFailureToMessage(e)));
     }
   }

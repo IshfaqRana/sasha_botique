@@ -6,7 +6,7 @@ class CreateOrderParams {
   final List<ProductModel> items;
   final double totalAmount;
   final String currency;
-  final PaymentMethodModel paymentMethod;
+  final PaymentMethodModel? paymentMethod;
   final UserAddressModel deliveryAddress;
   final String promoCode;
   final String email;
@@ -17,7 +17,7 @@ class CreateOrderParams {
     required this.items,
     required this.totalAmount,
     required this.currency,
-    required this.paymentMethod,
+    this.paymentMethod,
     required this.deliveryAddress,
     required this.promoCode,
     required this.email,

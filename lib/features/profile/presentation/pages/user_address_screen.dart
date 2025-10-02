@@ -9,7 +9,6 @@ import '../bloc/user_address/user_address_bloc.dart';
 import '../widgets/address_bottom_sheet.dart';
 import '../widgets/address_item.dart';
 
-
 class AddressScreen extends StatefulWidget {
   const AddressScreen({Key? key}) : super(key: key);
 
@@ -22,20 +21,19 @@ class _AddressScreenState extends State<AddressScreen> {
   bool isLoading = false;
   bool initialLoading = true;
 
-
   @override
   void initState() {
     super.initState();
     addressBloc = getIt<AddressBloc>();
-
-    // addressBloc.add(GetAddressesEvent());
+    // Always fetch fresh addresses when screen is opened
+    addressBloc.add(GetAddressesEvent());
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AddressBloc, AddressState>(
       bloc: addressBloc,
-      listener: (context, state){
+      listener: (context, state) {
         // if (state is AddressLoading ) {
         //   setState(() {
         //     isLoading = true;
@@ -46,75 +44,72 @@ class _AddressScreenState extends State<AddressScreen> {
         //     isLoading =false;
         //   });
         // }
-        if(initialLoading) {
-          if (state is AddressesLoaded) {
-            addressBloc.add(GetAddressesEvent());
-          }
-          if (state is AddressError || state is AddressInitial) {
-            addressBloc.add(GetAddressesEvent());
-          }
-          setState(() {
-            initialLoading = false;
-          });
-        }
+        // Remove looping re-fetch; rely on initState fetch and user actions
+        initialLoading = false;
         if (state is AddressError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
         }
-
       },
       builder: (context, state) {
-
         List<UserAddress> addresses = state.addressList;
 
         return LoadingOverlay(
-      isLoading: state is AddressLoading,
-      child: Scaffold(
-        appBar: AppBar(
-          // backgroundColor: Colors.black,
-          // foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: Text('Delivery Addresses',style: context.titleMedium,),
-        ),
-        body:
-            // if (state is AddressLoading) {
-            //   return const Center(child: CircularProgressIndicator(color: Colors.blue));
-            // } else
-            //   if (state is AddressError) {
-            //   return Center(child: Padding(
-            //     padding: const EdgeInsets.all(32.0),
-            //     child: Text(state.message),
-            //   ));
-            // } else
-            //   if (state is AddressesLoaded) {
-               addresses.isEmpty ? const Center(child: Text('No addresses found')): _buildAddressList(context, addresses),
+          isLoading: state is AddressLoading,
+          child: Scaffold(
+            appBar: AppBar(
+              // backgroundColor: Colors.black,
+              // foregroundColor: Colors.white,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: Text(
+                'Delivery Addresses',
+                style: context.titleMedium,
+              ),
+            ),
+            body:
+                // if (state is AddressLoading) {
+                //   return const Center(child: CircularProgressIndicator(color: Colors.blue));
+                // } else
+                //   if (state is AddressError) {
+                //   return Center(child: Padding(
+                //     padding: const EdgeInsets.all(32.0),
+                //     child: Text(state.message),
+                //   ));
+                // } else
+                //   if (state is AddressesLoaded) {
+                addresses.isEmpty
+                    ? const Center(child: Text('No addresses found'))
+                    : _buildAddressList(context, addresses),
             // }
             // return const Center(child: Text('No addresses found'));
 
-        bottomNavigationBar: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: () => _showAddressBottomSheet(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              // shape: RoundedRectangleBorder(
-              //   borderRadius: BorderRadius.circular(20.0),
-              // ),
-            ),
-            child: const Text(
-              'ADD ADDRESSES',
-              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+            bottomNavigationBar: SafeArea(
+              top: false,
+              child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () => _showAddressBottomSheet(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      // shape: RoundedRectangleBorder(
+                      //   borderRadius: BorderRadius.circular(20.0),
+                      // ),
+                    ),
+                    child: const Text(
+                      'ADD ADDRESSES',
+                      style: TextStyle(
+                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                    ),
+                  )),
             ),
           ),
-        ),
-      ),
-    );
+        );
       },
     );
   }
@@ -125,22 +120,30 @@ class _AddressScreenState extends State<AddressScreen> {
       itemCount: addresses.length,
       itemBuilder: (context, index) => AddressListItem(
         address: addresses[index],
-        onEdit: () => _showAddressBottomSheet(context, addresses[index],index),
+        onEdit: () => _showAddressBottomSheet(context, addresses[index], index),
         onDelete: () => _confirmDeleteAddress(context, index.toString()),
-
         onSetDefault: () {
           UserAddress userAddress = addresses[index];
-          bool defaultVal  = userAddress.isDefault ?? false;
-          UserAddress updated = UserAddress(state: userAddress.state,street: userAddress.street,city: userAddress.city,country: userAddress.country,postalCode: userAddress.postalCode,isDefault: !defaultVal,phone: userAddress.phone,name: userAddress.name,instruction: userAddress.instruction);
+          bool defaultVal = userAddress.isDefault ?? false;
+          UserAddress updated = UserAddress(
+              state: userAddress.state,
+              street: userAddress.street,
+              city: userAddress.city,
+              country: userAddress.country,
+              postalCode: userAddress.postalCode,
+              isDefault: !defaultVal,
+              phone: userAddress.phone,
+              name: userAddress.name,
+              instruction: userAddress.instruction);
           addressBloc.add(
-          SetDefaultAddressEvent(address: updated, id: index.toString()));
-    },
-        ),
-      );
-
+              SetDefaultAddressEvent(address: updated, id: index.toString()));
+        },
+      ),
+    );
   }
 
-  void _showAddressBottomSheet(BuildContext context, [UserAddress? address, int id = 0]) {
+  void _showAddressBottomSheet(BuildContext context,
+      [UserAddress? address, int id = 0]) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -151,7 +154,8 @@ class _AddressScreenState extends State<AddressScreen> {
           if (address == null) {
             addressBloc.add(AddAddressEvent(address: newAddress));
           } else {
-            addressBloc.add(UpdateAddressEvent(id: id.toString(),address: newAddress));
+            addressBloc.add(
+                UpdateAddressEvent(id: id.toString(), address: newAddress));
           }
           Navigator.pop(context);
         },

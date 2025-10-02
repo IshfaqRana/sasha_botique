@@ -6,7 +6,7 @@ class Order {
   final String id;
   final List<ProductModel> items;
   final double totalAmount;
-  final PaymentMethodModel paymentMethod;
+  final PaymentMethodModel? paymentMethod;
   final UserAddressModel deliveryAddress;
   final String promoCode;
   final double discountAmount;
@@ -17,6 +17,8 @@ class Order {
   final String status;
   final String revolutOrderId;
   final String paymentStatus;
+  final String? trackingId;
+  final String? trackingUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String paymentUrl; // Store payment URL for pending payments
@@ -25,7 +27,7 @@ class Order {
     required this.id,
     required this.items,
     required this.totalAmount,
-    required this.paymentMethod,
+    this.paymentMethod,
     required this.deliveryAddress,
     required this.promoCode,
     required this.discountAmount,
@@ -36,6 +38,8 @@ class Order {
     required this.status,
     required this.revolutOrderId,
     required this.paymentStatus,
+    this.trackingId,
+    this.trackingUrl,
     required this.createdAt,
     required this.updatedAt,
     this.paymentUrl = '',
