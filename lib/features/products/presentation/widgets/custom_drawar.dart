@@ -43,6 +43,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
     profileBloc = getIt<ProfileBloc>();
     imageURL = link;
     super.initState();
+
+    // Load user profile if authenticated
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is Authenticated) {
+        profileBloc.add(GetUserProfileEvent());
+      }
+    });
   }
 
   @override
@@ -55,102 +63,114 @@ class _CustomDrawerState extends State<CustomDrawer> {
         child: SafeArea(
           child: Column(
             children: [
-              GestureDetector(
-                onTap: () async {
-                  Navigator.pop(context);
-
-                  final isAuthenticated = await AuthRequiredMixin.checkAuthAndPrompt(
-                    context,
-                    title: 'Login Required',
-                    message: 'You need to login to view your profile.',
-                  );
-
-                  if (isAuthenticated) {
-                    Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                            builder: (context) => ProfileScreen()));
-                  }
-                },
-                child: BlocConsumer<ProfileBloc, ProfileState>(
-                  bloc: profileBloc,
-                  listener: (context, state) {
-                    // User user=  profileBloc.user;
-
-                    // name = state.user.firstName + state.user.lastName;
-                    // email = state.user.email;
-                    // imageURL = state.user.profileImageUrl ?? link;
-                  },
-                  builder: (context, state) {
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is! Authenticated) {
                     return Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
                         children: [
                           Container(
-                            height: 60,
-                            width: 60,
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.amber,
-                                width: 3.0,
-                              ),
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ClipOval(
-                                child:
-                                    // state.user.profileImageUrl != null
-                                    //     ?
-                                    CustomCachedNetworkShimmer(
-                              imageUrl: state.user.profileImageUrl ?? link,
-                              // fit: BoxFit.cover,
-                              height: 60,
-                              width: 60,
-                            )
-                                //     : Icon(
-                                //   Icons.person,
-                                //   size: 60,
-                                //   color: Colors.grey,
-                                // ),
-                                ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${state.user.firstName} ${state.user.lastName}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                      ),
-                                ),
-                                Text(
-                                  state.user.email,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: Colors.white70,
-                                      ),
-                                ),
-                              ],
+                            child: Icon(
+                              Icons.store_outlined,
+                              size: 48,
+                              color: Colors.white,
                             ),
                           ),
-                          // Icon(
-                          Icon(Icons.edit, color: Colors.white),
-
-                          // ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Sasha Boutique',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Welcome to our store',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white70,
+                                ),
+                          ),
                         ],
                       ),
                     );
-                  },
-                ),
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen()));
+                    },
+                    child: BlocConsumer<ProfileBloc, ProfileState>(
+                      bloc: profileBloc,
+                      listener: (context, state) {},
+                      builder: (context, state) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                height: 60,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.amber,
+                                    width: 3.0,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: CustomCachedNetworkShimmer(
+                                    imageUrl: state.user.profileImageUrl ?? link,
+                                    height: 60,
+                                    width: 60,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${state.user.firstName} ${state.user.lastName}",
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                    ),
+                                    Text(
+                                      state.user.email,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: Colors.white70,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.edit, color: Colors.white),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
 
-              const Divider(color: Colors.white24),
+              const Divider(color: Colors.white24, height: 1),
+              const SizedBox(height: 8),
               DrawerItem(
                 icon: Icons.shopping_bag_outlined,
                 title: 'Orders',
@@ -163,7 +183,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     message: 'You need to login to view your orders.',
                   );
 
-                  if (isAuthenticated) {
+                  if (isAuthenticated && mounted) {
                     Navigator.push(context,
                         CupertinoPageRoute(builder: (context) => OrdersPage()));
                   }
@@ -181,7 +201,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     message: 'You need to login to view your wishlist.',
                   );
 
-                  if (isAuthenticated) {
+                  if (isAuthenticated && mounted) {
                     Navigator.push(
                         context,
                         CupertinoPageRoute(
@@ -201,7 +221,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     message: 'You need to login to manage your delivery addresses.',
                   );
 
-                  if (isAuthenticated) {
+                  if (isAuthenticated && mounted) {
                     Navigator.push(
                         context,
                         CupertinoPageRoute(
@@ -237,7 +257,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const WebView(
-                                url: "http://sashaboutique.co.uk/privacy",
+                                url: "https://privacy.sashaboutique.co.uk",
                                 privacyURL: true,
                               )));
                 },
@@ -250,17 +270,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const WebView(
-                                url: "http://sashaboutique.co.uk/about",
+                                url: "https://about.sashaboutique.co.uk",
                                 privacyURL: false,
                               )));
-                  // Navigator.push(context, MaterialPageRoute(builder: (context)=> const WebView(url: "https://latsuccess.com/privacy",privacyURL: false)));
-                  //
                 },
               ),
               const Spacer(),
+              const Divider(color: Colors.white24, height: 1),
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
-                  print('🔍 Drawer Auth State: $state');
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: DrawerItem(

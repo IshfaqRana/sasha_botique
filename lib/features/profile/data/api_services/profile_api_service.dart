@@ -75,13 +75,31 @@ class ProfileApiService {
   }
   Future<Map<String, dynamic>> addUserAddress(Map<String, dynamic> userData) async {
     try {
+    print('📦 ADD ADDRESS REQUEST PAYLOAD:');
+    print('Endpoint: /account/delivery-address');
+    print('Method: POST');
+    print('Payload: $userData');
+    print('-----------------------------------');
+
     final response = await networkManager.post(
       '/account/delivery-address',
       data: userData,
     );
 
+    print('✅ ADD ADDRESS RESPONSE:');
+    print('Status: ${response.statusCode}');
+    print('Response: ${response.data}');
+    print('-----------------------------------');
+
     return response.data;
     } catch (e) {
+      print('❌ ADD ADDRESS ERROR:');
+      print('Error: $e');
+      if (e is DioException) {
+        print('Response Data: ${e.response?.data}');
+        print('Status Code: ${e.response?.statusCode}');
+      }
+      print('-----------------------------------');
       rethrow;
     }
   }

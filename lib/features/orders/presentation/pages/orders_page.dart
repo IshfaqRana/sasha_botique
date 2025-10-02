@@ -6,6 +6,7 @@ import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/core/extensions/toast_extension.dart';
 import 'package:sasha_botique/features/orders/presentation/pages/payment_webpage.dart';
+import 'package:sasha_botique/features/products/presentation/pages/home_screen.dart';
 import 'package:sasha_botique/shared/extensions/string_extensions.dart';
 import 'package:sasha_botique/shared/widgets/cache_image.dart';
 
@@ -105,7 +106,11 @@ class _OrdersPageState extends State<OrdersPage> {
                     ElevatedButton(
                       onPressed: () {
                         // Navigate to products/home page
-                        Navigator.pushReplacementNamed(context, '/home');
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                          (Route<dynamic> route) => false,
+                        );
                       },
                       child: const Text('Shop Now'),
                     ),

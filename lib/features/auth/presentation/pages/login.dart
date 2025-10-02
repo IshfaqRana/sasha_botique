@@ -225,6 +225,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: () {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                                  (Route<dynamic> route) => false,
+                                );
+                              },
+                              icon: const Icon(Icons.shopping_bag_outlined),
+                              label: const Text('Browse as Guest'),
+                            ),
+                          ),
                           SizedBox(
                               height: MediaQuery.of(context).viewInsets.bottom),
                         ],

@@ -99,18 +99,59 @@ class _HomePageState extends State<HomeScreen>
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit App'),
+        content: const Text('Are you sure you want to exit?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+    return shouldExit ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<FavoriteBloc, FavoriteState>(
-      bloc: _wishlistBloc,
-      builder: (context, state2) {
-        bool isLoading = false;
-        if (state2 is LoadedFavProducts) {
-          isLoading = state2.isLoading;
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, authState) {
+        if (authState is Authenticated) {
+          print('🔍 Home: AuthBloc became Authenticated, loading user data');
+          // Load user-specific data when auth state becomes Authenticated
+          _profileBloc.add(GetUserProfileEvent());
+          _wishlistBloc.add(LoadInitialEvent());
+          addressBloc.add(GetAddressesEvent());
+          paymentBloc.add(GetPaymentMethodsEvent());
         }
-        return LoadingOverlay(
-          isLoading: isLoading,
-          child: Scaffold(
+      },
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          final shouldPop = await _onWillPop();
+          if (shouldPop && context.mounted) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: BlocBuilder<FavoriteBloc, FavoriteState>(
+          bloc: _wishlistBloc,
+          builder: (context, state2) {
+            bool isLoading = false;
+            if (state2 is LoadedFavProducts) {
+              isLoading = state2.isLoading;
+            }
+            return LoadingOverlay(
+              isLoading: isLoading,
+              child: Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: false,
               title: Text(
@@ -287,6 +328,8 @@ class _HomePageState extends State<HomeScreen>
           ),
         );
       },
+        ),
+      ),
     );
   }
 

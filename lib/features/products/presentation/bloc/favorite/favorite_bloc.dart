@@ -29,9 +29,12 @@ class FavoriteBloc extends Bloc<FavoriteEvents, FavoriteState> {
     }
   }
   Future<void> _removeFromFavorite(RemoveFromFavoriteEvent event, Emitter<FavoriteState> emit) async {
-    var currentState = state as LoadedFavProducts;
-
-    emit(currentState.copyWith(isLoading: true));
+    if (state is! LoadedFavProducts) {
+      emit(LoadingFavProductState());
+    } else {
+      var currentState = state as LoadedFavProducts;
+      emit(currentState.copyWith(isLoading: true));
+    }
 
     try{
        await removeFromFavoriteUseCase(event.product.id);
@@ -44,9 +47,12 @@ class FavoriteBloc extends Bloc<FavoriteEvents, FavoriteState> {
     }
   }
   Future<void> _addToFavorite(AddToFavoriteEvent event, Emitter<FavoriteState> emit) async {
-    var currentState = state as LoadedFavProducts;
-
-    emit(currentState.copyWith(isLoading: true));
+    if (state is! LoadedFavProducts) {
+      emit(LoadingFavProductState());
+    } else {
+      var currentState = state as LoadedFavProducts;
+      emit(currentState.copyWith(isLoading: true));
+    }
 
     try{
       await addToFavouriteUseCase(event.product.id);
