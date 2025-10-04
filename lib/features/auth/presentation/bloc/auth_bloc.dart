@@ -47,7 +47,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final isAuthenticated = await checkAuthStatus();
       emit(isAuthenticated ? Authenticated() : Unauthenticated());
     } catch (e) {
-      emit(AuthError(_mapFailureToMessage(e)));
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
   Future<void> _onResetPassword(
@@ -65,7 +66,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(ResetPasswordSuccess());
     } catch (error) {
-      emit(AuthError(_mapFailureToMessage(error)));
+      final validationErrors = error is AuthException ? error.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(error), validationErrors: validationErrors));
     }
   }
 
@@ -95,7 +97,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
      }
     } catch (e) {
       print('🔐 AuthBloc Debug: Login exception: $e');
-      emit(AuthError(_mapFailureToMessage(e)));
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
 
@@ -112,7 +115,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError(entity.message));
       }
     } catch (e) {
-      emit(AuthError(_mapFailureToMessage(e)));
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
 
@@ -125,7 +129,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await logout();
       emit(Unauthenticated());
     } catch (e) {
-      emit(AuthError(_mapFailureToMessage(e)));
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
 
@@ -138,7 +143,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await forgotPassword(event.email);
       emit(PasswordResetEmailSent());
     } catch (e) {
-      emit(AuthError(_mapFailureToMessage(e)));
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
   String _mapFailureToMessage( exception) {

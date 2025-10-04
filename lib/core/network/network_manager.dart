@@ -95,13 +95,22 @@ class NetworkManager {
 
       // Get error message from response if available
       String errorMessage = 'An unexpected error occurred';
+      List<String>? validationErrors;
 
       if (responseData != null) {
-        // Try different common fields for error messages
-        errorMessage = responseData['payload'] ??
-            responseData['message'] ??
-            responseData['error'] ??
-            errorMessage;
+        // Handle validation errors (when message is a list)
+        if (responseData['message'] is List) {
+          validationErrors = (responseData['message'] as List)
+              .map((e) => e.toString())
+              .toList();
+          errorMessage = validationErrors.join(', ');
+        } else {
+          // Try different common fields for error messages
+          errorMessage = responseData['payload'] ??
+              responseData['message'] ??
+              responseData['error'] ??
+              errorMessage;
+        }
       } else if (error.message != null && error.message!.isNotEmpty) {
         errorMessage = error.message!;
       }
@@ -119,11 +128,11 @@ class NetworkManager {
           // Now handle based on status code
           switch (statusCode) {
             case 400:
-              return BadRequestException("Bad request $errorMessage");
+              return BadRequestException(errorMessage, validationErrors: validationErrors);
             case 401:
               return UnauthorizedException(errorMessage);
             case 403:
-              return ForbiddenException('Access denied: $errorMessage');
+              return ForbiddenException(errorMessage);
             case 404:
               return NotFoundException(errorMessage);
             case 500:
@@ -138,17 +147,17 @@ class NetworkManager {
           if (statusCode != null) {
             switch (statusCode) {
               case 400:
-                return NetworkException(errorMessage);
+                return BadRequestException(errorMessage, validationErrors: validationErrors);
               case 401:
                 return UnauthorizedException(errorMessage);
               case 403:
-                return NetworkException('Access denied: $errorMessage');
+                return ForbiddenException(errorMessage);
               case 404:
                 return NotFoundException(errorMessage);
               case 500:
                 return ServerException(errorMessage);
               default:
-                return NetworkException('Error $statusCode: $errorMessage');
+                return NetworkException(errorMessage);
             }
           }
           return NetworkException(errorMessage);

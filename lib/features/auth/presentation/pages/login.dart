@@ -72,11 +72,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     color: context.colors.whiteColor,
                                     size: 30,
                                   ),
-                                  onPressed: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              WelcomeScreen())),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //       builder: (context) =>
+                                    //           WelcomeScreen()));
+                                  },
                                 ),
                               ),
                               const SizedBox(height: 10),

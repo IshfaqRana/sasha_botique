@@ -110,9 +110,15 @@ class AuthService {
     if (error is NetworkException) {
       return AuthException(error.message);
     } else if (error is UnauthorizedException) {
-      return AuthException('Invalid credentials');
+      return AuthException(error.message);
     } else if (error is ServerException) {
-      return AuthException('Authentication service unavailable');
+      return AuthException(error.message);
+    } else if (error is BadRequestException) {
+      return AuthException(error.message, validationErrors: error.validationErrors);
+    } else if (error is NotFoundException) {
+      return AuthException(error.message);
+    } else if (error is ForbiddenException) {
+      return AuthException(error.message);
     }
     return AuthException('Authentication failed');
   }
@@ -121,5 +127,6 @@ class AuthService {
 // auth_exception.dart
 class AuthException implements Exception {
   final String message;
-  AuthException(this.message);
+  final List<String>? validationErrors;
+  AuthException(this.message, {this.validationErrors});
 }

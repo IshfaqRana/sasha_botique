@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
+import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'package:sasha_botique/shared/widgets/auth_required_dialog.dart';
 import 'package:sasha_botique/shared/widgets/cache_image.dart';
 import 'package:sasha_botique/shared/widgets/cached_network_image.dart';
@@ -288,6 +289,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         if (state is Authenticated) {
                           // Logout
                           context.read<AuthBloc>().add(LogoutEvent());
+                          getIt<FavoriteBloc>().add(ClearFavoritesEvent());
                           Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(

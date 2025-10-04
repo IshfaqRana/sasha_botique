@@ -17,6 +17,7 @@ import 'package:sasha_botique/shared/widgets/auth_required_dialog.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../payment/presentation/bloc/payment_bloc.dart';
 import '../../../profile/presentation/bloc/user_address/user_address_bloc.dart';
+import '../../../profile/presentation/widgets/address_bottom_sheet.dart';
 // import '../../../profile/presentation/pages/user_address_screen.dart'; // Temporarily commented out
 import '../../domain/entities/promo_code_entity.dart';
 import '../bloc/order_bloc.dart';
@@ -54,8 +55,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     orderBloc.add(GetPromoCodesEvent());
     final addressState = addressBloc.state;
     if (addressState is AddressesLoaded) {
-      if (addressState.addresses.isNotEmpty) {
-        int index = addressState.addresses
+      if (addressState.addressList.isNotEmpty) {
+        int index = addressState.addressList
             .indexWhere((element) => element.isDefault == true);
         print("index: $index");
         setState(() {
@@ -66,7 +67,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final paymentState = paymentBloc.state;
     if (paymentState is PaymentMethodsLoaded) {
       if (paymentState.paymentMethods.isNotEmpty) {
-        int index = addressState.addressList
+        int index = paymentState.paymentMethods
             .indexWhere((element) => element.isDefault == true);
         print("index: $index");
         setState(() {
@@ -116,6 +117,32 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ),
                 );
               } else if (state is OrderError) {
+                context.showToast(state.message);
+              }
+            },
+          ),
+          BlocListener<AddressBloc, AddressState>(
+            bloc: addressBloc,
+            listener: (context, state) {
+              if (state is AddressesLoaded && state.addressList.isNotEmpty) {
+                // Auto-select the newly added address (last in the list)
+                // Or select the default address if one exists
+                int defaultIndex = state.addressList
+                    .indexWhere((element) => element.isDefault == true);
+
+                if (defaultIndex != -1) {
+                  // If there's a default address, select it
+                  setState(() {
+                    selectedAddressIndex = defaultIndex;
+                  });
+                } else if (selectedAddressIndex == null) {
+                  // If no address was selected before and no default, select the last one (newly added)
+                  setState(() {
+                    selectedAddressIndex = state.addressList.length - 1;
+                  });
+                }
+              } else if (state is AddressError) {
+                // Show error message (e.g., duplicate address)
                 context.showToast(state.message);
               }
             },
@@ -209,31 +236,84 @@ class _CheckoutPageState extends State<CheckoutPage> {
           builder: (context, state) {
             if (state is AddressesLoaded) {
               if (state.addressList.isEmpty) {
-                return const Text('No saved addresses. Please add an address.');
+                return Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.location_off, size: 48, color: Colors.grey.shade400),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No saved addresses',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Please add a delivery address to continue',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddressBottomSheet(context),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add Address'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: state.addressList.length,
-                itemBuilder: (context, index) {
-                  final address = state.addressList[index];
-                  return RadioListTile(
-                    value: index,
-                    groupValue: selectedAddressIndex,
-                    title: Text('${address.street}'),
-                    subtitle: Text(
-                      '${address.city}, ${address.postalCode}, ${address.country}',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedAddressIndex = value as int;
-                      });
+              return Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: state.addressList.length,
+                    itemBuilder: (context, index) {
+                      final address = state.addressList[index];
+                      return RadioListTile(
+                        value: index,
+                        groupValue: selectedAddressIndex,
+                        title: Text('${address.street}'),
+                        subtitle: Text(
+                          '${address.city}, ${address.postalCode}, ${address.country}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedAddressIndex = value as int;
+                          });
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () => _showAddressBottomSheet(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add New Address'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+                ],
               );
             } else if (state is AddressLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -497,7 +577,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           if (addressState is AddressesLoaded &&
               profileState is ProfileLoaded) {
             final selectedAddress =
-                addressState.addresses[selectedAddressIndex!];
+                addressState.addressList[selectedAddressIndex!];
             // Payment method temporarily commented out
             // final selectedPayment =
             //     paymentState.paymentMethods[selectedPaymentIndex!];
@@ -569,6 +649,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
           'Place Order',
           style: TextStyle(fontSize: 18),
         ),
+      ),
+    );
+  }
+
+  void _showAddressBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AddressFormBottomSheet(
+        onSubmit: (newAddress) {
+          addressBloc.add(AddAddressEvent(address: newAddress));
+          Navigator.pop(context);
+        },
       ),
     );
   }

@@ -65,7 +65,21 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     try {
       final response = await networkManager.get('/order/all-orders');
       final ordersList = response.data['payload'] as List;
-      return ordersList.map((order) => OrderModel.fromJson(order)).toList();
+      final orders = ordersList.map((order) => OrderModel.fromJson(order)).toList();
+
+      // Deduplicate orders based on their unique ID
+      final Map<String, OrderModel> uniqueOrders = {};
+      for (var order in orders) {
+        if (order.id.isNotEmpty) {
+          uniqueOrders[order.id] = order;
+        }
+      }
+
+      // Convert to list and sort by creation date (newest first)
+      final uniqueOrdersList = uniqueOrders.values.toList();
+      uniqueOrdersList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return uniqueOrdersList;
     } catch (e) {
       rethrow;
     }

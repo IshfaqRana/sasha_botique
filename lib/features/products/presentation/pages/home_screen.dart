@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/features/auth/presentation/bloc/auth_bloc.dart';
@@ -139,7 +140,7 @@ class _HomePageState extends State<HomeScreen>
           if (didPop) return;
           final shouldPop = await _onWillPop();
           if (shouldPop && context.mounted) {
-            Navigator.of(context).pop();
+            SystemNavigator.pop();
           }
         },
         child: BlocBuilder<FavoriteBloc, FavoriteState>(

@@ -43,11 +43,28 @@ class AuthRemoteDataSourceIml implements AuthRemoteDataSource {
   Future<AuthEntity> signup(User user, String password) async {
     try{
       final response = await authService.signup(user, password);
-      LoginModel loginModel = LoginModel.fromJson(response);
-      return AuthEntity(token: loginModel.payload ?? "", message: loginModel.message??"Successfully Logged in!", success: true);
-    }catch(e){
+      print('🔍 Signup Response Debug: $response');
 
-      return AuthEntity(token: null, message: e is AuthException ? e.message   : "Something went wrong", success: false);
+      LoginModel loginModel = LoginModel.fromJson(response);
+      return AuthEntity(token: loginModel.payload ?? "", message: loginModel.message??"Account created successfully!", success: true);
+    }catch(e){
+      print('🔍 Signup Error Debug: $e');
+      print('🔍 Signup Error Type: ${e.runtimeType}');
+
+      String errorMessage = "Something went wrong";
+      if (e is AuthException) {
+        errorMessage = e.message;
+      } else if (e is BadRequestException) {
+        errorMessage = e.message;
+      } else if (e is NetworkException) {
+        errorMessage = e.message;
+      } else if (e is ServerException) {
+        errorMessage = e.message;
+      } else {
+        errorMessage = e.toString();
+      }
+
+      return AuthEntity(token: null, message: errorMessage, success: false);
     }
   }
 

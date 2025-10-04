@@ -29,7 +29,8 @@ class CartException implements Exception {
 }
 class BadRequestException implements Exception {
   final String message;
-  BadRequestException(this.message );
+  final List<String>? validationErrors;
+  BadRequestException(this.message, {this.validationErrors});
 }
 
 class ForbiddenException implements Exception {

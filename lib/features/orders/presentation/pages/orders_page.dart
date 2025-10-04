@@ -127,7 +127,8 @@ class _OrdersPageState extends State<OrdersPage> {
                 padding: const EdgeInsets.all(16),
                 itemCount: state.orders.length,
                 itemBuilder: (context, index) {
-                  return _buildOrderCard(context, state.orders[index]);
+                  final order = state.orders[index];
+                  return _buildOrderCard(context, order);
                 },
               ),
             );

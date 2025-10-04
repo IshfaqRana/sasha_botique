@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sasha_botique/features/cart/domain/usecases/remove_from_cart.dart';
 import 'package:sasha_botique/features/products/domain/entities/products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/add_to_favourite.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
@@ -17,6 +16,7 @@ class FavoriteBloc extends Bloc<FavoriteEvents, FavoriteState> {
     on<RemoveFromFavoriteEvent>(_removeFromFavorite);
     on<LoadInitialEvent>(_onLoadInitialFavorite);
     on<AddToFavoriteEvent>(_addToFavorite);
+    on<ClearFavoritesEvent>(_clearFavorites);
   }
 
   Future<void> _onLoadInitialFavorite(LoadInitialEvent event, Emitter<FavoriteState> emit) async {
@@ -63,5 +63,9 @@ class FavoriteBloc extends Bloc<FavoriteEvents, FavoriteState> {
     }catch(e){
       emit(ErrorState(e.toString()));
     }
+  }
+
+  void _clearFavorites(ClearFavoritesEvent event, Emitter<FavoriteState> emit) {
+    emit(InitialState());
   }
 }

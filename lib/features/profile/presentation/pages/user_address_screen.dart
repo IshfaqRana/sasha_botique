@@ -48,7 +48,18 @@ class _AddressScreenState extends State<AddressScreen> {
         initialLoading = false;
         if (state is AddressError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.white),
+                  SizedBox(width: 8),
+                  Expanded(child: Text(state.message)),
+                ],
+              ),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
+            ),
           );
         }
       },

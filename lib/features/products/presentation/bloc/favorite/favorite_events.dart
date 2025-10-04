@@ -11,3 +11,4 @@ class RemoveFromFavoriteEvent extends FavoriteEvents{
   Product product;
   RemoveFromFavoriteEvent(this.product);
 }
+class ClearFavoritesEvent extends FavoriteEvents{}

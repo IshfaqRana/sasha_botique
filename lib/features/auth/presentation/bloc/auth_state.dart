@@ -12,7 +12,8 @@ class Unauthenticated extends AuthState {}
 
 class AuthError extends AuthState {
   final String message;
-  AuthError(this.message);
+  final List<String>? validationErrors;
+  AuthError(this.message, {this.validationErrors});
 }
 class PasswordResetEmailSent extends AuthState {}
 class ResetPasswordSuccess extends AuthState {}

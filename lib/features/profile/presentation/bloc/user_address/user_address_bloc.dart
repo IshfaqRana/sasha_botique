@@ -53,8 +53,37 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
       AddAddressEvent event,
       Emitter<AddressState> emit,
       ) async {
+    // Check if address already exists BEFORE emitting loading state
+    bool isDuplicate = addressList.any((existingAddress) => existingAddress.isSameAs(event.address));
+
+    if (isDuplicate) {
+      emit(AddressError(message: 'This address already exists',addressList));
+      return;
+    }
+
     emit(AddressLoading(addressList));
     try{
+    // If the new address is being set as default, unset the existing default first
+    if (event.address.isDefault == true) {
+      int? defaultAddressIndex = addressList.indexWhere((test)=> test.isDefault ?? false,);
+      if(defaultAddressIndex != -1){
+        UserAddress unDefaultAddress = UserAddress(
+          street: addressList[defaultAddressIndex].street,
+          name: addressList[defaultAddressIndex].name,
+          city: addressList[defaultAddressIndex].city,
+          state: addressList[defaultAddressIndex].state,
+          postalCode: addressList[defaultAddressIndex].postalCode,
+          country: addressList[defaultAddressIndex].country,
+          phone: addressList[defaultAddressIndex].phone,
+          instruction: addressList[defaultAddressIndex].instruction,
+          isDefault: false,
+        );
+        final unDefaultAddressResult = await setDefaultAddress(defaultAddressIndex.toString(), unDefaultAddress);
+        addressList.removeAt(defaultAddressIndex);
+        addressList.insert(defaultAddressIndex, unDefaultAddressResult.first);
+      }
+    }
+
     final result = await addAddress(event.address);
     addressList = result;
     emit(AddressesLoaded( addresses: result,addressList));
@@ -70,6 +99,30 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
 
     emit(AddressLoading(addressList));
     try{
+    // If the address is being set as default, unset the existing default first
+    if (event.address.isDefault == true) {
+      int? defaultAddressIndex = addressList.indexWhere((test)=> test.isDefault ?? false,);
+      int currentIndex = int.parse(event.id);
+
+      // Only unset if there's a different address currently set as default
+      if(defaultAddressIndex != -1 && defaultAddressIndex != currentIndex){
+        UserAddress unDefaultAddress = UserAddress(
+          street: addressList[defaultAddressIndex].street,
+          name: addressList[defaultAddressIndex].name,
+          city: addressList[defaultAddressIndex].city,
+          state: addressList[defaultAddressIndex].state,
+          postalCode: addressList[defaultAddressIndex].postalCode,
+          country: addressList[defaultAddressIndex].country,
+          phone: addressList[defaultAddressIndex].phone,
+          instruction: addressList[defaultAddressIndex].instruction,
+          isDefault: false,
+        );
+        final unDefaultAddressResult = await setDefaultAddress(defaultAddressIndex.toString(), unDefaultAddress);
+        addressList.removeAt(defaultAddressIndex);
+        addressList.insert(defaultAddressIndex, unDefaultAddressResult.first);
+      }
+    }
+
     final result = await updateAddress(event.id, event.address);
 
     // print('AddressBloc._onSetDefaultAddress: Before Updating at ${event.id} >>>>>>>>>');
@@ -127,8 +180,6 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
     //   print(item.city);
     //   print(item.isDefault);
     // });
-    print("addressList.length");
-    print(result.length);
     emit(AddressesLoaded( addresses: result,addressList));
     } catch (e) {
       emit(AddressError(message: 'Failed to update address: ${_mapFailureToMessage(e)}',addressList));

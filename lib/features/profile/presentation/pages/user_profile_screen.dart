@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
+import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'package:sasha_botique/features/profile/presentation/pages/user_address_screen.dart';
 import 'package:sasha_botique/shared/widgets/cached_network_image.dart';
 import 'package:sasha_botique/shared/widgets/loading_overlay.dart';
@@ -172,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildInfoItem(
                         context: context,
-                        label: user.mobileNo,
+                        label: user.mobileNo.isEmpty ? 'Add mobile number' : user.mobileNo,
                         iconData: Icons.phone,
                         onTap: () =>
                             _showUpdateDialog(
@@ -399,6 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         onTap: () {
           getIt<AuthBloc>().add(LogoutEvent());
+          getIt<FavoriteBloc>().add(ClearFavoritesEvent());
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
 
         },

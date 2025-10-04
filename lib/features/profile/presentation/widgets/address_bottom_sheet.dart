@@ -132,9 +132,22 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                   label: 'Postal Code',
                   hint: 'Please enter postal code',
                   controller: _postalCodeController,
-                  validator: (value) =>
-                      value!.isEmpty ? '* Please enter postal code' : null,
-                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '* Please enter postal code';
+                    }
+                    if (value.length < 5) {
+                      return '* Postal code must be at least 5 characters';
+                    }
+                    if (value.length > 7) {
+                      return '* Postal code cannot exceed 7 characters';
+                    }
+                    return null;
+                  },
+                  keyboardType: TextInputType.text,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(7),
+                  ],
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(

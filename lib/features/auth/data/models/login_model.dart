@@ -21,12 +21,36 @@ class LoginModel {
     this.payload,
   });
 
-  factory LoginModel.fromJson(Map<String, dynamic> json) => LoginModel(
-    status: json["status"],
-    statusCode: json["statusCode"],
-    message: json["message"],
-    payload: json["payload"] == null ? null : (json["payload"].runtimeType ==  String ? json["payload"] : Payload.fromJson(json["payload"]).jwt),
-  );
+  factory LoginModel.fromJson(Map<String, dynamic> json) {
+    String? token;
+
+    if (json["payload"] != null) {
+      if (json["payload"] is String) {
+        // Direct string token
+        token = json["payload"];
+      } else if (json["payload"] is Map) {
+        // Check if it's a nested structure {"jwt": {"jwt": "token"}}
+        final payloadMap = json["payload"] as Map<String, dynamic>;
+        if (payloadMap["jwt"] != null) {
+          if (payloadMap["jwt"] is String) {
+            // {"jwt": "token"}
+            token = payloadMap["jwt"];
+          } else if (payloadMap["jwt"] is Map) {
+            // {"jwt": {"jwt": "token"}}
+            final jwtMap = payloadMap["jwt"] as Map<String, dynamic>;
+            token = jwtMap["jwt"];
+          }
+        }
+      }
+    }
+
+    return LoginModel(
+      status: json["status"],
+      statusCode: json["statusCode"],
+      message: json["message"],
+      payload: token,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "status": status,

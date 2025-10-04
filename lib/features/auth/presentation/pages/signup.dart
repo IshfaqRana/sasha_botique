@@ -9,6 +9,7 @@ import '../../../products/presentation/pages/home_screen.dart';
 import '../../../profile/domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/background_design.dart';
+import '../widgets/validation_error_widget.dart';
 import 'login.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreedToTerms = false;
+  List<String> _validationErrors = [];
 
   // Dummy data for dropdowns
   final List<String> _countries = ['USA', 'UK', 'Canada', 'Australia'];
@@ -82,14 +84,26 @@ class _SignupScreenState extends State<SignupScreen> {
         body: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is Authenticated) {
+              setState(() {
+                _validationErrors = [];
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Registration successful!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => HomeScreen()),
                   (Route<dynamic> route) => false);
             } else if (state is AuthError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
+              setState(() {
+                // If there are validation errors, use them; otherwise create a list with the general error message
+                _validationErrors = (state.validationErrors != null && state.validationErrors!.isNotEmpty)
+                    ? state.validationErrors!
+                    : [state.message];
+              });
             }
           },
           child: CustomScrollView(
@@ -280,11 +294,18 @@ class _SignupScreenState extends State<SignupScreen> {
               //     ),
               //   ],
               // ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+              ValidationErrorWidget(errors: _validationErrors),
+              const SizedBox(height: 8),
               CustomButton(
                 text: 'REGISTER',
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
+                    // Clear validation errors before submitting
+                    setState(() {
+                      _validationErrors = [];
+                    });
+
                     final user = User(
                       // id: DateTime.now().toString(),
                       email: _emailController.text,
