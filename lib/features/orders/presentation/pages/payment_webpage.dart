@@ -267,7 +267,6 @@ class _PaymentWebViewState extends State<PaymentWebView> {
         }
       }).catchError((error) {
         // If JavaScript execution fails, continue monitoring
-        print('Error monitoring payment status: $error');
       });
     });
   }
@@ -287,7 +286,9 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
-              Navigator.pushReplacement(
+              // Pop the checkout page and push order detail page
+              Navigator.pop(context); // Go back to previous screen (likely cart or home)
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => OrderDetailPage(orderId: widget.orderId),
@@ -357,7 +358,6 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       }
     } catch (e) {
       // If we can't check the order status, continue monitoring
-      print('Error checking order status: $e');
     }
   }
 

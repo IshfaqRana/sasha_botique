@@ -121,16 +121,20 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   OtpTextField(
                     numberOfFields: 4,
                     borderColor: Color(0xFF512DA8),
-                    //set to true to show as box or false to show as dash
+                    focusedBorderColor: Color(0xFF512DA8),
                     showFieldAsBox: true,
-                    //runs when a code is typed in
+                    fieldWidth: MediaQuery.of(context).size.width * 0.15,
+                    fieldHeight: 56.0,
+                    borderWidth: 2.0,
+                    textStyle: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                     onCodeChanged: (String code) {
-                      // Update the OTP controller's text with the full OTP
-                      // _otpController.text = code; // This will replace the OTP text with the full value each time
+                      // Handle code change
                     },
                     onSubmit: (String code) {
-                      // This can be used when you want to handle the OTP submission after all fields are filled
-                      print('OTP Entered: $code');
                       _otpController.text = code;
                     },
                   ),

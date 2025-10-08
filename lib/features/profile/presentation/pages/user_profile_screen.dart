@@ -92,6 +92,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               setState(() {
                 isLoading =false;
               });
+            } else if (state is DeleteUserSuccess) {
+              setState(() {
+                isLoading = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Account deleted successfully')),
+              );
+              // Logout and clear session
+              getIt<AuthBloc>().add(LogoutEvent());
+              getIt<FavoriteBloc>().add(ClearFavoritesEvent());
+              // Navigate to login screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (Route<dynamic> route) => false,
+              );
             }
           },
           builder: (context, state) {
@@ -452,10 +468,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             TextButton(
               onPressed: () {
-                profileBloc.add(DeleteUserEvent());
-                // getIt<AuthBloc>().add(LogoutEvent());
-                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
-
+                Navigator.of(context).pop(); // Close the dialog first
+                profileBloc.add(DeleteUserEvent()); // Trigger the delete event
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: Text("Delete"),
