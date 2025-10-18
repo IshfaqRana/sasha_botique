@@ -26,28 +26,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   void initState() {
     super.initState();
     _filters = Map.from(widget.initialFilters);
-    // widget.initialFilters.forEach((key,value){
-    //   debugPrinter("$key >>>>>>>>>>>>>>==============>>>>>>>>>>>>>>> $value");
-    //
-    // });
-    // _sortOption = widget.currentSortOption;
-    debugPrint('FilterBottomSheet initState called');
-    _initializeFilters();
-  }
-
-  void _initializeFilters() {
-    // Create a deep copy of the initial filters
-    _filters = Map<String, dynamic>.from(widget.initialFilters);
     _sortOption = widget.currentSortOption;
-
-    // Debug prints to verify initialization
-    debugPrint('Initial Filters: $_filters');
-    debugPrint('Initial Sort Option: $_sortOption');
-
-    // Print each filter separately
-    widget.initialFilters.forEach((key, value) {
-      debugPrint('Filter - $key: $value');
-    });
   }
 
   @override
@@ -56,14 +35,11 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     // Handle updates if the initial filters change
     if (oldWidget.initialFilters != widget.initialFilters ||
         oldWidget.currentSortOption != widget.currentSortOption) {
-      _initializeFilters();
+      setState(() {
+        _filters = Map.from(widget.initialFilters);
+        _sortOption = widget.currentSortOption;
+      });
     }
-  }
-
-  @override
-  void dispose() {
-    debugPrint('FilterBottomSheet dispose called');
-    super.dispose();
   }
 
   @override
@@ -105,11 +81,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                   'Summer Collection',
                   'Winter Collection'
                 ]),
-                // Comment out unsupported filters for now
-                // _buildExpandableFilter('Color', ['Red', 'Blue', 'Black', 'White']),
-                // _buildExpandableFilter('Size', ['S', 'M', 'L', 'XL']),
-                // _buildExpandableFilter('Price', []),
-                // _buildExpandableFilter('Gender', ['Men', 'Women', 'Unisex']),
                 _buildSortDropdown(),
               ],
             ),
@@ -152,30 +123,27 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     return ExpansionTile(
       title: Text(title),
       children: [
-        if (title == 'Price')
-          _buildPriceRangeFilter()
-        else
-          Wrap(
-            spacing: 8,
-            children: options
-                .map((option) => FilterChip(
-                      label: Text(option),
-                      selected: (_filters[filterKey] ?? []).contains(option),
-                      onSelected: (selected) {
-                        setState(() {
-                          final List<String> currentFilters =
-                              List.from(_filters[filterKey] ?? []);
-                          if (selected) {
-                            currentFilters.add(option);
-                          } else {
-                            currentFilters.remove(option);
-                          }
-                          _filters[filterKey] = currentFilters;
-                        });
-                      },
-                    ))
-                .toList(),
-          ),
+        Wrap(
+          spacing: 8,
+          children: options
+              .map((option) => FilterChip(
+                    label: Text(option),
+                    selected: (_filters[filterKey] ?? []).contains(option),
+                    onSelected: (selected) {
+                      setState(() {
+                        final List<String> currentFilters =
+                            List.from(_filters[filterKey] ?? []);
+                        if (selected) {
+                          currentFilters.add(option);
+                        } else {
+                          currentFilters.remove(option);
+                        }
+                        _filters[filterKey] = currentFilters;
+                      });
+                    },
+                  ))
+              .toList(),
+        ),
       ],
     );
   }
@@ -192,40 +160,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         return 'fit_type';
       case 'Collection':
         return 'collection';
-      case 'Color':
-        return 'colors';
-      case 'Size':
-        return 'sizes';
-      case 'Gender':
-        return 'gender';
       default:
         return title.toLowerCase().replaceAll(' ', '_');
     }
-  }
-
-  Widget _buildPriceRangeFilter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: RangeSlider(
-        values: RangeValues(
-          _filters['minPrice']?.toDouble() ?? 0.0,
-          _filters['maxPrice']?.toDouble() ?? 1000.0,
-        ),
-        min: 0.0,
-        max: 1000.0,
-        divisions: 20,
-        labels: RangeLabels(
-          '\$${_filters['minPrice']?.toStringAsFixed(0) ?? '0'}',
-          '\$${_filters['maxPrice']?.toStringAsFixed(0) ?? '1000'}',
-        ),
-        onChanged: (RangeValues values) {
-          setState(() {
-            _filters['minPrice'] = values.start;
-            _filters['maxPrice'] = values.end;
-          });
-        },
-      ),
-    );
   }
 
   Widget _buildSortDropdown() {

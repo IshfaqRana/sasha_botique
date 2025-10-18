@@ -12,6 +12,7 @@ import 'package:sasha_botique/features/orders/presentation/bloc/order_bloc.dart'
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
 import 'package:sasha_botique/features/products/domain/usecases/add_to_favourite.dart';
 import 'package:sasha_botique/features/products/domain/usecases/fetch_product_detail.dart';
+import 'package:sasha_botique/features/products/domain/usecases/filter_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_favorite_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_popular_products.dart';
 import 'package:sasha_botique/features/products/domain/usecases/get_products_by_gender.dart';
@@ -295,6 +296,10 @@ Future<void> setup() async {
     () => SearchProductsUseCase(getIt<ProductRepository>()),
   );
 
+  getIt.registerLazySingleton<FilterProductsUseCase>(
+    () => FilterProductsUseCase(getIt<ProductRepository>()),
+  );
+
   getIt.registerLazySingleton<GetNewArrivalProductsUseCase>(
     () => GetNewArrivalProductsUseCase(getIt<ProductRepository>()),
   );
@@ -319,6 +324,7 @@ Future<void> setup() async {
     () => HomeBloc(
       getAllProducts: getIt<GetAllProductsUseCase>(),
       searchProductsUseCase: getIt<SearchProductsUseCase>(),
+      filterProductsUseCase: getIt<FilterProductsUseCase>(),
       getProductsOnSaleUseCase: getIt<GetProductsOnSaleUseCase>(),
       getGenderProductsUseCase: getIt<GetGenderProductsUseCase>(),
       getNewArrivalProductsUseCase: getIt<GetNewArrivalProductsUseCase>(),

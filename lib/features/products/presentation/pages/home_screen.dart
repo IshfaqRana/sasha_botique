@@ -7,6 +7,7 @@ import 'package:sasha_botique/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:sasha_botique/features/cart/presentation/pages/cart_screen.dart';
 import 'package:sasha_botique/features/products/presentation/pages/favourite_products_screen.dart';
 import 'package:sasha_botique/features/products/presentation/pages/search_screen.dart';
+import 'package:sasha_botique/features/products/presentation/pages/filtered_products_screen.dart';
 import 'package:sasha_botique/features/profile/presentation/bloc/user_profile/user_profile_bloc.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 import 'package:sasha_botique/shared/widgets/loading_overlay.dart';
@@ -359,22 +360,35 @@ class _HomePageState extends State<HomeScreen>
                     context: context,
                     isScrollControlled: true,
                     builder: (context) => FilterBottomSheet(
-                      initialFilters: state.activeFilters,
-                      currentSortOption: state.currentSortOption,
+                      initialFilters: {},
+                      currentSortOption: 'Featured',
                       onApplyFilters: (filters, sortOption) {
-                        clearCurrentList(state.currentCategory);
-                        homeBloc.add(
-                          ApplyFilters(
-                              filters: filters, sortOption: sortOption),
+                        // Navigate to filtered products screen
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => FilteredProductsScreen(
+                              initialFilters: filters,
+                              initialSortOption: sortOption,
+                            ),
+                          ),
                         );
                       },
                       onCancelFilter: (filters, sortOption) {
-                        clearCurrentList(state.currentCategory);
-                        homeBloc.add(
-                          ApplyFilters(
-                              filters: filters, sortOption: sortOption),
-                        );
+                        // Navigate to filtered products screen
                         Navigator.pop(context);
+                        if (filters.isNotEmpty || sortOption != 'Featured') {
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => FilteredProductsScreen(
+                                initialFilters: filters,
+                                initialSortOption: sortOption,
+                              ),
+                            ),
+                          );
+                        }
                       },
                     ),
                   );
@@ -552,29 +566,6 @@ class _HomePageState extends State<HomeScreen>
         sashaBProducts = [];
         hasMoreDataPerCategory['sasha-b'] = true;
     }
-  }
-
-  void _showDeleteDialog(BuildContext context, HomeError state) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Error"),
-          content: Text(state.message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                if (state.previousState != null) {
-                  homeBloc.add(ReloadStateEvent(state.previousState!));
-                }
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   // WhatsApp contact function

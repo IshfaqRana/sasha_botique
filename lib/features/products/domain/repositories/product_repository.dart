@@ -1,3 +1,4 @@
+import '../entities/filter_result.dart';
 import '../entities/products.dart';
 
 abstract class ProductRepository {
@@ -60,4 +61,14 @@ abstract class ProductRepository {
   Future<void> addToFav(String productID);
   Future<Product?> fetchProductDetail(String productID);
   Future<void> removeFromFav(String productID);
+
+  /// New unified filter method
+  Future<FilterResult> filterProducts({
+    List<String>? filters,
+    String? sortBy,
+    String? sortOrder,
+    int page = 1,
+    int limit = 10,
+    String? search,
+  });
 }

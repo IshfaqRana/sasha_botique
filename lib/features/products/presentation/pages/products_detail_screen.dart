@@ -380,33 +380,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: List.generate(
-              product.sizes.length,
-              (index) => GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedSizeIndex = index;
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _selectedSizeIndex == index
-                        ? Colors.black
-                        : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: Text(
-                      product.sizes[index],
-                      style: TextStyle(
-                        color: _selectedSizeIndex == index
-                            ? Colors.white
-                            : Colors.black,
-                        fontWeight: FontWeight.bold,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                product.sizes.length,
+                (index) => GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedSizeIndex = index;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _selectedSizeIndex == index
+                          ? Colors.black
+                          : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Center(
+                      child: Text(
+                        product.sizes[index],
+                        style: TextStyle(
+                          color: _selectedSizeIndex == index
+                              ? Colors.white
+                              : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -426,7 +429,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         children: [
           // Add to Cart Button
           Expanded(
-            flex: 2,
             child: ElevatedButton(
               onPressed: () {
                 final selectedSize = product.sizes[_selectedSizeIndex];
@@ -455,6 +457,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 builder: (context, state) {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: state is CartLoading
                         ? [
                             SizedBox(
@@ -467,12 +470,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Icon(
                               Icons.shopping_bag_outlined,
                               color: context.colors.whiteColor,
+                              size: 20,
                             ),
                             SizedBox(width: 8),
                             Text(
                               'ADD TO CART',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -482,9 +487,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // Checkout Button
+          // Buy Now Button
           Expanded(
-            flex: 1,
             child: ElevatedButton(
               onPressed: () {
                 final selectedSize = product.sizes[_selectedSizeIndex];
@@ -500,18 +504,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.shopping_cart_checkout,
                     color: Colors.white,
-                    size: 18,
+                    size: 20,
                   ),
-                  SizedBox(width: 4),
+                  SizedBox(width: 8),
                   Text(
                     'BUY NOW',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 13,
                     ),
                   ),
                 ],

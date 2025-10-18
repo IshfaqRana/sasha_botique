@@ -219,12 +219,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () => _showPasswordChangeDialog(context),
                       ),
 
-                      const SizedBox(height: 16),
+                      // const SizedBox(height: 16),
                       //
                       _buildDeliveryAddressTile(context),
 
-                      const SizedBox(height: 16),
-                      _buildPaymentMethodTile(context),
+                      // const SizedBox(height: 16),
+                      // _buildPaymentMethodTile(context),
 
                       const SizedBox(height: 16),
 
@@ -357,37 +357,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  Widget _buildPaymentMethodTile(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Icon(Icons.payment, color: Colors.grey.shade700),
-        title: Text(
-          'Payment Methods',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        trailing: Icon(Icons.chevron_right, color: Colors.grey.shade600),
-        onTap: () {
-          Navigator.push(context, CupertinoPageRoute(builder: (context) => PaymentMethodsScreen()));
+  // Widget _buildPaymentMethodTile(BuildContext context) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(12),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.grey.withOpacity(0.1),
+  //           spreadRadius: 1,
+  //           blurRadius: 4,
+  //           offset: Offset(0, 1),
+  //         ),
+  //       ],
+  //     ),
+  //     child: ListTile(
+  //       leading: Icon(Icons.payment, color: Colors.grey.shade700),
+  //       title: Text(
+  //         'Payment Methods',
+  //         style: TextStyle(
+  //           fontSize: 16,
+  //           fontWeight: FontWeight.w500,
+  //         ),
+  //       ),
+  //       trailing: Icon(Icons.chevron_right, color: Colors.grey.shade600),
+  //       onTap: () {
+  //         Navigator.push(context, CupertinoPageRoute(builder: (context) => PaymentMethodsScreen()));
 
-        },
-      ),
-    );
-  }
+  //       },
+  //     ),
+  //   );
+  // }
 
   Widget _buildLogoutButton(BuildContext context) {
     return Container(

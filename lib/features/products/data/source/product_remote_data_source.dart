@@ -1,6 +1,7 @@
 import 'package:sasha_botique/features/products/data/api_services/product_api_service.dart';
 
 import '../models/favourite_products_response_model.dart';
+import '../models/filter_products_response_model.dart';
 import '../models/get_all_items_response_model.dart';
 import '../models/product_model.dart';
 
@@ -48,6 +49,16 @@ abstract class ProductRemoteDataSource {
   Future<void> addToFavorite(String productID);
   Future<void> removeFromFavorite(String productID);
   Future<ProductModel?> fetchProductDetail(String productID);
+
+  /// New unified filter method
+  Future<FilterPayload> filterProducts({
+    List<String>? filters,
+    String? sortBy,
+    String? sortOrder,
+    int page = 1,
+    int limit = 10,
+    String? search,
+  });
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -217,6 +228,50 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  @override
+  Future<FilterPayload> filterProducts({
+    List<String>? filters,
+    String? sortBy,
+    String? sortOrder,
+    int page = 1,
+    int limit = 10,
+    String? search,
+  }) async {
+    try {
+      final response = await productApiService.filterProducts(
+        filters: filters,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+        page: page,
+        limit: limit,
+        search: search,
+      );
+
+      FilterProductsResponseModel filterResponse =
+          FilterProductsResponseModel.fromJson(response);
+
+      if (filterResponse.status ?? false) {
+        return filterResponse.payload ?? FilterPayload();
+      }
+
+      // Return empty payload if status is false
+      return FilterPayload(
+        totalItems: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        items: [],
+        appliedFilters: filters ?? [],
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+      );
+    } catch (e) {
+      print('Error in filterProducts: $e');
+      rethrow;
     }
   }
 }

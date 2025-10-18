@@ -109,63 +109,97 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     );
                   }
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen()));
+                  return BlocConsumer<ProfileBloc, ProfileState>(
+                    bloc: profileBloc,
+                    listener: (context, state) {},
+                    builder: (context, state) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+                        child: Column(
+                          children: [
+                            // Profile Picture
+                            Container(
+                              height: 100,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.amber,
+                                  width: 3.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: CustomCachedNetworkShimmer(
+                                  imageUrl: state.user.profileImageUrl ?? link,
+                                  height: 100,
+                                  width: 100,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Name
+                            Text(
+                              "${state.user.firstName} ${state.user.lastName}",
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Edit Profile Button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen()));
+                                },
+                                borderRadius: BorderRadius.circular(24),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Edit Profile',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     },
-                    child: BlocConsumer<ProfileBloc, ProfileState>(
-                      bloc: profileBloc,
-                      listener: (context, state) {},
-                      builder: (context, state) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.amber,
-                                    width: 3.0,
-                                  ),
-                                ),
-                                child: ClipOval(
-                                  child: CustomCachedNetworkShimmer(
-                                    imageUrl: state.user.profileImageUrl ?? link,
-                                    height: 60,
-                                    width: 60,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${state.user.firstName} ${state.user.lastName}",
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            color: Colors.white,
-                                          ),
-                                    ),
-                                    Text(
-                                      state.user.email,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: Colors.white70,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.edit, color: Colors.white),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
                   );
                 },
               ),

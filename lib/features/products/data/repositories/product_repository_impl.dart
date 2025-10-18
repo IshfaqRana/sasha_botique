@@ -3,6 +3,7 @@ import 'package:sasha_botique/core/utils/app_utils.dart';
 import '../source/product_local_data_source.dart';
 import '../source/product_remote_data_source.dart';
 
+import '../../domain/entities/filter_result.dart';
 import '../../domain/entities/products.dart';
 import '../../domain/repositories/product_repository.dart';
 
@@ -216,6 +217,44 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       debugPrinter(e.toString());
       throw Exception('Sorry,Failed in fetching product details.');
+    }
+  }
+
+  @override
+  Future<FilterResult> filterProducts({
+    List<String>? filters,
+    String? sortBy,
+    String? sortOrder,
+    int page = 1,
+    int limit = 10,
+    String? search,
+  }) async {
+    try {
+      final payload = await remoteDataSource.filterProducts(
+        filters: filters,
+        sortBy: sortBy,
+        sortOrder: sortOrder,
+        page: page,
+        limit: limit,
+        search: search,
+      );
+
+      // Convert FilterPayload to FilterResult entity
+      return FilterResult(
+        totalItems: payload.totalItems ?? 0,
+        currentPage: payload.currentPage ?? page,
+        totalPages: payload.totalPages ?? 0,
+        hasNextPage: payload.hasNextPage ?? false,
+        hasPrevPage: payload.hasPrevPage ?? false,
+        items: payload.items ?? [],
+        appliedFilters: payload.appliedFilters ?? [],
+        sortBy: payload.sortBy,
+        sortOrder: payload.sortOrder,
+      );
+    } catch (e) {
+      debugPrinter('Error in filterProducts repository: $e');
+      // Return empty result on error
+      return FilterResult.empty();
     }
   }
 }

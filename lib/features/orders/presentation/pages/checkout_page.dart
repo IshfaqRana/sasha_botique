@@ -559,6 +559,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
           // ),
         ),
         onPressed: () {
+          // Validate cart has items
+          if (cartState.items.isEmpty) {
+            context.showToast('Please select at least one item before proceeding.');
+            return;
+          }
+
           if (selectedAddressIndex == null) {
             context.showToast('Please select a delivery address');
             return;
@@ -662,6 +668,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         onSubmit: (newAddress) {
           addressBloc.add(AddAddressEvent(address: newAddress));
           Navigator.pop(context);
+          // Reload addresses to ensure the new one appears immediately
+          Future.delayed(Duration(milliseconds: 500), () {
+            addressBloc.add(GetAddressesEvent());
+          });
         },
       ),
     );

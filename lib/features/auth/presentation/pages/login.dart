@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: SizedBox(
                                   width: 300,
                                   child: Text(
-                                    'Yay! You\'re back! Thanks for shopping with us. We have excited deals and promotions going on, grab your pick now!',
+                                    'We\'re thrilled to see you again. Explore fresh looks and limited offers just for you.now',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium!

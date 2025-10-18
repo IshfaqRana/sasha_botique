@@ -94,26 +94,30 @@ class _ProductListState extends State<ProductList> {
             controller: _scrollController,
             padding: const EdgeInsets.all(16),
             itemCount: widget.products.length + 1,
-            itemBuilder: (context, index) => GestureDetector(
-              onTap: () => widget.onProductTap(widget.products[index]),
-              child: index < widget.products.length
-                  ? ProductCard(
-                      product: widget.products[index],
-                      isListView: true,
-                      index: index + 1,
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(
-                          left: 12.0, right: 12, top: 30, bottom: 30),
-                      child: !widget.hasMoreData
-                          ? EmptyProductList(
-                              emptyList: false,
-                            )
-                          : widget.isLoading
-                              ? AppLoading()
-                              : SizedBox(),
-                    ),
-            ),
+            itemBuilder: (context, index) {
+              if (index < widget.products.length) {
+                return GestureDetector(
+                  onTap: () => widget.onProductTap(widget.products[index]),
+                  child: ProductCard(
+                    product: widget.products[index],
+                    isListView: true,
+                    index: index + 1,
+                  ),
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.only(
+                      left: 12.0, right: 12, top: 30, bottom: 30),
+                  child: !widget.hasMoreData
+                      ? EmptyProductList(
+                          emptyList: false,
+                        )
+                      : widget.isLoading
+                          ? AppLoading()
+                          : SizedBox(),
+                );
+              }
+            },
           );
   }
 

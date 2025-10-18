@@ -247,4 +247,35 @@ class ProductApiService {
       rethrow;
     }
   }
+
+  /// New unified filter API endpoint
+  /// Supports filtering, sorting, search, and pagination in a single request
+  Future<Map<String, dynamic>> filterProducts({
+    List<String>? filters, // e.g., ["Sasha Basics", "Popular", "Clearance"]
+    String? sortBy, // e.g., "price", "name", "_id"
+    String? sortOrder, // "ASC" or "DESC"
+    int page = 1,
+    int limit = 10,
+    String? search,
+  }) async {
+    try {
+      final requestBody = {
+        if (filters != null && filters.isNotEmpty) "filters": filters,
+        if (sortBy != null) "sortBy": sortBy,
+        if (sortOrder != null) "sortOrder": sortOrder,
+        "page": page,
+        "limit": limit,
+        if (search != null && search.isNotEmpty) "search": search,
+      };
+
+      final response = await networkManager.post(
+        '$_baseEndpoint/filter',
+        data: requestBody,
+      );
+
+      return response.data;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

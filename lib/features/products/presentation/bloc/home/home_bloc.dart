@@ -6,9 +6,11 @@ import 'package:sasha_botique/features/products/domain/usecases/get_products_on_
 
 import '../../../../../core/services/cart_product_communication_service/cart_product_comm_service.dart';
 import '../../../../../core/utils/cart_operation_enum.dart';
+import '../../../../../core/utils/filter_helper.dart';
 import '../../../../../core/utils/product_category_enum.dart';
 import '../../../../../core/utils/product_category_mapper.dart';
 import '../../../domain/entities/products.dart';
+import '../../../domain/usecases/filter_products.dart';
 import '../../../domain/usecases/get_new_arrival_products.dart';
 import '../../../domain/usecases/get_all_products.dart';
 import '../../../domain/usecases/get_popular_products.dart';
@@ -28,6 +30,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetClearanceProductsUseCase getClearanceProductsUseCase;
   final GetAccessoriesProductsUseCase getAccessoriesProductsUseCase;
   final SearchProductsUseCase searchProductsUseCase;
+  final FilterProductsUseCase filterProductsUseCase;
   final ICartCommunicationService cartService;
 
   static const int _pageSize = 10;
@@ -36,6 +39,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required this.getAllProducts,
     required this.getPopularProducts,
     required this.searchProductsUseCase,
+    required this.filterProductsUseCase,
     required this.getProductsOnSaleUseCase,
     required this.getGenderProductsUseCase,
     required this.getNewArrivalProductsUseCase,
@@ -322,40 +326,59 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     if (state is! HomeLoaded) return;
     final currentState = state as HomeLoaded;
 
+    // Set activeFilters and sort immediately so listener knows it's filter mode
     emit(currentState.copyWith(
-      categoryProducts: {
-        CategoryMapper.getCategory(currentState.currentCategory): []
-      },
+      activeFilters: event.filters,
+      currentSortOption: event.sortOption,
+      isLoadingMore: true,
     ));
 
     try {
-      // When filters are applied, use search API instead of category-specific endpoints
-      final List<Product> products = await searchProductsUseCase(
-        "", // Empty query to search all products
-        event.filters,
-      );
+      // Extract category filters from the filter UI
+      // event.filters format: {'categories': ['Popular', 'Clearance'], ...}
+      List<String> categoryFilters = [];
+      
+      if (event.filters.containsKey('categories') && 
+          event.filters['categories'] is List && 
+          (event.filters['categories'] as List).isNotEmpty) {
+        // User selected categories from filter UI
+        categoryFilters.addAll(
+          (event.filters['categories'] as List).map((v) => v.toString())
+        );
+      }
 
-      // debugPrinter('HomeBloc.Sort Options${event.sortOption}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
-      // debugPrinter('HomeBloc.hasMoreProducts${currentState.hasMoreProducts}: ${CategoryMapper.getCategory(currentState.currentCategory)}: ${products.length}');
+      // Map UI sort option to API format
+      Map<String, String> sortMapping = FilterHelper.mapSortOption(event.sortOption);
+
+      // Use filter API
+      final filterResult = await filterProductsUseCase(
+        filters: categoryFilters.isNotEmpty ? categoryFilters : null,
+        sortBy: sortMapping['sortBy'],
+        sortOrder: sortMapping['sortOrder'],
+        page: 1,
+        limit: 50,
+        search: null,
+      );
 
       emit(currentState.copyWith(
         categoryProducts: {
-          CategoryMapper.getCategory(currentState.currentCategory): products
+          CategoryMapper.getCategory(currentState.currentCategory): filterResult.items
         },
         categoryOffsets: {
           CategoryMapper.getCategory(currentState.currentCategory): 1
         },
         activeFilters: event.filters,
         currentSortOption: event.sortOption,
+        isLoadingMore: false,
         hasMoreProducts: {
           ...currentState.hasMoreProducts,
-          CategoryMapper.getCategory(currentState.currentCategory):
-              false // Search doesn't support pagination
+          CategoryMapper.getCategory(currentState.currentCategory): filterResult.hasNextPage
         },
       ));
     } catch (e) {
-      // Handle "No data found" as empty result instead of error
-      if (e is BadRequestException && e.message.contains("No data found")) {
+      // Handle "No items found" as empty result instead of error
+      if (e is BadRequestException &&
+          (e.message.contains("No items found") || e.message.contains("No data found"))) {
         emit(currentState.copyWith(
           categoryProducts: {
             CategoryMapper.getCategory(currentState.currentCategory): []
@@ -365,6 +388,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           },
           activeFilters: event.filters,
           currentSortOption: event.sortOption,
+          isLoadingMore: false,
           hasMoreProducts: {
             ...currentState.hasMoreProducts,
             CategoryMapper.getCategory(currentState.currentCategory): false
