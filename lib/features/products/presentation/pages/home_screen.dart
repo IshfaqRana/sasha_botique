@@ -26,7 +26,7 @@ import 'products_detail_screen.dart';
 import '../../domain/entities/products.dart';
 import '../bloc/home/home_bloc.dart';
 import '../widgets/custom_drawar.dart';
-import '../widgets/filter_bottom_sheet.dart';
+import 'filter_page.dart';
 import '../widgets/empty_product_screen.dart';
 import 'product_list.dart';
 
@@ -356,40 +356,27 @@ class _HomePageState extends State<HomeScreen>
                   // state.activeFilters.forEach((key, value) {
                   //   debugPrint('Filters into the Home Screen - $key: $value');
                   // });
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) => FilterBottomSheet(
-                      initialFilters: {},
-                      currentSortOption: 'Featured',
-                      onApplyFilters: (filters, sortOption) {
-                        // Navigate to filtered products screen
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => FilteredProductsScreen(
-                              initialFilters: filters,
-                              initialSortOption: sortOption,
-                            ),
-                          ),
-                        );
-                      },
-                      onCancelFilter: (filters, sortOption) {
-                        // Navigate to filtered products screen
-                        Navigator.pop(context);
-                        if (filters.isNotEmpty || sortOption != 'Featured') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FilterPage(
+                        initialFilters: {},
+                        currentSortOption: 'Featured',
+                        onApplyFilters: (filters, sortOption) {
+                          // First pop the filter page
+                          Navigator.pop(context);
+                          // Then navigate to filtered products screen
                           Navigator.push(
                             context,
-                            CupertinoPageRoute(
+                            MaterialPageRoute(
                               builder: (context) => FilteredProductsScreen(
                                 initialFilters: filters,
                                 initialSortOption: sortOption,
                               ),
                             ),
                           );
-                        }
-                      },
+                        },
+                      ),
                     ),
                   );
 

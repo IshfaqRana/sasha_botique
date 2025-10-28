@@ -127,7 +127,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ) async {
     emit(ProfileLoading(user));
     try {
-      final updatedUser = await changePassword(event.newPassword);
+      final updatedUser = await changePassword(event.currentPassword, event.newPassword);
 
       if (updatedUser.firstName != "") {
 

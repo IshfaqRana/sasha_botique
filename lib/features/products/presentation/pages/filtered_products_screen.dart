@@ -7,7 +7,7 @@ import 'package:sasha_botique/features/products/domain/entities/products.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/home/home_bloc.dart';
 import 'package:sasha_botique/features/products/presentation/pages/products_detail_screen.dart';
 import 'package:sasha_botique/features/products/presentation/widgets/empty_product_screen.dart';
-import 'package:sasha_botique/features/products/presentation/widgets/filter_bottom_sheet.dart';
+import 'package:sasha_botique/features/products/presentation/pages/filter_page.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 import 'package:sasha_botique/shared/widgets/loading_overlay.dart';
 
@@ -216,11 +216,8 @@ class _FilteredProductsScreenState extends State<FilteredProductsScreen> {
               if (filterCount > 0 || hasSortApplied)
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      _currentFilters.clear();
-                      _currentSortOption = 'Featured';
-                    });
-                    _applyFilters();
+                    // Navigate back to home screen when clearing all filters
+                    Navigator.pop(context);
                   },
                   child: const Text('Clear All'),
                 ),
@@ -289,27 +286,23 @@ class _FilteredProductsScreenState extends State<FilteredProductsScreen> {
   }
 
   void _showFilterSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => FilterBottomSheet(
-        initialFilters: _currentFilters,
-        currentSortOption: _currentSortOption,
-        onApplyFilters: (filters, sortOption) {
-          setState(() {
-            _currentFilters = filters;
-            _currentSortOption = sortOption;
-          });
-          _applyFilters();
-        },
-        onCancelFilter: (filters, sortOption) {
-          setState(() {
-            _currentFilters = filters;
-            _currentSortOption = sortOption;
-          });
-          _applyFilters();
-          Navigator.pop(context);
-        },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterPage(
+          initialFilters: _currentFilters,
+          currentSortOption: _currentSortOption,
+          onApplyFilters: (filters, sortOption) {
+            // First pop the filter page
+            Navigator.pop(context);
+            // Then update filters and apply
+            setState(() {
+              _currentFilters = filters;
+              _currentSortOption = sortOption;
+            });
+            _applyFilters();
+          },
+        ),
       ),
     );
   }

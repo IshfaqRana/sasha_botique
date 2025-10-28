@@ -323,77 +323,119 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ApplyFilters event,
     Emitter<HomeState> emit,
   ) async {
-    if (state is! HomeLoaded) return;
-    final currentState = state as HomeLoaded;
+    // Handle both initial state and loaded state
+    if (state is! HomeLoaded) {
+      emit(HomeLoading());
+    }
 
-    // Set activeFilters and sort immediately so listener knows it's filter mode
-    emit(currentState.copyWith(
-      activeFilters: event.filters,
-      currentSortOption: event.sortOption,
-      isLoadingMore: true,
-    ));
+    final currentState = state is HomeLoaded
+        ? state as HomeLoaded
+        : null;
+
+    // Set loading state
+    if (currentState != null) {
+      emit(currentState.copyWith(
+        activeFilters: event.filters,
+        currentSortOption: event.sortOption,
+        isLoadingMore: true,
+      ));
+    }
 
     try {
-      // Extract category filters from the filter UI
-      // event.filters format: {'categories': ['Popular', 'Clearance'], ...}
-      List<String> categoryFilters = [];
-      
-      if (event.filters.containsKey('categories') && 
-          event.filters['categories'] is List && 
-          (event.filters['categories'] as List).isNotEmpty) {
-        // User selected categories from filter UI
-        categoryFilters.addAll(
-          (event.filters['categories'] as List).map((v) => v.toString())
-        );
-      }
+      // Extract filterList from UI filters
+      List<String> filterList = FilterHelper.extractFilterList(event.filters);
+
+      // Extract additional filters object
+      Map<String, String> filtersObject = FilterHelper.extractFiltersObject(event.filters);
 
       // Map UI sort option to API format
       Map<String, String> sortMapping = FilterHelper.mapSortOption(event.sortOption);
 
-      // Use filter API
+      // Use filter API with new structure
       final filterResult = await filterProductsUseCase(
-        filters: categoryFilters.isNotEmpty ? categoryFilters : null,
+        filterList: filterList.isNotEmpty ? filterList : null,
         sortBy: sortMapping['sortBy'],
         sortOrder: sortMapping['sortOrder'],
         page: 1,
         limit: 50,
         search: null,
+        filters: filtersObject.isNotEmpty ? filtersObject : null,
       );
 
-      emit(currentState.copyWith(
-        categoryProducts: {
-          CategoryMapper.getCategory(currentState.currentCategory): filterResult.items
-        },
-        categoryOffsets: {
-          CategoryMapper.getCategory(currentState.currentCategory): 1
-        },
-        activeFilters: event.filters,
-        currentSortOption: event.sortOption,
-        isLoadingMore: false,
-        hasMoreProducts: {
-          ...currentState.hasMoreProducts,
-          CategoryMapper.getCategory(currentState.currentCategory): filterResult.hasNextPage
-        },
-      ));
-    } catch (e) {
-      // Handle "No items found" as empty result instead of error
-      if (e is BadRequestException &&
-          (e.message.contains("No items found") || e.message.contains("No data found"))) {
+      // Determine current category
+      final currentCategory = currentState?.currentCategory ?? ProductCategory.all;
+
+      if (currentState != null) {
         emit(currentState.copyWith(
           categoryProducts: {
-            CategoryMapper.getCategory(currentState.currentCategory): []
+            CategoryMapper.getCategory(currentCategory): filterResult.items
           },
           categoryOffsets: {
-            CategoryMapper.getCategory(currentState.currentCategory): 1
+            CategoryMapper.getCategory(currentCategory): 1
           },
           activeFilters: event.filters,
           currentSortOption: event.sortOption,
           isLoadingMore: false,
           hasMoreProducts: {
             ...currentState.hasMoreProducts,
-            CategoryMapper.getCategory(currentState.currentCategory): false
+            CategoryMapper.getCategory(currentCategory): filterResult.hasNextPage
           },
         ));
+      } else {
+        // Create new HomeLoaded state if coming from initial state
+        emit(HomeLoaded(
+          categoryProducts: {
+            CategoryMapper.getCategory(currentCategory): filterResult.items
+          },
+          categoryOffsets: {
+            CategoryMapper.getCategory(currentCategory): 1
+          },
+          activeFilters: event.filters,
+          currentSortOption: event.sortOption,
+          isLoadingMore: false,
+          hasMoreProducts: {
+            CategoryMapper.getCategory(currentCategory): filterResult.hasNextPage
+          },
+        ));
+      }
+    } catch (e) {
+      // Handle "No items found" as empty result instead of error
+      if (e is BadRequestException &&
+          (e.message.contains("No items found") || e.message.contains("No data found"))) {
+        final currentCategory = currentState?.currentCategory ?? ProductCategory.all;
+
+        if (currentState != null) {
+          emit(currentState.copyWith(
+            categoryProducts: {
+              CategoryMapper.getCategory(currentCategory): []
+            },
+            categoryOffsets: {
+              CategoryMapper.getCategory(currentCategory): 1
+            },
+            activeFilters: event.filters,
+            currentSortOption: event.sortOption,
+            isLoadingMore: false,
+            hasMoreProducts: {
+              ...currentState.hasMoreProducts,
+              CategoryMapper.getCategory(currentCategory): false
+            },
+          ));
+        } else {
+          emit(HomeLoaded(
+            categoryProducts: {
+              CategoryMapper.getCategory(currentCategory): []
+            },
+            categoryOffsets: {
+              CategoryMapper.getCategory(currentCategory): 1
+            },
+            activeFilters: event.filters,
+            currentSortOption: event.sortOption,
+            isLoadingMore: false,
+            hasMoreProducts: {
+              CategoryMapper.getCategory(currentCategory): false
+            },
+          ));
+        }
         return;
       }
 

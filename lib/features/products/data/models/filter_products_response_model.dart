@@ -61,22 +61,37 @@ class FilterPayload {
     this.sortOrder,
   });
 
-  factory FilterPayload.fromJson(Map<String, dynamic> json) => FilterPayload(
-        totalItems: json["totalItems"],
-        currentPage: json["currentPage"],
-        totalPages: json["totalPages"],
-        hasNextPage: json["hasNextPage"],
-        hasPrevPage: json["hasPrevPage"],
-        items: json["items"] == null
-            ? []
-            : List<ProductModel>.from(
-                json["items"]!.map((x) => ProductModel.fromJson(x))),
-        appliedFilters: json["appliedFilters"] == null
-            ? []
-            : List<String>.from(json["appliedFilters"]!.map((x) => x)),
-        sortBy: json["sortBy"],
-        sortOrder: json["sortOrder"],
-      );
+  factory FilterPayload.fromJson(Map<String, dynamic> json) {
+    // Safely parse appliedFilters - handle both List and non-List cases
+    List<String> parsedAppliedFilters = [];
+    if (json["appliedFilters"] != null && json["appliedFilters"] is List) {
+      parsedAppliedFilters = List<String>.from(json["appliedFilters"]!.map((x) => x.toString()));
+    }
+
+    // Safely parse items array
+    List<ProductModel> parsedItems = [];
+    if (json["items"] != null && json["items"] is List) {
+      try {
+        parsedItems = List<ProductModel>.from(
+            json["items"]!.map((x) => ProductModel.fromJson(x)));
+      } catch (e) {
+        print('Error parsing filter items: $e');
+        parsedItems = [];
+      }
+    }
+
+    return FilterPayload(
+      totalItems: json["totalItems"],
+      currentPage: json["currentPage"],
+      totalPages: json["totalPages"],
+      hasNextPage: json["hasNextPage"],
+      hasPrevPage: json["hasPrevPage"],
+      items: parsedItems,
+      appliedFilters: parsedAppliedFilters,
+      sortBy: json["sortBy"],
+      sortOrder: json["sortOrder"],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "totalItems": totalItems,

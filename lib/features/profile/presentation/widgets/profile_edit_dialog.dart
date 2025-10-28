@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../../../core/utils/phone_validation.dart';
 
 class ProfileEditDialog extends StatefulWidget {
   final String title;
@@ -6,6 +8,7 @@ class ProfileEditDialog extends StatefulWidget {
   final Function(String) onSave;
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const ProfileEditDialog({
     Key? key,
@@ -14,6 +17,7 @@ class ProfileEditDialog extends StatefulWidget {
     required this.onSave,
     this.validator,
     this.keyboardType = TextInputType.text,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -45,6 +49,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         child: TextFormField(
           controller: _controller,
           keyboardType: widget.keyboardType,
+          inputFormatters: widget.inputFormatters,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

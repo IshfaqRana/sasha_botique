@@ -251,21 +251,23 @@ class ProductApiService {
   /// New unified filter API endpoint
   /// Supports filtering, sorting, search, and pagination in a single request
   Future<Map<String, dynamic>> filterProducts({
-    List<String>? filters, // e.g., ["Sasha Basics", "Popular", "Clearance"]
-    String? sortBy, // e.g., "price", "name", "_id"
+    List<String>? filterList, // e.g., ["Sasha Basics", "Popular", "Clearance", "Accessories"]
+    String? sortBy, // e.g., "price", "name", "createdAt", "popularity", "id"
     String? sortOrder, // "ASC" or "DESC"
     int page = 1,
     int limit = 10,
     String? search,
+    Map<String, String>? filters, // Additional filters object
   }) async {
     try {
       final requestBody = {
-        if (filters != null && filters.isNotEmpty) "filters": filters,
-        if (sortBy != null) "sortBy": sortBy,
-        if (sortOrder != null) "sortOrder": sortOrder,
+        "filterList": filterList ?? [],
+        "sortBy": sortBy ?? "id",
+        "sortOrder": sortOrder ?? "DESC",
         "page": page,
         "limit": limit,
-        if (search != null && search.isNotEmpty) "search": search,
+        "search": search ?? "",
+        "filters": filters ?? {},
       };
 
       final response = await networkManager.post(

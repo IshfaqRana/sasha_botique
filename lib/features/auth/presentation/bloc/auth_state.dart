@@ -17,4 +17,5 @@ class AuthError extends AuthState {
 }
 class PasswordResetEmailSent extends AuthState {}
 class ResetPasswordSuccess extends AuthState {}
+class OTPResentSuccessfully extends AuthState {}
 

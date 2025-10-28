@@ -30,7 +30,8 @@ class UpdateProfilePictureEvent extends ProfileEvent {
 }
 
 class ChangePasswordEvent extends ProfileEvent {
+  final String currentPassword;
   final String newPassword;
 
-  ChangePasswordEvent(this.newPassword);
+  ChangePasswordEvent(this.currentPassword, this.newPassword);
 }

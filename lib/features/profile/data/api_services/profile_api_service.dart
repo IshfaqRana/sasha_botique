@@ -51,11 +51,12 @@ class ProfileApiService {
     return response.data;
   }
 
-  Future<Map<String, dynamic>> changePassword(String newPassword) async {
+  Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
     final response = await networkManager.post(
-      '/account/updateSingleAccount',
+      '/account/change-password',
       data: {
-        'password': newPassword,
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
       },
     );
 

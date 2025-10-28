@@ -14,7 +14,7 @@ abstract class ProfileRemoteDataSource {
   Future<UserModel> getUserProfile();
   Future<UserModel> updateUserProfile(UserModel userModel);
   Future<UserModel> updateProfilePicture(String filePath);
-  Future<UserModel> changePassword(String newPassword);
+  Future<UserModel> changePassword(String currentPassword, String newPassword);
   Future<void> deleteUser();
   Future<List<UserAddressModel>> getUserAddress();
   Future<List<UserAddressModel>> updateUserAddress(String id,UserAddressModel userAddress);
@@ -63,9 +63,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<UserModel> changePassword(String newPassword) async {
+  Future<UserModel> changePassword(String currentPassword, String newPassword) async {
     try {
-      final response = await apiService.changePassword(newPassword);
+      final response = await apiService.changePassword(currentPassword, newPassword);
       // UserResponseModel userResponseModel = UserResponseModel.fromJson(response);
       return UserModel(title: "Mr", firstName: "", lastName: "", username: "", email: "", mobileNo: "");
     } catch (e) {

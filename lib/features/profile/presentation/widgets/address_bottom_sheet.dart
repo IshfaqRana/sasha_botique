@@ -1,6 +1,7 @@
 // lib/features/address/presentation/widgets/address_form_bottom_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/utils/phone_validation.dart';
 import '../../data/models/user_address_reponse_model.dart';
 import '../../domain/entities/user_address.dart';
 
@@ -162,21 +163,10 @@ class _AddressFormBottomSheetState extends State<AddressFormBottomSheet> {
                   label: 'Number',
                   hint: 'Please enter phone number',
                   controller: _phoneController,
-                  validator: (value) {
-                    final input = (value ?? '').trim();
-                    if (input.isEmpty) return '* Please enter phone number';
-                    // UK mobile local format: 7XXXXXXXXX (10 digits, starts with 7)
-                    final isUkMobile = RegExp(r'^7\d{9}').hasMatch(input);
-                    if (!isUkMobile)
-                      return 'Enter valid UK mobile (starts with 7, 10 digits)';
-                    return null;
-                  },
+                  validator: (value) => PhoneValidation.getValidationError(value ?? ''),
                   keyboardType: TextInputType.phone,
                   isPhone: true,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
-                  ],
+                  inputFormatters: PhoneValidation.getUkMobileFormatters(),
                 ),
                 const SizedBox(height: 16.0),
                 _buildFormField(

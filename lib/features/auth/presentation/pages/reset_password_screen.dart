@@ -28,10 +28,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+
+  // Progressive timer intervals like WhatsApp: 60s → 120s → 300s → 1800s
+  final List<int> _timerIntervals = [60, 120, 300, 1800];
+  int _currentIntervalIndex = 0;
   int _remainingResendTime = 60;
   bool _canResendOtp = false;
+  bool _isResendingOtp = false;
 
-  late Timer _resendTimer;
+  Timer? _resendTimer;
 
   @override
   void initState() {
@@ -41,26 +46,57 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _startResendTimer() {
+    _canResendOtp = false;
+    _remainingResendTime = _timerIntervals[_currentIntervalIndex];
+
+    _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _remainingResendTime--;
-        if (_remainingResendTime <= 0) {
-          _canResendOtp = true;
-          timer.cancel();
-        }
-      });
+      if (mounted) {
+        setState(() {
+          _remainingResendTime--;
+          if (_remainingResendTime <= 0) {
+            _canResendOtp = true;
+            timer.cancel();
+          }
+        });
+      }
     });
   }
 
   void _resendOtp() {
-    if (_canResendOtp) {
-      // Implement OTP resend logic
+    if (_canResendOtp && !_isResendingOtp) {
       setState(() {
-        _remainingResendTime = 60;
-        _canResendOtp = false;
+        _isResendingOtp = true;
       });
-      _startResendTimer();
+
+      // Call the API to resend OTP
+      authBloc.add(ResendOTPEvent(widget.email));
     }
+  }
+
+  void _handleResendSuccess() {
+    // Move to next interval for progressive delay
+    if (_currentIntervalIndex < _timerIntervals.length - 1) {
+      _currentIntervalIndex++;
+    }
+
+    setState(() {
+      _isResendingOtp = false;
+    });
+
+    _startResendTimer();
+  }
+
+  String _formatTime(int seconds) {
+    if (seconds >= 60) {
+      final minutes = seconds ~/ 60;
+      final remainingSeconds = seconds % 60;
+      if (remainingSeconds == 0) {
+        return '$minutes ${minutes == 1 ? 'minute' : 'minutes'}';
+      }
+      return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+    }
+    return '$seconds ${seconds == 1 ? 'second' : 'seconds'}';
   }
 
   void _resetPassword() {
@@ -85,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     _otpController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _resendTimer.cancel();
+    _resendTimer?.cancel();
     super.dispose();
   }
 
@@ -103,7 +139,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => LoginScreen()),
             );
+          } else if (state is OTPResentSuccessfully) {
+            _handleResendSuccess();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('OTP has been resent to your email'),
+                backgroundColor: Colors.green,
+              ),
+            );
           } else if (state is AuthError) {
+            // Handle resend error
+            if (_isResendingOtp) {
+              setState(() {
+                _isResendingOtp = false;
+              });
+            }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -140,7 +190,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   const SizedBox(height: 40),
                   if (!_canResendOtp)
-                    Center(child: Text('Resend OTP in $_remainingResendTime seconds')),
+                    Center(
+                      child: Text(
+                        'Resend OTP in ${_formatTime(_remainingResendTime)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 40),
                   _buildResendButton(),
                   const SizedBox(height: 100),
@@ -197,25 +256,51 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildResendButton() {
     return Center(
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-          ),
-          text: "Didn't receive the code? ",
-          children: [
-            TextSpan(
-              text: "Resend",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: _canResendOtp ? Colors.blue : Colors.grey,
+      child: _isResendingOtp
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Sending...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
+          : RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+                text: "Didn't receive the code? ",
+                children: [
+                  TextSpan(
+                    text: "Resend",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _canResendOtp ? Colors.blue : Colors.grey,
+                      decoration: _canResendOtp ? TextDecoration.underline : null,
+                    ),
+                    recognizer: _canResendOtp && !_isResendingOtp
+                        ? (TapGestureRecognizer()..onTap = _resendOtp)
+                        : null,
+                  ),
+                ],
               ),
-              recognizer: TapGestureRecognizer()..onTap = _resendOtp,
             ),
-          ],
-        ),
-      ),
     );
   }
 }

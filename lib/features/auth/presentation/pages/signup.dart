@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sasha_botique/core/utils/phone_validation.dart';
 import 'package:sasha_botique/features/theme/presentation/theme/theme_helper.dart';
 
 import '../../../../shared/widgets/custom_app_button.dart';
@@ -256,8 +258,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 prefixIcon: const Icon(Icons.phone),
                 controller: _phoneController,
                 label: 'Phone *',
-                validator: (value) =>
-                    value?.isEmpty == true ? 'Required' : null,
+                keyboardType: TextInputType.phone,
+                inputFormatters: PhoneValidation.getUkMobileFormatters(),
+                validator: (value) => PhoneValidation.getValidationError(value ?? ''),
               ),
               const SizedBox(height: 16),
               CustomTextField(

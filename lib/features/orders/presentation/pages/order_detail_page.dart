@@ -655,22 +655,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           ),
         ),
       );
-    } else if ((order.status.toLowerCase() == 'completed' ||
-            order.status.toLowerCase() == 'paid') &&
-        order.paymentStatus.toLowerCase() == 'completed') {
-      buttons.add(SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implement track order functionality
-            },
-            icon: const Icon(Icons.location_on),
-            // label: const Text('Track Order'),
-            label: const Text('In Progress'),
+    } 
+    // else if ((order.status.toLowerCase() == 'completed' ||
+    //         order.status.toLowerCase() == 'paid') &&
+    //     order.paymentStatus.toLowerCase() == 'completed') {
+    //   buttons.add(SizedBox(
+    //       width: double.infinity,
+    //       child: ElevatedButton.icon(
+    //         onPressed: () {
+    //           // TODO: Implement track order functionality
+    //         },
+    //         icon: const Icon(Icons.location_on),
+    //         // label: const Text('Track Order'),
+    //         label: const Text('In Progress'),
 
-            style: ElevatedButton.styleFrom(),
-          )));
-    } else {
+    //         style: ElevatedButton.styleFrom(),
+    //       )));
+    // }
+     else {
       buttons.add(SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(

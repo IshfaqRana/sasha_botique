@@ -52,12 +52,13 @@ abstract class ProductRemoteDataSource {
 
   /// New unified filter method
   Future<FilterPayload> filterProducts({
-    List<String>? filters,
+    List<String>? filterList,
     String? sortBy,
     String? sortOrder,
     int page = 1,
     int limit = 10,
     String? search,
+    Map<String, String>? filters,
   });
 }
 
@@ -233,21 +234,23 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<FilterPayload> filterProducts({
-    List<String>? filters,
+    List<String>? filterList,
     String? sortBy,
     String? sortOrder,
     int page = 1,
     int limit = 10,
     String? search,
+    Map<String, String>? filters,
   }) async {
     try {
       final response = await productApiService.filterProducts(
-        filters: filters,
+        filterList: filterList,
         sortBy: sortBy,
         sortOrder: sortOrder,
         page: page,
         limit: limit,
         search: search,
+        filters: filters,
       );
 
       FilterProductsResponseModel filterResponse =
@@ -265,7 +268,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         hasNextPage: false,
         hasPrevPage: false,
         items: [],
-        appliedFilters: filters ?? [],
+        appliedFilters: filterList ?? [],
         sortBy: sortBy,
         sortOrder: sortOrder,
       );

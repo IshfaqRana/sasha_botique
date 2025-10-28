@@ -67,7 +67,11 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           Expanded(
             child: ListView(
               children: [
-                // Only show filters that backend supports
+                // New filterList section for category filters
+                _buildFilterListSection(),
+                const Divider(),
+                
+                // Additional filters section
                 _buildExpandableFilter(
                     'Brand Name', ['Bilal A', 'Maria B', 'SASHA BASICS']),
                 _buildExpandableFilter('Product Type',
@@ -80,6 +84,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                   'Eid Collection 2025',
                   'Summer Collection',
                   'Winter Collection'
+                ]),
+                _buildExpandableFilter('Category', [
+                  'Dresses', 'Tops', 'Bottoms', 'Accessories', 'Shoes'
                 ]),
                 _buildSortDropdown(),
               ],
@@ -160,39 +167,96 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         return 'fit_type';
       case 'Collection':
         return 'collection';
+      case 'Category':
+        return 'category';
       default:
         return title.toLowerCase().replaceAll(' ', '_');
     }
   }
 
+  Widget _buildFilterListSection() {
+    return ExpansionTile(
+      title: const Text('Category Filters'),
+      subtitle: const Text('Filter by product categories'),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select categories to filter by:',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  'Sasha Basics',
+                  'Popular',
+                  'Clearance', 
+                  'Accessories',
+                ].map((category) => FilterChip(
+                  label: Text(category),
+                  selected: (_filters['filterList'] ?? []).contains(category),
+                  onSelected: (selected) {
+                    setState(() {
+                      final List<String> currentFilters = 
+                          List.from(_filters['filterList'] ?? []);
+                      if (selected) {
+                        currentFilters.add(category);
+                      } else {
+                        currentFilters.remove(category);
+                      }
+                      _filters['filterList'] = currentFilters;
+                    });
+                  },
+                )).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSortDropdown() {
-    return ListTile(
-      title: const Text('Sort'),
-      trailing: DropdownButton<String>(
-        value: _sortOption,
-        items: [
-          'Featured',
-          'Best Selling',
-          'Alphabetically, A-Z',
-          'Alphabetically, Z-A',
-          'Price, High to Low',
-          'Price, Low to High',
-          'Date, Old to New',
-          'Date, New to Old',
-        ].map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) {
-            setState(() {
-              _sortOption = newValue;
-            });
-          }
-        },
-      ),
+    return ExpansionTile(
+      title: const Text('Sort By'),
+      subtitle: Text(_sortOption),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            children: [
+              _buildSortOption('Featured', 'Default sorting'),
+              _buildSortOption('Best Selling', 'Sort by popularity'),
+              _buildSortOption('Alphabetically, A-Z', 'Name A to Z'),
+              _buildSortOption('Alphabetically, Z-A', 'Name Z to A'),
+              _buildSortOption('Price, Low to High', 'Price ascending'),
+              _buildSortOption('Price, High to Low', 'Price descending'),
+              _buildSortOption('Date, New to Old', 'Newest first'),
+              _buildSortOption('Date, Old to New', 'Oldest first'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSortOption(String value, String description) {
+    return RadioListTile<String>(
+      title: Text(value),
+      subtitle: Text(description, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      value: value,
+      groupValue: _sortOption,
+      onChanged: (String? newValue) {
+        if (newValue != null) {
+          setState(() {
+            _sortOption = newValue;
+          });
+        }
+      },
     );
   }
 }

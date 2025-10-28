@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/utils/app_utils.dart';
@@ -12,6 +13,8 @@ class CustomTextField extends StatefulWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final FocusNode? focusNode;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     Key? key,
@@ -23,6 +26,8 @@ class CustomTextField extends StatefulWidget {
     this.validator,
     this.suffixIcon,
     this.prefixIcon,
+    this.keyboardType,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -37,6 +42,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
       controller: widget.controller,
       obscureText: widget.obscureText,
       focusNode: widget.focusNode ?? customFocusNode,
+      keyboardType: widget.keyboardType,
+      inputFormatters: widget.inputFormatters,
       onChanged: (text){
         if (widget.onChange != null) {
           widget.onChange!(text); // Call the onChange callback

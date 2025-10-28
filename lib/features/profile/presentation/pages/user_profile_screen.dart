@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
+import 'package:sasha_botique/core/utils/phone_validation.dart';
 import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'package:sasha_botique/features/profile/presentation/pages/user_address_screen.dart';
@@ -16,7 +18,7 @@ import '../../../auth/presentation/pages/login.dart';
 import '../../domain/entities/user.dart';
 import '../bloc/user_address/user_address_bloc.dart';
 import '../bloc/user_profile/user_profile_bloc.dart';
-import '../widgets/change_password_dialog.dart';
+import '../pages/change_password_page.dart';
 import '../widgets/profile_edit_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -209,6 +211,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 );
                               },
                               textInputType: TextInputType.phone,
+                              validator: (value) => PhoneValidation.getValidationError(value ?? ''),
+                              inputFormatters: PhoneValidation.getUkMobileFormatters(),
                             ),
                       ),
 
@@ -522,17 +526,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showPasswordChangeDialog(BuildContext context,) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return PasswordChangeDialog(onSave: (value){},);
-        }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChangePasswordPage(
+          onSave: (currentPassword, newPassword) {
+            profileBloc.add(ChangePasswordEvent(currentPassword, newPassword));
+          },
+        ),
+      ),
     );
-  }  void _showUpdateDialog(BuildContext context, String title, String field, Function(String) onSave, {TextInputType textInputType = TextInputType.text,String? Function(String?)? validator}) {
+  }  void _showUpdateDialog(BuildContext context, String title, String field, Function(String) onSave, {TextInputType textInputType = TextInputType.text,String? Function(String?)? validator, List<TextInputFormatter>? inputFormatters}) {
     showDialog(
         context: context,
         builder: (context) {
-          return ProfileEditDialog(title: title,initialValue: field,onSave: onSave,validator: validator,keyboardType: textInputType,);
+          return ProfileEditDialog(title: title,initialValue: field,onSave: onSave,validator: validator,keyboardType: textInputType, inputFormatters: inputFormatters,);
         }
     );
   }

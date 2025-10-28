@@ -222,21 +222,23 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<FilterResult> filterProducts({
-    List<String>? filters,
+    List<String>? filterList,
     String? sortBy,
     String? sortOrder,
     int page = 1,
     int limit = 10,
     String? search,
+    Map<String, String>? filters,
   }) async {
     try {
       final payload = await remoteDataSource.filterProducts(
-        filters: filters,
+        filterList: filterList,
         sortBy: sortBy,
         sortOrder: sortOrder,
         page: page,
         limit: limit,
         search: search,
+        filters: filters,
       );
 
       // Convert FilterPayload to FilterResult entity

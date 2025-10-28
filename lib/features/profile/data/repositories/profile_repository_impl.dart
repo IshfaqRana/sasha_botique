@@ -38,8 +38,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<User> changePassword(String newPassword) async {
-    return await remoteDataSource.changePassword(newPassword);
+  Future<User> changePassword(String currentPassword, String newPassword) async {
+    return await remoteDataSource.changePassword(currentPassword, newPassword);
   }
 
   @override

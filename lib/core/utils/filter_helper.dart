@@ -5,9 +5,9 @@ class FilterHelper {
   static Map<String, String> mapSortOption(String uiSortOption) {
     switch (uiSortOption) {
       case 'Featured':
-        return {'sortBy': '_id', 'sortOrder': 'DESC'};
+        return {'sortBy': 'id', 'sortOrder': 'DESC'};
       case 'Best Selling':
-        return {'sortBy': '_id', 'sortOrder': 'DESC'}; // Default to DESC
+        return {'sortBy': 'popularity', 'sortOrder': 'DESC'};
       case 'Alphabetically, A-Z':
         return {'sortBy': 'name', 'sortOrder': 'ASC'};
       case 'Alphabetically, Z-A':
@@ -21,7 +21,7 @@ class FilterHelper {
       case 'Date, New to Old':
         return {'sortBy': 'createdAt', 'sortOrder': 'DESC'};
       default:
-        return {'sortBy': '_id', 'sortOrder': 'DESC'};
+        return {'sortBy': 'id', 'sortOrder': 'DESC'};
     }
   }
 
@@ -77,4 +77,90 @@ class FilterHelper {
 
     return filters;
   }
+
+  /// Builds the new API filter request structure
+  /// Returns a map with filterList, sortBy, sortOrder, page, limit, search, and filters
+  static Map<String, dynamic> buildNewFilterRequest({
+    List<String>? filterList,
+    String? sortBy,
+    String? sortOrder,
+    int page = 1,
+    int limit = 10,
+    String? search,
+    Map<String, String>? filters,
+  }) {
+    return {
+      'filterList': filterList ?? [],
+      'sortBy': sortBy ?? 'id',
+      'sortOrder': sortOrder ?? 'DESC',
+      'page': page,
+      'limit': limit,
+      'search': search ?? '',
+      'filters': filters ?? {},
+    };
+  }
+
+  /// Extracts filterList from UI filters
+  /// Maps UI filter categories to API filterList values
+  static List<String> extractFilterList(Map<String, dynamic> uiFilters) {
+    List<String> filterList = [];
+    
+    if (uiFilters.containsKey('filterList') && uiFilters['filterList'] is List) {
+      filterList.addAll((uiFilters['filterList'] as List).cast<String>());
+    }
+    
+    return filterList;
+  }
+
+  /// Extracts additional filters object from UI filters
+  /// Maps UI filter fields to API filters object
+  static Map<String, String> extractFiltersObject(Map<String, dynamic> uiFilters) {
+    Map<String, String> filters = {};
+    
+    // Map UI filter keys to API filter keys
+    final filterMappings = {
+      'brand_name': 'brand_name',
+      'product_type': 'product_type', 
+      'season': 'season',
+      'fit_type': 'fit_type',
+      'collection': 'collection',
+      'category': 'category',
+    };
+    
+    filterMappings.forEach((uiKey, apiKey) {
+      if (uiFilters.containsKey(uiKey) && uiFilters[uiKey] != null) {
+        final value = uiFilters[uiKey];
+        if (value is String && value.isNotEmpty) {
+          filters[apiKey] = value;
+        } else if (value is List && value.isNotEmpty) {
+          filters[apiKey] = value.first.toString();
+        }
+      }
+    });
+    
+    return filters;
+  }
+
+  /// Valid filterList values for the API
+  static const List<String> validFilterListValues = [
+    'Sasha Basics',
+    'Popular', 
+    'Clearance',
+    'Accessories',
+  ];
+
+  /// Valid sortBy values for the API
+  static const List<String> validSortByValues = [
+    'price',
+    'name', 
+    'createdAt',
+    'popularity',
+    'id',
+  ];
+
+  /// Valid sortOrder values for the API
+  static const List<String> validSortOrderValues = [
+    'ASC',
+    'DESC',
+  ];
 }

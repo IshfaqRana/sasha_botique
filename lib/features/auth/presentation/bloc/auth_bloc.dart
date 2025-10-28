@@ -35,6 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutEvent>(_onLogout);
     on<ForgotPasswordEvent>(_onForgotPassword);
     on<ResetPasswordEvent>(_onResetPassword);
+    on<ResendOTPEvent>(_onResendOTP);
 
   }
 
@@ -147,6 +148,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
     }
   }
+
+  Future<void> _onResendOTP(
+      ResendOTPEvent event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+    try {
+      await forgotPassword(event.email);
+      emit(OTPResentSuccessfully());
+    } catch (e) {
+      final validationErrors = e is AuthException ? e.validationErrors : null;
+      emit(AuthError(_mapFailureToMessage(e), validationErrors: validationErrors));
+    }
+  }
+
   String _mapFailureToMessage( exception) {
     switch (exception) {
       case NotFoundException _:

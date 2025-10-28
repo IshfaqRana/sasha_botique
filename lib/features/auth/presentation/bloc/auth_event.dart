@@ -35,3 +35,9 @@ class ResetPasswordEvent extends AuthEvent {
     required this.email,
   });
 }
+
+class ResendOTPEvent extends AuthEvent {
+  final String email;
+
+  ResendOTPEvent(this.email);
+}
