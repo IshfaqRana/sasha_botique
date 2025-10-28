@@ -53,15 +53,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void initState() {
-    if (kDebugMode) {
-      _emailController = TextEditingController(text: "test_user@gmail.com");
-      _userNameController = TextEditingController(text: "test_user");
-
-      _passwordController = TextEditingController(text: "Test1234@");
-      _firstNameController = TextEditingController(text: "Test");
-      _lastNameController = TextEditingController(text: "User");
-      _phoneController = TextEditingController(text: "+923333333333");
-    }
     super.initState();
   }
 
@@ -108,110 +99,118 @@ class _SignupScreenState extends State<SignupScreen> {
               });
             }
           },
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: context.colors.blackWhite,
-                pinned: false,
-                expandedHeight: 312,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    children: [
-                      BackgroundDesign(width: 414, height: 352),
-                      SafeArea(
-                        bottom: false,
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16.0),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.arrow_back,
-                                    color: context.colors.whiteColor,
-                                    size: 30,
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    // Header section
+                    Container(
+                      constraints: BoxConstraints(
+                        minHeight: 312,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.colors.blackWhite,
+                      ),
+                      child: Stack(
+                        children: [
+                          BackgroundDesign(width: 414, height: 352),
+                          SafeArea(
+                            bottom: false,
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_back,
+                                        color: context.colors.whiteColor,
+                                        size: 30,
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
                                   ),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Text(
-                                  'Get\'s started with SASHA.',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium!
-                                      .copyWith(
-                                          color: context.colors.whiteColor),
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Already have an account?',
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text(
+                                      'Get\'s started with SASHA.',
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyMedium!
+                                          .headlineMedium!
                                           .copyWith(
                                               color: context.colors.whiteColor),
                                     ),
-                                    TextButton(
-                                      onPressed: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  LoginScreen())),
-                                      child: Text(
-                                        'Log in',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!
-                                            .copyWith(
-                                                color:
-                                                    context.colors.whiteColor),
-                                      ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Already have an account?',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium!
+                                              .copyWith(
+                                                  color: context.colors.whiteColor),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      LoginScreen())),
+                                          child: Text(
+                                            'Log in',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium!
+                                                .copyWith(
+                                                    color:
+                                                        context.colors.whiteColor),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Register',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium!
+                                          .copyWith(
+                                              color: context.colors.whiteColor),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20), // Add some bottom spacing
+                                ],
                               ),
-                              const SizedBox(height: 24),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Register',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium!
-                                      .copyWith(
-                                          color: context.colors.whiteColor),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    // Form section
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                      child: signupForm(context),
+                    ),
+                  ],
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                  ),
-                  child: signupForm(context),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -326,10 +325,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 },
                 isLoading: context.watch<AuthBloc>().state is AuthLoading,
               ),
-              SizedBox(
-                height: 24,
-              ),
-              SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+              const SizedBox(height: 24),
             ],
           ),
         ),

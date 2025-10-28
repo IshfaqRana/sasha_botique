@@ -155,39 +155,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                       ),
 
-                      _buildInfoItem(
-                        context: context,
-                        label: user.email,
-                        iconData: Icons.email,
-                        onTap: () =>
-                            _showUpdateDialog(
-                              context,
-                              'Update Email',
-                              user.email,
-                                  (value) {
-                                    profileBloc.add(
-                                  UpdateUserProfileEvent(
-                                    title: user.title,
-                                    firstName: user.firstName,
-                                    lastName: user.lastName,
-                                    username: user.username,
-                                    email: value,
-                                    mobileNo: user.mobileNo,
-                                  ),
-                                );
-                              },
-                              textInputType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter an email';
-                                }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                  return 'Please enter a valid email';
-                                }
-                                return null;
-                              },
-                            ),
-                      ),
+                      // _buildInfoItem(
+                      //   context: context,
+                      //   label: user.email,
+                      //   iconData: Icons.email,
+                      //   onTap: () =>
+                      //       _showUpdateDialog(
+                      //         context,
+                      //         'Update Email',
+                      //         user.email,
+                      //             (value) {
+                      //               profileBloc.add(
+                      //             UpdateUserProfileEvent(
+                      //               title: user.title,
+                      //               firstName: user.firstName,
+                      //               lastName: user.lastName,
+                      //               username: user.username,
+                      //               email: value,
+                      //               mobileNo: user.mobileNo,
+                      //             ),
+                      //           );
+                      //         },
+                      //         textInputType: TextInputType.emailAddress,
+                      //         validator: (value) {
+                      //           if (value == null || value.isEmpty) {
+                      //             return 'Please enter an email';
+                      //           }
+                      //           if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      //             return 'Please enter a valid email';
+                      //           }
+                      //           return null;
+                      //         },
+                      //       ),
+                      // ),
 
                       _buildInfoItem(
                         context: context,

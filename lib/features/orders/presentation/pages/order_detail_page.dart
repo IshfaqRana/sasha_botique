@@ -324,7 +324,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           const SizedBox(height: 16),
 
           // Payment Actions
-          if (order.paymentStatus.toLowerCase() == 'pending') ...[
+          if (order.paymentStatus.toLowerCase() == 'pending' || 
+              order.paymentStatus.toLowerCase() == 'unpaid') ...[
             const SizedBox(height: 16),
             const Text(
               'Payment Required',
@@ -546,7 +547,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           const SizedBox(height: 24),
 
           // Action buttons based on order status
-          _buildActionButtons(context, order),
+          // _buildActionButtons(context, order),
 
           const SizedBox(height: 32),
         ],
@@ -656,23 +657,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ),
       );
     } 
-    // else if ((order.status.toLowerCase() == 'completed' ||
-    //         order.status.toLowerCase() == 'paid') &&
-    //     order.paymentStatus.toLowerCase() == 'completed') {
-    //   buttons.add(SizedBox(
-    //       width: double.infinity,
-    //       child: ElevatedButton.icon(
-    //         onPressed: () {
-    //           // TODO: Implement track order functionality
-    //         },
-    //         icon: const Icon(Icons.location_on),
-    //         // label: const Text('Track Order'),
-    //         label: const Text('In Progress'),
-
-    //         style: ElevatedButton.styleFrom(),
-    //       )));
-    // }
-     else {
+    else if (order.paymentStatus.toLowerCase() == 'pending' || 
+              order.paymentStatus.toLowerCase() == 'unpaid') {
       buttons.add(SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -680,11 +666,45 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               _orderBloc.add(UpdatePaymentURLEvent(orderID: order.id));
             },
             icon: const Icon(Icons.shopping_basket),
-            label: Text(order.status),
+            label: const Text('Complete Payment'),
             style: ElevatedButton.styleFrom(),
           )));
     }
-    return buttons.first;
+    else if (order.paymentStatus.toLowerCase() == 'completed' || 
+              order.paymentStatus.toLowerCase() == 'paid') {
+      buttons.add(SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Order is paid, show status
+            },
+            icon: const Icon(Icons.check_circle),
+            label: const Text('Order Confirmed'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          )));
+    }
+    else {
+      // Fallback for any other status
+      buttons.add(SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // No action for unknown status
+            },
+            icon: const Icon(Icons.info),
+            label: Text('Status: ${order.status}'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey,
+              foregroundColor: Colors.white,
+            ),
+          )));
+    }
+    
+    // Return the first button or an empty container if no buttons
+    return buttons.isNotEmpty ? buttons.first : const SizedBox.shrink();
   }
 
   void _showPaymentErrorDialog(BuildContext context, String errorMessage) {

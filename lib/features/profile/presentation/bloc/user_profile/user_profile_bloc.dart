@@ -130,11 +130,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final updatedUser = await changePassword(event.currentPassword, event.newPassword);
 
       if (updatedUser.firstName != "") {
-
-        user = updatedUser;
+        // Password change successful - don't update user data, just emit success
         emit(PasswordChanged(user));
-        // Reload user profile to get any updated info
-        emit(ProfileLoaded(updatedUser));
+        // Keep the current user data intact
+        emit(ProfileLoaded(user));
       } else {
         emit(ProfileError('Failed to change password',user));
       }

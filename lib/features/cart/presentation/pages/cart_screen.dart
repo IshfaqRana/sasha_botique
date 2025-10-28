@@ -93,20 +93,22 @@ class _CartScreenState extends State<CartScreen> {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: () async {
-                          final isAuthenticated = await AuthRequiredMixin.checkAuthAndPrompt(
-                            context,
-                            title: 'Login Required',
-                            message: 'You need to login to proceed with checkout.',
-                          );
+                        onPressed: cartItems.isEmpty
+                            ? null
+                            : () async {
+                                final isAuthenticated = await AuthRequiredMixin.checkAuthAndPrompt(
+                                  context,
+                                  title: 'Login Required',
+                                  message: 'You need to login to proceed with checkout.',
+                                );
 
-                          if (isAuthenticated) {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => CheckoutPage()));
-                          }
-                        },
+                                if (isAuthenticated) {
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => CheckoutPage()));
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           minimumSize: const Size(double.infinity, 50),

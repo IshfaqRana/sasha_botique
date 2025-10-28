@@ -313,7 +313,8 @@ class _OrdersPageState extends State<OrdersPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              if (order.paymentStatus.toLowerCase() == 'pending')
+              if (order.paymentStatus.toLowerCase() == 'pending' || 
+                  order.paymentStatus.toLowerCase() == 'unpaid')
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

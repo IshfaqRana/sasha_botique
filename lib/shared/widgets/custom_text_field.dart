@@ -55,6 +55,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       },
       decoration: InputDecoration(
         labelText: widget.label,
+        errorMaxLines: 3,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF6C63FF)),

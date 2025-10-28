@@ -36,7 +36,7 @@ class OrderRepositoryImpl implements OrderRepository {
           status: '',
           revolutOrderId: '',
           paymentStatus: '',
-          discountAmount: 0,
+          discountAmount: params.discountAmount,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(), phone: params.phone, name: params.name,
         );

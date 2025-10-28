@@ -9,6 +9,7 @@ class CreateOrderParams {
   final PaymentMethodModel? paymentMethod;
   final UserAddressModel deliveryAddress;
   final String promoCode;
+  final double discountAmount;
   final String email;
   final String name;
   final String phone;
@@ -20,6 +21,7 @@ class CreateOrderParams {
     this.paymentMethod,
     required this.deliveryAddress,
     required this.promoCode,
+    required this.discountAmount,
     required this.email,
     required this.name,
     required this.phone,

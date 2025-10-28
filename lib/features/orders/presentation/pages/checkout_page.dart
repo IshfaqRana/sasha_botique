@@ -641,6 +641,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               promoCode: promoCodeController.text.isEmpty
                   ? " "
                   : promoCodeController.text.toUpperCase(),
+              discountAmount: discountAmount,
               email: profileState.user.email,
               name:
                   "${profileState.user.firstName} ${profileState.user.lastName}",

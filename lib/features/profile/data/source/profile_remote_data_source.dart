@@ -66,8 +66,9 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<UserModel> changePassword(String currentPassword, String newPassword) async {
     try {
       final response = await apiService.changePassword(currentPassword, newPassword);
-      // UserResponseModel userResponseModel = UserResponseModel.fromJson(response);
-      return UserModel(title: "Mr", firstName: "", lastName: "", username: "", email: "", mobileNo: "");
+      // For password change, we don't need to return user data, just indicate success
+      // Return a dummy user model with firstName set to indicate success
+      return UserModel(title: "Mr", firstName: "success", lastName: "", username: "", email: "", mobileNo: "");
     } catch (e) {
       rethrow;
     }

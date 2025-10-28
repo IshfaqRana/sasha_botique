@@ -52,6 +52,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           inputFormatters: widget.inputFormatters,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
+            errorMaxLines: 3,
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
           validator: widget.validator,

@@ -537,12 +537,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     ));
 
     // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Product added to cart'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   const SnackBar(
+    //     content: Text('Product added to cart'),
+    //     duration: Duration(seconds: 1),
+    //   ),
+    // );
 
     // Navigate to cart page
     Navigator.push(

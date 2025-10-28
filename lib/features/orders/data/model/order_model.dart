@@ -176,6 +176,7 @@ class OrderModel extends Order {
         'is_default': deliveryAddress.isDefault,
       },
       'promoCode': promoCode,
+      'discountAmount': discountAmount,
       'email': email,
     };
   }
