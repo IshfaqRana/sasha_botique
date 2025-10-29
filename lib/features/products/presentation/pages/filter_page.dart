@@ -31,7 +31,8 @@ class _FilterPageState extends State<FilterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Filters'),
+        centerTitle: true,
+        title: const Text('Filters', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),),
         actions: [
           TextButton(
             onPressed: _clearAllFilters,
@@ -52,7 +53,7 @@ class _FilterPageState extends State<FilterPage> {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  const Icon(Icons.filter_alt, size: 20, color: Colors.blue),
+                  const Icon(Icons.filter_alt, size: 20, color: Colors.black),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -87,56 +88,56 @@ class _FilterPageState extends State<FilterPage> {
                   icon: Icons.branding_watermark,
                   title: 'Brand',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Brand Name', 
                   ['Bilal A', 'Maria B', 'SASHA BASICS'],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Product Type
                 _buildSectionHeader(
                   icon: Icons.inventory_2,
                   title: 'Product Type',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Product Type',
                   ['Stitched', 'Unstitched', 'Semi-Stitched'],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Season
                 _buildSectionHeader(
                   icon: Icons.sunny,
                   title: 'Season',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Season',
                   ['Summer', 'Winter', 'Spring', 'Fall'],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Fit Type
                 _buildSectionHeader(
                   icon: Icons.straighten,
                   title: 'Fit Type',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Fit Type',
                   ['Regular', 'Slim', 'Loose'],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Collection
                 _buildSectionHeader(
                   icon: Icons.collections,
                   title: 'Collection',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Collection',
                   [
                     'Eid Collection 2025',
@@ -144,19 +145,19 @@ class _FilterPageState extends State<FilterPage> {
                     'Winter Collection',
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Category
                 _buildSectionHeader(
                   icon: Icons.label,
                   title: 'Category',
                 ),
-                const SizedBox(height: 12),
-                _buildExpandableFilter(
+                const SizedBox(height: 8),
+                _buildHorizontalScrollableChips(
                   'Category',
                   ['Dresses', 'Tops', 'Bottoms', 'Accessories', 'Shoes'],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
                 // Sort By Section
                 _buildSectionHeader(
@@ -203,7 +204,7 @@ class _FilterPageState extends State<FilterPage> {
                   ),
                   child: const Text(
                     'Apply Filters',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black, ),
                   ),
                 ),
               ),
@@ -221,7 +222,7 @@ class _FilterPageState extends State<FilterPage> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 24, color: Colors.blue),
+        Icon(icon, size: 24, color: Colors.black),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -251,22 +252,22 @@ class _FilterPageState extends State<FilterPage> {
 
   Widget _buildFilterListSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: 4,
+        runSpacing: 0,
         children: [
           'Sasha Basics',
           'Popular',
           'Clearance',
           'Accessories',
         ].map((category) => FilterChip(
-          label: Text(category),
+          label: Text(category, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),),
           selected: (_filters['filterList'] ?? []).contains(category),
           onSelected: (selected) {
             setState(() {
@@ -285,44 +286,35 @@ class _FilterPageState extends State<FilterPage> {
     );
   }
 
-  Widget _buildExpandableFilter(String title, List<String> options) {
+  Widget _buildHorizontalScrollableChips(String title, List<String> options) {
     String filterKey = _getFilterKey(title);
 
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: ExpansionTile(
-        title: Text(title),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: options
-                  .map((option) => ChoiceChip(
-                        label: Text(option),
-                        selected: (_filters[filterKey] ?? []).contains(option),
-                        onSelected: (selected) {
-                          setState(() {
-                            final List<String> currentFilters =
-                                List.from(_filters[filterKey] ?? []);
-                            if (selected) {
-                              currentFilters.add(option);
-                            } else {
-                              currentFilters.remove(option);
-                            }
-                            _filters[filterKey] = currentFilters;
-                          });
-                        },
-                      ))
-                  .toList(),
-            ),
-          ),
-        ],
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 0,
+        children: options.map((option) => FilterChip(
+          label: Text(option, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),),
+          selected: (_filters[filterKey] ?? []).contains(option),
+          onSelected: (selected) {
+            setState(() {
+              final List<String> currentFilters =
+                  List.from(_filters[filterKey] ?? []);
+              if (selected) {
+                currentFilters.add(option);
+              } else {
+                currentFilters.remove(option);
+              }
+              _filters[filterKey] = currentFilters;
+            });
+          },
+        )).toList(),
       ),
     );
   }
