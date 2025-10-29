@@ -10,7 +10,6 @@ import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../products/presentation/pages/home_screen.dart';
 import '../../../profile/domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
-import '../widgets/background_design.dart';
 import '../widgets/validation_error_widget.dart';
 import 'login.dart';
 
@@ -58,158 +57,220 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        // appBar: AppBar(
-        //   backgroundColor: context.colors.blackWhite,
-        //   leading: Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-        //     child: GestureDetector(
-        //         onTap: () {
-        //           Navigator.pop(context);
-        //         },
-        //         child: FaIcon(FontAwesomeIcons.chevronLeft)),
-        //   ),
-        // ),
-        body: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is Authenticated) {
-              setState(() {
-                _validationErrors = [];
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Registration successful!'),
-                  backgroundColor: Colors.green,
+        backgroundColor: Colors.transparent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.black,
+                lightWhiteColor,
+              ],
+            ),
+          ),
+          child: BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is Authenticated) {
+                setState(() {
+                  _validationErrors = [];
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Registration successful!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    (Route<dynamic> route) => false);
+              } else if (state is AuthError) {
+                setState(() {
+                  _validationErrors = (state.validationErrors != null && state.validationErrors!.isNotEmpty)
+                      ? state.validationErrors!
+                      : [state.message];
+                });
+              }
+            },
+            child: Stack(
+              children: [
+                // Decorative images positioned throughout the background
+                // Top section
+                Positioned(
+                  right: screenWidth * 0.1,
+                  top: screenHeight * 0.08,
+                  child: Opacity(
+                    opacity: 0.3,
+                    child: SizedBox(
+                      height: screenHeight * 0.3,
+                      width: screenWidth * 0.45,
+                      child: Image.asset(
+                        "assets/images/design.png",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
                 ),
-              );
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                  (Route<dynamic> route) => false);
-            } else if (state is AuthError) {
-              setState(() {
-                // If there are validation errors, use them; otherwise create a list with the general error message
-                _validationErrors = (state.validationErrors != null && state.validationErrors!.isNotEmpty)
-                    ? state.validationErrors!
-                    : [state.message];
-              });
-            }
-          },
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
-                  children: [
-                    // Header section
-                    Container(
-                      constraints: BoxConstraints(
-                        minHeight: 312,
+                Positioned(
+                  right: screenWidth * 0.07,
+                  top: screenHeight * 0.03,
+                  child: Opacity(
+                    opacity: 0.35,
+                    child: SizedBox(
+                      width: screenWidth * 0.3,
+                      height: screenHeight * 0.38,
+                      child: Image.asset(
+                        "assets/images/login_girl.png",
+                        fit: BoxFit.contain,
                       ),
-                      decoration: BoxDecoration(
-                        color: context.colors.blackWhite,
+                    ),
+                  ),
+                ),
+                // Middle section
+                Positioned(
+                  left: -screenWidth * 0.1,
+                  top: screenHeight * 0.35,
+                  child: Opacity(
+                    opacity: 0.2,
+                    child: SizedBox(
+                      height: screenHeight * 0.25,
+                      width: screenWidth * 0.4,
+                      child: Image.asset(
+                        "assets/images/design.png",
+                        fit: BoxFit.contain,
                       ),
-                      child: Stack(
-                        children: [
-                          BackgroundDesign(width: 414, height: 352),
-                          SafeArea(
-                            bottom: false,
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.arrow_back,
-                                        color: context.colors.whiteColor,
-                                        size: 30,
-                                      ),
-                                      onPressed: () => Navigator.pop(context),
-                                    ),
+                    ),
+                  ),
+                ),
+                // Bottom section
+                Positioned(
+                  right: -screenWidth * 0.05,
+                  bottom: screenHeight * 0.05,
+                  child: Opacity(
+                    opacity: 0.25,
+                    child: SizedBox(
+                      height: screenHeight * 0.28,
+                      width: screenWidth * 0.4,
+                      child: Image.asset(
+                        "assets/images/design.png",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: screenWidth * 0.05,
+                  bottom: -screenHeight * 0.02,
+                  child: Opacity(
+                    opacity: 0.2,
+                    child: SizedBox(
+                      width: screenWidth * 0.25,
+                      height: screenHeight * 0.3,
+                      child: Image.asset(
+                        "assets/images/login_girl.png",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+                // Scrollable content
+                SafeArea(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.06,
+                      vertical: screenHeight * 0.02,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back button
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: context.colors.whiteColor,
+                            size: 28,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          alignment: Alignment.centerLeft,
+                        ),
+                        SizedBox(height: screenHeight * 0.015),
+                        // Welcome text
+                        Text(
+                          'Get\'s started with SASHA.',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge!
+                              .copyWith(
+                                color: context.colors.whiteColor,
+                                fontSize: screenWidth * 0.07,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        SizedBox(height: screenHeight * 0.008),
+                        Row(
+                          children: [
+                            Text(
+                              'Already have an account?',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                    color: context.colors.whiteColor.withValues(alpha: 0.9),
+                                    fontSize: screenWidth * 0.035,
                                   ),
-                                  const SizedBox(height: 8),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text(
-                                      'Get\'s started with SASHA.',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium!
-                                          .copyWith(
-                                              color: context.colors.whiteColor),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          'Already have an account?',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium!
-                                              .copyWith(
-                                                  color: context.colors.whiteColor),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      LoginScreen())),
-                                          child: Text(
-                                            'Log in',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .copyWith(
-                                                    color:
-                                                        context.colors.whiteColor),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Register',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium!
-                                          .copyWith(
-                                              color: context.colors.whiteColor),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20), // Add some bottom spacing
-                                ],
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LoginScreen())),
+                              child: Text(
+                                'Log in',
+                                style: TextStyle(
+                                  color: context.colors.whiteColor,
+                                  fontSize: screenWidth * 0.035,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+                        SizedBox(height: screenHeight * 0.03),
+                        // Signup form card
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                          padding: EdgeInsets.all(screenWidth * 0.06),
+                          child: signupForm(context),
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+                      ],
                     ),
-                    // Form section
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                      ),
-                      child: signupForm(context),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -218,21 +279,24 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget signupForm(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 24.0,
-        right: 24,
-        top: 24,
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 16,
-              ),
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Register',
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium!
+                .copyWith(
+                  fontSize: MediaQuery.of(context).size.width * 0.06,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          SizedBox(height: screenHeight * 0.024),
               CustomTextField(
                 label: 'First Name',
                 controller: _firstNameController,
@@ -328,8 +392,6 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 24),
             ],
           ),
-        ),
-      ),
     );
   }
 
