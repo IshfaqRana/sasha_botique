@@ -286,13 +286,18 @@ class _PaymentWebViewState extends State<PaymentWebView> {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog
-              // Pop the checkout page and push order detail page
-              Navigator.pop(context); // Go back to previous screen (likely cart or home)
-              Navigator.push(
+              // Clear navigation stack back to HomeScreen and push order detail page
+              // This ensures back button goes to HomeScreen
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
                   builder: (_) => OrderDetailPage(orderId: widget.orderId),
                 ),
+                (Route<dynamic> route) {
+                  // Keep only the first route (HomeScreen) - remove all intermediate routes
+                  // This ensures when user taps back, they go to HomeScreen
+                  return route.isFirst;
+                },
               );
             },
             child: const Text('View Order'),

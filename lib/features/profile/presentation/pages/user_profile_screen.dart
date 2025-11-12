@@ -6,12 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sasha_botique/core/di/injections.dart';
 import 'package:sasha_botique/core/extensions/get_text_style_extensions.dart';
 import 'package:sasha_botique/core/utils/phone_validation.dart';
-import 'package:sasha_botique/features/payment/presentation/pages/payment_methods_screen.dart';
 import 'package:sasha_botique/features/products/presentation/bloc/favorite/favorite_bloc.dart';
 import 'package:sasha_botique/features/profile/presentation/pages/user_address_screen.dart';
 import 'package:sasha_botique/shared/widgets/cached_network_image.dart';
 import 'package:sasha_botique/shared/widgets/loading_overlay.dart';
-import 'dart:io';
 
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/pages/login.dart';
@@ -102,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SnackBar(content: Text('Account deleted successfully')),
               );
               // Logout and clear session
-              getIt<AuthBloc>().add(LogoutEvent());
+              context.read<AuthBloc>().add(LogoutEvent());
               getIt<FavoriteBloc>().add(ClearFavoritesEvent());
               // Navigate to login screen
               Navigator.pushAndRemoveUntil(
@@ -135,24 +133,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context: context,
                         label: user.username,
                         iconData: Icons.person_outline,
-                        onTap: () =>
-                            _showUpdateDialog(
-                              context,
-                              'Update Username',
-                              user.username,
-                                  (value) {
-                                    profileBloc.add(
-                                  UpdateUserProfileEvent(
-                                    title: user.title,
-                                    firstName: user.firstName,
-                                    lastName: user.lastName,
-                                    username: value,
-                                    email: user.email,
-                                    mobileNo: user.mobileNo,
-                                  ),
-                                );
-                              },
-                            ),
+                        onTap: () => _showUpdateDialog(
+                          context,
+                          'Update Username',
+                          user.username,
+                          (value) {
+                            profileBloc.add(
+                              UpdateUserProfileEvent(
+                                title: user.title,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                username: value,
+                                email: user.email,
+                                mobileNo: user.mobileNo,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      _buildInfoItem(
+                        context: context,
+                        label: user.email,
+                        iconData: Icons.email,
+                        isEditable: false,
+                        onTap: null,
                       ),
 
                       // _buildInfoItem(
@@ -193,27 +198,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context: context,
                         label: user.mobileNo.isEmpty ? 'Add mobile number' : user.mobileNo,
                         iconData: Icons.phone,
-                        onTap: () =>
-                            _showUpdateDialog(
-                              context,
-                              'Update Mobile Number',
-                              user.mobileNo,
-                                  (value) {
-                                    profileBloc.add(
-                                  UpdateUserProfileEvent(
-                                    title: user.title,
-                                    firstName: user.firstName,
-                                    lastName: user.lastName,
-                                    username: user.username,
-                                    email: user.email,
-                                    mobileNo: value,
-                                  ),
-                                );
-                              },
-                              textInputType: TextInputType.phone,
-                              validator: (value) => PhoneValidation.getValidationError(value ?? ''),
-                              inputFormatters: PhoneValidation.getUkMobileFormatters(),
-                            ),
+                        onTap: () => _showUpdateDialog(
+                          context,
+                          'Update Mobile Number',
+                          user.mobileNo,
+                          (value) {
+                            profileBloc.add(
+                              UpdateUserProfileEvent(
+                                title: user.title,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                username: user.username,
+                                email: user.email,
+                                mobileNo: value,
+                              ),
+                            );
+                          },
+                          textInputType: TextInputType.phone,
+                          validator: (value) => PhoneValidation.getValidationError(value ?? ''),
+                          inputFormatters: PhoneValidation.getUkMobileFormatters(),
+                        ),
                       ),
 
                       _buildInfoItem(
@@ -241,6 +245,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
 
           },
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  void _showImageSourceDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Update Profile Picture'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_library),
+              title: Text('Choose from Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? image =
+                    await _picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  profileBloc.add(
+                    UpdateProfilePictureEvent(image.path),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Take a Photo'),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? photo =
+                    await _picker.pickImage(source: ImageSource.camera);
+                if (photo != null) {
+                  profileBloc.add(
+                    UpdateProfilePictureEvent(photo.path),
+                  );
+                }
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -297,7 +344,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required BuildContext context,
     required String label,
     required IconData iconData,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
+    bool isEditable = true,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
@@ -322,10 +370,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        trailing: IconButton(
-          icon: Icon(Icons.edit, color: Colors.grey.shade600),
-          onPressed: onTap,
-        ),
+        trailing: isEditable
+            ? IconButton(
+                icon: Icon(Icons.edit, color: Colors.grey.shade600),
+                onPressed: onTap,
+              )
+            : Icon(Icons.lock_outline, color: Colors.grey.shade400),
+        onTap: onTap,
       ),
     );
   }
@@ -418,12 +469,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.red.shade400,
           ),
         ),
-        onTap: () {
-          getIt<AuthBloc>().add(LogoutEvent());
-          getIt<FavoriteBloc>().add(ClearFavoritesEvent());
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (Route<dynamic> route) => false);
-
-        },
+        onTap: () => showLogoutConfirmationDialog(context),
       ),
     );
   }
@@ -456,6 +502,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+  void showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Log Out"),
+          content: Text("Are you sure you want to log out?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog first
+                context.read<AuthBloc>().add(LogoutEvent());
+                getIt<FavoriteBloc>().add(ClearFavoritesEvent());
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text("Log Out"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showDeleteAccountDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -484,47 +564,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showImageSourceDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) =>
-          AlertDialog(
-            title: Text('Update Profile Picture'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: Icon(Icons.photo_library),
-                  title: Text('Choose from Gallery'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                    if (image != null) {
-                      profileBloc.add(
-                        UpdateProfilePictureEvent(image.path),
-                      );
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.camera_alt),
-                  title: Text('Take a Photo'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-                    if (photo != null) {
-                      profileBloc.add(
-                        UpdateProfilePictureEvent(photo.path),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
   void _showPasswordChangeDialog(BuildContext context,) {
     Navigator.push(
       context,
@@ -536,11 +575,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }  void _showUpdateDialog(BuildContext context, String title, String field, Function(String) onSave, {TextInputType textInputType = TextInputType.text,String? Function(String?)? validator, List<TextInputFormatter>? inputFormatters}) {
+  }  void _showUpdateDialog(
+      BuildContext context,
+      String title,
+      String field,
+      Function(String) onSave, {
+        TextInputType textInputType = TextInputType.text,
+        String? Function(String?)? validator,
+        List<TextInputFormatter>? inputFormatters,
+        bool readOnly = false,
+      }) {
     showDialog(
         context: context,
         builder: (context) {
-          return ProfileEditDialog(title: title,initialValue: field,onSave: onSave,validator: validator,keyboardType: textInputType, inputFormatters: inputFormatters,);
+          return ProfileEditDialog(
+            title: title,
+            initialValue: field,
+            onSave: onSave,
+            validator: validator,
+            keyboardType: textInputType,
+            inputFormatters: inputFormatters,
+            readOnly: readOnly,
+          );
         }
     );
   }
@@ -548,7 +604,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
         context: context,
         builder: (context) {
-      String currentTitle = title;
       TextEditingController firstNameController = TextEditingController(text: firstName);
       TextEditingController lastNameController = TextEditingController(text: lastName);
 

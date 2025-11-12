@@ -71,11 +71,11 @@ if adb devices | grep -q "emulator"; then
         
         # Install and launch app
         adb -s $emulator_id install -r build/app/outputs/flutter-apk/app-release.apk
-        adb -s $emulator_id shell am start -n com.example.sasha_botique/.MainActivity
+        adb -s $emulator_id shell am start -n com.sashaluxuryuk.sasha_botique/.MainActivity
         
         # Wait and check if app is running
         sleep 10
-        if adb -s $emulator_id shell pidof com.example.sasha_botique > /dev/null; then
+        if adb -s $emulator_id shell pidof com.sashaluxuryuk.sasha_botique > /dev/null; then
             echo "   ✓ App launched successfully on 16KB emulator"
         else
             echo "   ❌ App failed to launch on 16KB emulator"

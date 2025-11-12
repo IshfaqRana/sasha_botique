@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../core/utils/phone_validation.dart';
-
 class ProfileEditDialog extends StatefulWidget {
   final String title;
   final String initialValue;
@@ -9,6 +7,7 @@ class ProfileEditDialog extends StatefulWidget {
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
+  final bool readOnly;
 
   const ProfileEditDialog({
     Key? key,
@@ -18,6 +17,7 @@ class ProfileEditDialog extends StatefulWidget {
     this.validator,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
+    this.readOnly = false,
   }) : super(key: key);
 
   @override
@@ -50,6 +50,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           controller: _controller,
           keyboardType: widget.keyboardType,
           inputFormatters: widget.inputFormatters,
+          readOnly: widget.readOnly,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             errorMaxLines: 3,
@@ -60,19 +61,26 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState?.validate() ?? false) {
-              widget.onSave(_controller.text);
-              Navigator.of(context).pop();
-            }
-          },
-          child: Text('Save'),
-        ),
+        if (!widget.readOnly)
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+        if (widget.readOnly)
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close'),
+          ),
+        if (!widget.readOnly)
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState?.validate() ?? false) {
+                widget.onSave(_controller.text);
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text('Save'),
+          ),
       ],
     );
   }
